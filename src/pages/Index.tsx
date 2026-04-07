@@ -1,16 +1,39 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import Leaderboard from "@/components/dashboard/Leaderboard";
+import KpiCards from "@/components/dashboard/KpiCards";
+import PomodoroTimer from "@/components/dashboard/PomodoroTimer";
+import WeeklyHeatmap from "@/components/dashboard/WeeklyHeatmap";
+import ActivityFeed from "@/components/dashboard/ActivityFeed";
+import PerformanceChart from "@/components/dashboard/PerformanceChart";
+import BadgesPanel from "@/components/dashboard/BadgesPanel";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="min-h-screen bg-background p-5">
+      <DashboardHeader />
+
+      <div className="grid grid-cols-12 gap-4">
+        {/* Left: KPIs + Chart + Badges */}
+        <div className="col-span-5 space-y-4">
+          <KpiCards />
+          <PerformanceChart />
+          <BadgesPanel />
+        </div>
+
+        {/* Center: Leaderboard */}
+        <div className="col-span-4">
+          <Leaderboard />
+        </div>
+
+        {/* Right: Pomodoro + Heatmap + Feed */}
+        <div className="col-span-3 space-y-4">
+          <PomodoroTimer />
+          <WeeklyHeatmap />
+          <ActivityFeed />
+        </div>
+      </div>
     </div>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
