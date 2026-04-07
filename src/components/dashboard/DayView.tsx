@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Flame, TrendingUp, CheckCircle2, Clock, Target } from "lucide-react";
-import { ASSESSORS, SCHEDULE, type Assessor } from "@/data/mockData";
+import { Trophy, Flame, TrendingUp, Clock, Target } from "lucide-react";
+import { ASSESSORS, type Assessor } from "@/data/mockData";
 import PomodoroTimer from "./PomodoroTimer";
+import RegistrationPanel from "./RegistrationPanel";
 
 const DAYS_CONFIG = [
   {
@@ -10,8 +11,8 @@ const DAYS_CONFIG = [
     label: "Segunda",
     short: "SEG",
     activities: [
-      { id: "lista", name: "Geração Lista Prospecção", time: "13:30–14:30", kpi: "Leads", target: 10, field: "leads" as const },
-      { id: "cadencia-seg", name: "Cadência de Novos", time: "15:30–16:15", kpi: "% Cadenciada", target: 70, field: "cadencia" as const },
+      { id: "leads", name: "Geração Lista Prospecção", time: "13:30–14:30", kpi: "Leads gerados", target: 10, unit: "", field: "leads" as const },
+      { id: "cadencia-seg", name: "Cadência de Novos", time: "15:30–16:15", kpi: "% Cadenciada", target: 70, unit: "%", field: "cadencia" as const },
     ],
   },
   {
@@ -19,8 +20,9 @@ const DAYS_CONFIG = [
     label: "Terça",
     short: "TER",
     activities: [
-      { id: "bloco1", name: "Prospecção Ativa – Bloco 1", time: "10:00–10:45", kpi: "Ligações", target: 15, field: "ligacoes" as const },
-      { id: "bloco2", name: "Prospecção Ativa – Bloco 2", time: "15:00–15:45", kpi: "Ligações", target: 15, field: "ligacoes" as const },
+      { id: "ligacoes-b1", name: "Prospecção Ativa – Bloco 1", time: "10:00–10:45", kpi: "Ligações", target: 15, unit: "", field: "ligacoes" as const },
+      { id: "ligacoes-b2", name: "Prospecção Ativa – Bloco 2", time: "15:00–15:45", kpi: "Ligações", target: 15, unit: "", field: "ligacoes" as const },
+      { id: "reunioes-ter", name: "Reuniões Agendadas", time: "—", kpi: "Reuniões", target: 3, unit: "", field: "reunioes" as const },
     ],
   },
   {
@@ -28,7 +30,8 @@ const DAYS_CONFIG = [
     label: "Quarta",
     short: "QUA",
     activities: [
-      { id: "indica", name: "Indica Day", time: "Dia todo", kpi: "Indicações", target: 5, field: "indicacoes" as const },
+      { id: "reunioes-qua", name: "Reuniões Agendadas", time: "Dia todo", kpi: "Reuniões", target: 3, unit: "", field: "reunioes" as const },
+      { id: "indicacoes", name: "Indicações por Cliente", time: "Dia todo", kpi: "Indicações", target: 5, unit: "", field: "indicacoes" as const },
     ],
   },
   {
@@ -36,8 +39,8 @@ const DAYS_CONFIG = [
     label: "Quinta",
     short: "QUI",
     activities: [
-      { id: "cadencia-prod", name: "Cadência c/ Produto", time: "09:45–11:00", kpi: "Touch Points", target: 20, field: "cadencia" as const },
-      { id: "boleta", name: "Boleta Day", time: "14:00–17:30", kpi: "Boletos", target: 10, field: "boletos" as const },
+      { id: "cadencia-prod", name: "Cadência c/ Produto (Touch Points)", time: "09:45–11:00", kpi: "% Cadenciada", target: 100, unit: "%", field: "cadencia" as const },
+      { id: "boleta", name: "Boleta Day", time: "14:00–17:30", kpi: "Boletas", target: 10, unit: "", field: "boletos" as const },
     ],
   },
   {
@@ -45,12 +48,12 @@ const DAYS_CONFIG = [
     label: "Sexta",
     short: "SEX",
     activities: [
-      { id: "revisao", name: "Revisão & Follow-up", time: "09:00–12:00", kpi: "Cadência", target: 100, field: "cadencia" as const },
+      { id: "touchpoint-sex", name: "Touch Point Base Clientes", time: "09:00–12:00", kpi: "% Touch Point", target: 60, unit: "%", field: "cadencia" as const },
     ],
   },
 ];
 
-type KpiField = keyof Assessor["kpis"];
+export type DayActivity = typeof DAYS_CONFIG[number]["activities"][number];
 
 const LEVEL_COLORS = {
   gold: "text-gold border-gold/30 bg-gold/10",
@@ -65,33 +68,33 @@ const RANK_STYLES = [
 ];
 
 const DayView = () => {
-  const today = new Date().getDay(); // 0=Sun, 1=Mon...
+  const today = new Date().getDay();
   const defaultTab = Math.max(0, Math.min(4, today - 1));
   const [activeDay, setActiveDay] = useState(defaultTab);
-  const [registrations, setRegistrations] = useState<Record<string, Record<string, boolean>>>({});
+  // registrations[assessorId][activityId] = numeric value
+  const [registrations, setRegistrations] = useState<Record<string, Record<string, number>>>({});
 
   const day = DAYS_CONFIG[activeDay];
 
-  const toggleRegistration = (assessorId: string, activityId: string) => {
+  const updateRegistration = (assessorId: string, activityId: string, value: number) => {
     setRegistrations(prev => ({
       ...prev,
       [assessorId]: {
         ...prev[assessorId],
-        [activityId]: !prev[assessorId]?.[activityId],
+        [activityId]: value,
       },
     }));
   };
 
-  // Calculate day score per assessor based on the day's relevant KPI fields
-  const getDayScore = (assessor: Assessor) => {
+  const getAssessorDayScore = (assessor: Assessor) => {
     return day.activities.reduce((sum, act) => {
-      const val = assessor.kpis[act.field];
+      const val = registrations[assessor.id]?.[act.id] ?? 0;
       const pct = Math.min(100, Math.round((val / act.target) * 100));
       return sum + pct;
     }, 0);
   };
 
-  const sorted = [...ASSESSORS].sort((a, b) => getDayScore(b) - getDayScore(a));
+  const sorted = [...ASSESSORS].sort((a, b) => getAssessorDayScore(b) - getAssessorDayScore(a));
 
   return (
     <div className="space-y-4">
@@ -126,9 +129,8 @@ const DayView = () => {
           transition={{ duration: 0.2 }}
           className="grid grid-cols-12 gap-4"
         >
-          {/* Left: Activities Schedule + Registration */}
+          {/* Left: Activities + Pomodoro */}
           <div className="col-span-3 space-y-4">
-            {/* Day Activities */}
             <div className="card-glass rounded-xl p-5">
               <div className="flex items-center gap-2 mb-4">
                 <Clock className="w-4 h-4 text-primary" />
@@ -140,19 +142,17 @@ const DayView = () => {
                     <p className="text-sm font-semibold text-foreground">{act.name}</p>
                     <div className="flex items-center gap-3 mt-1.5">
                       <span className="text-xs font-mono text-primary">{act.time}</span>
-                      <span className="text-xs text-muted-foreground">Meta: {act.target} {act.kpi}</span>
+                      <span className="text-xs text-muted-foreground">Meta: {act.target}{act.unit} {act.kpi}</span>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* Pomodoro */}
             <PomodoroTimer />
           </div>
 
-          {/* Center: Individual Ranking for the Day */}
-          <div className="col-span-5">
+          {/* Center: Ranking */}
+          <div className="col-span-4">
             <div className="card-glass rounded-xl p-5 h-full">
               <div className="flex items-center gap-2 mb-4">
                 <Trophy className="w-5 h-5 text-gold" />
@@ -161,7 +161,7 @@ const DayView = () => {
 
               <div className="space-y-3">
                 {sorted.map((a, i) => {
-                  const dayScore = getDayScore(a);
+                  const dayScore = getAssessorDayScore(a);
                   const avgPct = Math.round(dayScore / day.activities.length);
 
                   return (
@@ -195,16 +195,15 @@ const DayView = () => {
                             )}
                           </div>
 
-                          {/* Individual KPIs for this day */}
                           <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
                             {day.activities.map(act => {
-                              const val = a.kpis[act.field];
+                              const val = registrations[a.id]?.[act.id] ?? 0;
                               const pct = Math.min(100, Math.round((val / act.target) * 100));
                               return (
                                 <div key={act.id} className="flex items-center gap-1.5">
                                   <span className="text-[10px] text-muted-foreground">{act.kpi}:</span>
                                   <span className={`text-xs font-mono font-semibold ${pct >= 80 ? "text-success" : pct >= 50 ? "text-chart-orange" : "text-destructive"}`}>
-                                    {act.field === "cadencia" ? `${val}%` : val}/{act.target}
+                                    {val}{act.unit}/{act.target}{act.unit}
                                   </span>
                                 </div>
                               );
@@ -234,46 +233,13 @@ const DayView = () => {
             </div>
           </div>
 
-          {/* Right: Quick Activity Registration */}
-          <div className="col-span-4">
-            <div className="card-glass rounded-xl p-5 h-full">
-              <div className="flex items-center gap-2 mb-4">
-                <Target className="w-4 h-4 text-success" />
-                <h2 className="text-sm font-bold text-foreground">Registrar Atividade</h2>
-              </div>
-
-              <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-240px)]">
-                {ASSESSORS.map(a => (
-                  <div key={a.id} className="p-3 rounded-lg bg-muted/20 border border-border/30">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border ${LEVEL_COLORS[a.level]}`}>
-                        {a.avatar}
-                      </div>
-                      <span className="text-sm font-semibold text-foreground">{a.name.split(" ")[0]}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {day.activities.map(act => {
-                        const done = registrations[a.id]?.[act.id];
-                        return (
-                          <button
-                            key={act.id}
-                            onClick={() => toggleRegistration(a.id, act.id)}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                              done
-                                ? "bg-success/20 text-success border border-success/30"
-                                : "bg-muted/30 text-muted-foreground border border-border/30 hover:bg-muted/50 hover:text-foreground"
-                            }`}
-                          >
-                            <CheckCircle2 className={`w-3.5 h-3.5 ${done ? "text-success" : "text-muted-foreground/50"}`} />
-                            {act.name.length > 20 ? act.kpi : act.name}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+          {/* Right: Registration */}
+          <div className="col-span-5">
+            <RegistrationPanel
+              activities={day.activities}
+              registrations={registrations}
+              onUpdate={updateRegistration}
+            />
           </div>
         </motion.div>
       </AnimatePresence>
