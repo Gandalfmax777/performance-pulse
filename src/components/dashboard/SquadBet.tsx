@@ -87,9 +87,11 @@ const SquadBet = ({ assessors }: Props) => {
 
   const finishBet = (betId: string) => {
     if (rankedSquads.length === 0) return;
+    // Winner = squad with best overall average performance (avgGoal)
+    const winner = rankedSquads[0];
     setBets(prev =>
       prev.map(b =>
-        b.id === betId ? { ...b, status: "finished" as const, winnerId: rankedSquads[0].id } : b
+        b.id === betId ? { ...b, status: "finished" as const, winnerId: winner.id } : b
       )
     );
   };
