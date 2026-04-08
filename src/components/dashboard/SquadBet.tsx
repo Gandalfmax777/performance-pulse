@@ -21,6 +21,8 @@ import {
   ChevronUp,
   Flame,
   Shield,
+  Vault,
+  Settings2,
 } from "lucide-react";
 import {
   RadarChart,
