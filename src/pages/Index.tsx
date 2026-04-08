@@ -203,18 +203,23 @@ const Index = () => {
       )}
 
       {view === "overview" && (
-        <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-5 space-y-4">
-            <KpiCards />
-            <PerformanceChart />
-            <BadgesPanel assessors={assessors} />
-          </div>
-          <div className="col-span-4">
-            <Leaderboard assessors={assessors} />
-          </div>
-          <div className="col-span-3 space-y-4">
-            <WeeklyHeatmap assessors={assessors} />
-            <ActivityFeed />
+        <div className="space-y-4">
+          {/* Row 1: KPI Cards full width */}
+          <KpiCards />
+
+          {/* Row 2: Ranking + Chart + Heatmap */}
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-4">
+              <Leaderboard assessors={assessors} />
+            </div>
+            <div className="col-span-5 space-y-4">
+              <PerformanceChart />
+              <BadgesPanel assessors={assessors} />
+            </div>
+            <div className="col-span-3 space-y-4">
+              <WeeklyHeatmap assessors={assessors} />
+              <ActivityFeed />
+            </div>
           </div>
         </div>
       )}
