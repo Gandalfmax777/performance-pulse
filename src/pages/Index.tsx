@@ -10,16 +10,18 @@ import DayView from "@/components/dashboard/DayView";
 import DailyResults from "@/components/dashboard/DailyResults";
 import KpiAnalytics from "@/components/dashboard/KpiAnalytics";
 import AssessorManager from "@/components/dashboard/AssessorManager";
+import SquadBet from "@/components/dashboard/SquadBet";
 import { DEFAULT_ASSESSORS, type Assessor } from "@/data/mockData";
 import { Settings } from "lucide-react";
 
-type View = "overview" | "daily" | "results" | "kpis";
+type View = "overview" | "daily" | "results" | "kpis" | "squad";
 
 const TABS: { key: View; label: string }[] = [
   { key: "overview", label: "Visão Geral" },
   { key: "daily", label: "Por Dia" },
   { key: "results", label: "Resultado do Dia" },
   { key: "kpis", label: "KPIs & Insights" },
+  { key: "squad", label: "⚔️ Squad Bet" },
 ];
 
 const Index = () => {
@@ -78,6 +80,7 @@ const Index = () => {
       {view === "daily" && <DayView assessors={assessors} />}
       {view === "results" && <DailyResults assessors={assessors} />}
       {view === "kpis" && <KpiAnalytics assessors={assessors} />}
+      {view === "squad" && <SquadBet assessors={assessors} />}
 
       {showManager && (
         <AssessorManager
