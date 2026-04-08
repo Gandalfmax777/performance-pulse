@@ -578,32 +578,66 @@ const SquadBet = ({ assessors }: Props) => {
 
             {/* Create new bet */}
             {!activeBet && (
-              <div className="flex items-center gap-3 mb-4 p-3 bg-muted/20 rounded-lg">
-                <span className="text-xs text-muted-foreground">Nova aposta:</span>
-                <span className="text-xs text-muted-foreground">R$</span>
-                <input
-                  type="number"
-                  value={newBetValue}
-                  onChange={e => setNewBetValue(Number(e.target.value))}
-                  className="w-20 bg-muted/30 border border-border/30 rounded-lg px-2 py-1 text-foreground text-sm font-mono text-center"
-                />
-                <button
-                  onClick={() => {
-                    const newBet: Bet = {
-                      id: `b${Date.now()}`,
-                      round: `Semana ${finishedBets.length + 1}`,
-                      type: "weekly",
-                      value: newBetValue,
-                      winnerId: null,
-                      date: new Date().toISOString().slice(0, 10),
-                      status: "active",
-                    };
-                    setBets(prev => [...prev, newBet]);
-                  }}
-                  className="px-3 py-1 rounded-lg gradient-primary text-primary-foreground text-xs font-bold"
-                >
-                  Iniciar Rodada
-                </button>
+              <div className="space-y-3 mb-4 p-4 bg-muted/20 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground font-semibold">Nova aposta:</span>
+                  {/* Type toggle */}
+                  <div className="flex rounded-lg overflow-hidden border border-border/30">
+                    <button
+                      onClick={() => setNewBetType("weekly")}
+                      className={`px-3 py-1 text-xs font-semibold transition-all ${
+                        newBetType === "weekly"
+                          ? "gradient-primary text-primary-foreground"
+                          : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      Semanal
+                    </button>
+                    <button
+                      onClick={() => setNewBetType("monthly")}
+                      className={`px-3 py-1 text-xs font-semibold transition-all ${
+                        newBetType === "monthly"
+                          ? "gradient-primary text-primary-foreground"
+                          : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      Mensal
+                    </button>
+                  </div>
+                  <span className="text-xs text-muted-foreground">R$</span>
+                  <input
+                    type="number"
+                    value={newBetValue}
+                    onChange={e => setNewBetValue(Number(e.target.value))}
+                    className="w-20 bg-muted/30 border border-border/30 rounded-lg px-2 py-1 text-foreground text-sm font-mono text-center"
+                  />
+                  <button
+                    onClick={() => {
+                      const weeklyCount = bets.filter(b => b.type === "weekly").length;
+                      const monthlyCount = bets.filter(b => b.type === "monthly").length;
+                      const roundName = newBetType === "weekly"
+                        ? `Semana ${weeklyCount + 1} - ${new Date().toLocaleString("pt-BR", { month: "long" }).replace(/^\w/, c => c.toUpperCase())}`
+                        : `Mês ${monthlyCount + 1} - ${new Date().toLocaleString("pt-BR", { month: "long" }).replace(/^\w/, c => c.toUpperCase())}`;
+                      const newBet: Bet = {
+                        id: `b${Date.now()}`,
+                        round: roundName,
+                        type: newBetType,
+                        value: newBetValue,
+                        winnerId: null,
+                        date: new Date().toISOString().slice(0, 10),
+                        status: "active",
+                      };
+                      setBets(prev => [...prev, newBet]);
+                    }}
+                    className="px-3 py-1 rounded-lg gradient-primary text-primary-foreground text-xs font-bold"
+                  >
+                    Iniciar Rodada
+                  </button>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  🏆 O vencedor é determinado automaticamente pelo melhor desempenho médio geral da squad.
+                  Meta atual: <span className="text-primary font-semibold">{betGoal}</span>
+                </p>
               </div>
             )}
 
