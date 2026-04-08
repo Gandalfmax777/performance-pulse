@@ -77,6 +77,7 @@ const Index = () => {
     setTvMode(true);
     setTvPlaying(true);
     setTvProgress(0);
+    setView(prev => TV_TABS.includes(prev) ? prev : TV_TABS[0]);
     document.documentElement.requestFullscreen?.().catch(() => {});
   }, []);
 
