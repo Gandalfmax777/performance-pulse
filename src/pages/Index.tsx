@@ -7,9 +7,20 @@ import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import PerformanceChart from "@/components/dashboard/PerformanceChart";
 import BadgesPanel from "@/components/dashboard/BadgesPanel";
 import DayView from "@/components/dashboard/DayView";
+import DailyResults from "@/components/dashboard/DailyResults";
+import KpiAnalytics from "@/components/dashboard/KpiAnalytics";
+
+type View = "overview" | "daily" | "results" | "kpis";
+
+const TABS: { key: View; label: string }[] = [
+  { key: "overview", label: "Visão Geral" },
+  { key: "daily", label: "Por Dia" },
+  { key: "results", label: "Resultado do Dia" },
+  { key: "kpis", label: "KPIs & Insights" },
+];
 
 const Index = () => {
-  const [view, setView] = useState<"overview" | "daily">("overview");
+  const [view, setView] = useState<View>("overview");
 
   return (
     <div className="min-h-screen bg-background p-5">
@@ -17,29 +28,22 @@ const Index = () => {
 
       {/* View Toggle */}
       <div className="flex gap-2 mb-5">
-        <button
-          onClick={() => setView("overview")}
-          className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-            view === "overview"
-              ? "gradient-primary text-primary-foreground glow-primary"
-              : "bg-muted/30 text-muted-foreground hover:bg-muted/50 border border-border/30"
-          }`}
-        >
-          Visão Geral
-        </button>
-        <button
-          onClick={() => setView("daily")}
-          className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-            view === "daily"
-              ? "gradient-primary text-primary-foreground glow-primary"
-              : "bg-muted/30 text-muted-foreground hover:bg-muted/50 border border-border/30"
-          }`}
-        >
-          Por Dia
-        </button>
+        {TABS.map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setView(tab.key)}
+            className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
+              view === tab.key
+                ? "gradient-primary text-primary-foreground glow-primary"
+                : "bg-muted/30 text-muted-foreground hover:bg-muted/50 border border-border/30"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {view === "overview" ? (
+      {view === "overview" && (
         <div className="grid grid-cols-12 gap-4">
           <div className="col-span-5 space-y-4">
             <KpiCards />
@@ -54,9 +58,11 @@ const Index = () => {
             <ActivityFeed />
           </div>
         </div>
-      ) : (
-        <DayView />
       )}
+
+      {view === "daily" && <DayView />}
+      {view === "results" && <DailyResults />}
+      {view === "kpis" && <KpiAnalytics />}
     </div>
   );
 };
