@@ -655,7 +655,14 @@ const SquadBet = ({ assessors }: Props) => {
                     <div className="flex items-center gap-3">
                       <Trophy className="w-4 h-4 text-accent" />
                       <div>
-                        <p className="text-xs font-semibold text-foreground">{bet.round}</p>
+                        <p className="text-xs font-semibold text-foreground">
+                          {bet.round}
+                          <span className={`ml-2 text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
+                            bet.type === "monthly" ? "bg-accent/20 text-accent" : "bg-primary/20 text-primary"
+                          }`}>
+                            {bet.type === "monthly" ? "MENSAL" : "SEMANAL"}
+                          </span>
+                        </p>
                         <p className="text-[10px] text-muted-foreground">{bet.date}</p>
                       </div>
                     </div>
