@@ -26,6 +26,14 @@ export interface Activity {
   kpiTarget: number;
 }
 
+export interface Badge {
+  id: string;
+  name: string;
+  icon: string;
+  desc: string;
+  check: (a: Assessor) => boolean;
+}
+
 export const SCHEDULE: Activity[] = [
   { id: "lista", name: "Geração Lista Prospecção", day: "Segunda", time: "13:30-14:30", kpiLabel: "Leads", kpiTarget: 10 },
   { id: "cadencia-seg", name: "Cadência de Novos", day: "Segunda", time: "15:30-16:15", kpiLabel: "% Cadenciada", kpiTarget: 70 },
@@ -36,7 +44,15 @@ export const SCHEDULE: Activity[] = [
   { id: "boleta", name: "Boleta Day", day: "Quinta", time: "14:00-17:30", kpiLabel: "Boletos", kpiTarget: 10 },
 ];
 
-export const ASSESSORS: Assessor[] = [
+export const BADGES: Badge[] = [
+  { id: "hunter", name: "Hunter Elite", icon: "🎯", desc: "100% cadência semanal", check: (a) => a.kpis.cadencia >= 100 },
+  { id: "closer", name: "Closer Pro", icon: "🤝", desc: "5+ reuniões na semana", check: (a) => a.kpis.reunioes >= 5 },
+  { id: "networker", name: "Prime Hein", icon: "🌐", desc: "10+ indicações no mês", check: (a) => a.kpis.indicacoes >= 10 },
+  { id: "machine", name: "Máquina", icon: "⚡", desc: "Streak 10+ dias", check: (a) => a.streak >= 10 },
+  { id: "starter", name: "Monstro Sagrado", icon: "🚀", desc: "Primeira semana completa", check: (a) => a.dailyActivity.every(Boolean) },
+];
+
+export const DEFAULT_ASSESSORS: Assessor[] = [
   {
     id: "1", name: "Lucas Mendes", avatar: "LM", points: 2450, level: "gold", streak: 12,
     weeklyGoalPercent: 94,
@@ -75,10 +91,5 @@ export const ASSESSORS: Assessor[] = [
   },
 ];
 
-export const BADGES = [
-  { id: "hunter", name: "Hunter Elite", icon: "🎯", desc: "100% cadência semanal" },
-  { id: "closer", name: "Closer Pro", icon: "🤝", desc: "5+ reuniões na semana" },
-  { id: "networker", name: "Networker", icon: "🌐", desc: "10+ indicações no mês" },
-  { id: "machine", name: "Máquina", icon: "⚡", desc: "Streak 10+ dias" },
-  { id: "starter", name: "Desbravador", icon: "🚀", desc: "Primeira semana completa" },
-];
+// Keep ASSESSORS as a reference for components that import it statically
+export const ASSESSORS = DEFAULT_ASSESSORS;
