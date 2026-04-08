@@ -11,7 +11,7 @@ const KPIS = [
 ];
 
 const KpiCards = () => (
-  <div className="grid grid-cols-3 gap-3">
+  <div className="grid grid-cols-6 gap-3">
     {KPIS.map((kpi, i) => {
       const pct = Math.min(100, Math.round((kpi.value / kpi.target) * 100));
       return (
