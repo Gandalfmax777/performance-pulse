@@ -564,7 +564,6 @@ const SquadBet = ({ assessors }: Props) => {
           </div>
         </div>
       </div>
-      </div>
     </div>
   );
 };
