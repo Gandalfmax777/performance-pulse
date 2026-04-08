@@ -226,9 +226,16 @@ const SquadBet = ({ assessors }: Props) => {
             <div className="flex items-center gap-3">
               <Flame className="w-6 h-6 text-primary animate-pulse" />
               <div>
-                <p className="text-sm font-bold text-foreground">Aposta Ativa: {activeBet.round}</p>
+                <p className="text-sm font-bold text-foreground">
+                  Aposta Ativa: {activeBet.round}
+                  <span className={`ml-2 text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                    activeBet.type === "monthly" ? "bg-accent/20 text-accent" : "bg-primary/20 text-primary"
+                  }`}>
+                    {activeBet.type === "monthly" ? "MENSAL" : "SEMANAL"}
+                  </span>
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  Valor: R$ {activeBet.value} • {activeBet.type === "weekly" ? "Semanal" : "Mensal"}
+                  Valor: R$ {activeBet.value} • Vencedor: melhor desempenho médio geral
                 </p>
               </div>
             </div>
