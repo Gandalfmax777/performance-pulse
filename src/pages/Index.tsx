@@ -24,6 +24,7 @@ const TABS: { key: View; label: string }[] = [
   { key: "squad", label: "⚔️ Squad Bet" },
 ];
 
+const TV_TABS: View[] = ["overview", "results", "squad"];
 const TV_INTERVALS = [10, 15, 20, 30, 45, 60];
 
 const Index = () => {
@@ -44,8 +45,9 @@ const Index = () => {
 
   const nextTab = useCallback(() => {
     setView(prev => {
-      const idx = TABS.findIndex(t => t.key === prev);
-      return TABS[(idx + 1) % TABS.length].key;
+      const idx = TV_TABS.indexOf(prev);
+      const nextIdx = idx === -1 ? 0 : (idx + 1) % TV_TABS.length;
+      return TV_TABS[nextIdx];
     });
     setTvProgress(0);
   }, []);
