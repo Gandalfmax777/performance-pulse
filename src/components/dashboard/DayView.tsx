@@ -176,7 +176,7 @@ const DayView = () => {
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-mono font-bold text-sm ${
-                          i === 0 ? "text-background" : i < 3 ? "text-foreground" : "text-muted-foreground"
+                          i < 3 ? "text-foreground" : "text-muted-foreground"
                         }`}>
                           {i === 0 ? "👑" : `#${i + 1}`}
                         </div>
