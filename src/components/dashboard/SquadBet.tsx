@@ -52,6 +52,7 @@ const SquadBet = ({ assessors }: Props) => {
   const [newEmoji, setNewEmoji] = useState("🔥");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [newBetValue, setNewBetValue] = useState(50);
+  const [newBetType, setNewBetType] = useState<"weekly" | "monthly">("weekly");
   const [expandedSquad, setExpandedSquad] = useState<string | null>(null);
   const [betPrize, setBetPrize] = useState("Vale-refeição R$50");
   const [betGoal, setBetGoal] = useState("Maior média de meta semanal (%)");
