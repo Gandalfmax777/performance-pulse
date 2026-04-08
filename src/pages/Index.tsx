@@ -213,7 +213,7 @@ const Index = () => {
             <Leaderboard assessors={assessors} />
           </div>
           <div className="col-span-3 space-y-4">
-            <WeeklyHeatmap />
+            <WeeklyHeatmap assessors={assessors} />
             <ActivityFeed />
           </div>
         </div>
