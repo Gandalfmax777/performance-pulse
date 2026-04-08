@@ -20,9 +20,9 @@ const DAYS_CONFIG = [
     label: "Terça",
     short: "TER",
     activities: [
-      { id: "ligacoes-b1", name: "Prospecção Ativa – Bloco 1", time: "10:00–10:45", kpi: "Ligações", target: 15, unit: "", field: "ligacoes" as const },
-      { id: "ligacoes-b2", name: "Prospecção Ativa – Bloco 2", time: "15:00–15:45", kpi: "Ligações", target: 15, unit: "", field: "ligacoes" as const },
-      { id: "reunioes-ter", name: "Reuniões Agendadas", time: "—", kpi: "Reuniões", target: 3, unit: "", field: "reunioes" as const },
+      { id: "ligacoes-b1", name: "Prospecção Ativa – Bloco 1", time: "10:00–10:45", kpi: "Ligações Bloco 1", target: 15, unit: "", field: "ligacoes" as const },
+      { id: "ligacoes-b2", name: "Prospecção Ativa – Bloco 2", time: "15:00–15:45", kpi: "Ligações Bloco 2", target: 15, unit: "", field: "ligacoes" as const },
+      { id: "reunioes-ter", name: "Reuniões Agendadas", time: "—", kpi: "Reuniões Agendadas", target: 3, unit: "", field: "reunioes" as const },
     ],
   },
   {
@@ -30,7 +30,7 @@ const DAYS_CONFIG = [
     label: "Quarta",
     short: "QUA",
     activities: [
-      { id: "reunioes-qua", name: "Reuniões Agendadas", time: "Dia todo", kpi: "Reuniões", target: 3, unit: "", field: "reunioes" as const },
+      { id: "reunioes-qua", name: "Reuniões Agendadas", time: "Dia todo", kpi: "Reuniões Agendadas", target: 3, unit: "", field: "reunioes" as const },
       { id: "indicacoes", name: "Indicações por Cliente", time: "Dia todo", kpi: "Indicações", target: 5, unit: "", field: "indicacoes" as const },
     ],
   },
