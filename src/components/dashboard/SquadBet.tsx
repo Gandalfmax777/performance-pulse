@@ -21,6 +21,8 @@ import {
   ChevronUp,
   Flame,
   Shield,
+  Vault,
+  Settings2,
 } from "lucide-react";
 import {
   RadarChart,
@@ -51,6 +53,9 @@ const SquadBet = ({ assessors }: Props) => {
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [newBetValue, setNewBetValue] = useState(50);
   const [expandedSquad, setExpandedSquad] = useState<string | null>(null);
+  const [betPrize, setBetPrize] = useState("Vale-refeição R$50");
+  const [betGoal, setBetGoal] = useState("Maior média de meta semanal (%)");
+  const [showBetConfig, setShowBetConfig] = useState(false);
 
   // Compute rankings
   const rankedSquads = squads
@@ -429,6 +434,137 @@ const SquadBet = ({ assessors }: Props) => {
                 <Bar dataKey="Pontos" fill="hsl(200,70%,50%)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+          </div>
+
+          {/* Vault - Cofre por Squad */}
+          <div className="card-glass rounded-xl p-5">
+            <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+              <Vault className="w-4 h-4 text-accent" /> Cofre de Apostas
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              {squads.map(sq => {
+                const wins = finishedBets.filter(b => b.winnerId === sq.id);
+                const total = wins.reduce((s, b) => s + b.value, 0);
+                const maxVal = Math.max(...squads.map(s => finishedBets.filter(b => b.winnerId === s.id).reduce((acc, b) => acc + b.value, 0)), 1);
+                const fillPercent = Math.min((total / maxVal) * 100, 100);
+                return (
+                  <div key={sq.id} className="rounded-xl border border-border/20 bg-muted/10 p-4 relative overflow-hidden">
+                    {/* Fill bar background */}
+                    <div
+                      className="absolute bottom-0 left-0 right-0 transition-all duration-1000 ease-out opacity-15"
+                      style={{
+                        height: `${fillPercent}%`,
+                        background: sq.color,
+                      }}
+                    />
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xl">{sq.emoji}</span>
+                        <span className="text-xs font-bold text-foreground">{sq.name}</span>
+                      </div>
+                      <p className="text-2xl font-bold font-mono text-accent">R$ {total}</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        {wins.length} vitória{wins.length !== 1 ? "s" : ""} acumulada{wins.length !== 1 ? "s" : ""}
+                      </p>
+                      {/* Mini vault visual */}
+                      <div className="mt-3 w-full bg-muted/30 rounded-full h-2 overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-1000"
+                          style={{ width: `${fillPercent}%`, background: sq.color }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Bet Config Panel */}
+          <div className="card-glass rounded-xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <Settings2 className="w-4 h-4 text-primary" /> Configurar Aposta
+              </h3>
+              <button
+                onClick={() => setShowBetConfig(!showBetConfig)}
+                className="text-xs text-primary hover:underline"
+              >
+                {showBetConfig ? "Fechar" : "Editar"}
+              </button>
+            </div>
+
+            {/* Current config display */}
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="bg-muted/20 rounded-lg p-3 border border-border/20">
+                <p className="text-[10px] text-muted-foreground mb-1">🎁 Prêmio em jogo</p>
+                <p className="text-sm font-bold text-foreground">{betPrize}</p>
+              </div>
+              <div className="bg-muted/20 rounded-lg p-3 border border-border/20">
+                <p className="text-[10px] text-muted-foreground mb-1">🎯 Meta da aposta</p>
+                <p className="text-sm font-bold text-foreground">{betGoal}</p>
+              </div>
+            </div>
+
+            {/* Edit form */}
+            {showBetConfig && (
+              <div className="space-y-3 pt-3 border-t border-border/20 animate-fade-in">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">O que está sendo apostado?</label>
+                  <input
+                    value={betPrize}
+                    onChange={e => setBetPrize(e.target.value)}
+                    placeholder="Ex: Vale-refeição, Day off, Coffee break..."
+                    className="w-full bg-muted/30 border border-border/30 rounded-lg px-3 py-2 text-foreground text-sm placeholder:text-muted-foreground/50"
+                  />
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {["Vale-refeição R$50", "Day off sexta", "Coffee break pro rival", "Vale-compras R$100", "Almoço pago"].map(opt => (
+                      <button
+                        key={opt}
+                        onClick={() => setBetPrize(opt)}
+                        className={`text-[10px] px-2 py-1 rounded-lg border transition-all ${
+                          betPrize === opt
+                            ? "border-primary/50 bg-primary/10 text-primary"
+                            : "border-border/20 bg-muted/20 text-muted-foreground hover:bg-muted/30"
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Meta da aposta (critério de vitória)</label>
+                  <input
+                    value={betGoal}
+                    onChange={e => setBetGoal(e.target.value)}
+                    placeholder="Ex: Maior média de cadência, Mais reuniões..."
+                    className="w-full bg-muted/30 border border-border/30 rounded-lg px-3 py-2 text-foreground text-sm placeholder:text-muted-foreground/50"
+                  />
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {[
+                      "Maior média de meta semanal (%)",
+                      "Mais reuniões agendadas",
+                      "Maior cadência (%)",
+                      "Mais leads gerados",
+                      "Mais boletas realizadas",
+                    ].map(opt => (
+                      <button
+                        key={opt}
+                        onClick={() => setBetGoal(opt)}
+                        className={`text-[10px] px-2 py-1 rounded-lg border transition-all ${
+                          betGoal === opt
+                            ? "border-primary/50 bg-primary/10 text-primary"
+                            : "border-border/20 bg-muted/20 text-muted-foreground hover:bg-muted/30"
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Bet History & New Bet */}
