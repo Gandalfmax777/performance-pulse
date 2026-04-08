@@ -53,6 +53,9 @@ const SquadBet = ({ assessors }: Props) => {
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [newBetValue, setNewBetValue] = useState(50);
   const [expandedSquad, setExpandedSquad] = useState<string | null>(null);
+  const [betPrize, setBetPrize] = useState("Vale-refeição R$50");
+  const [betGoal, setBetGoal] = useState("Maior média de meta semanal (%)");
+  const [showBetConfig, setShowBetConfig] = useState(false);
 
   // Compute rankings
   const rankedSquads = squads
