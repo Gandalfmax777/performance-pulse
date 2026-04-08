@@ -80,6 +80,7 @@ const Index = () => {
       {view === "daily" && <DayView assessors={assessors} />}
       {view === "results" && <DailyResults assessors={assessors} />}
       {view === "kpis" && <KpiAnalytics assessors={assessors} />}
+      {view === "squad" && <SquadBet assessors={assessors} />}
 
       {showManager && (
         <AssessorManager
