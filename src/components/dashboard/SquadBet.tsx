@@ -52,6 +52,7 @@ const SquadBet = ({ assessors }: Props) => {
   const [newEmoji, setNewEmoji] = useState("🔥");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [newBetValue, setNewBetValue] = useState(50);
+  const [newBetType, setNewBetType] = useState<"weekly" | "monthly">("weekly");
   const [expandedSquad, setExpandedSquad] = useState<string | null>(null);
   const [betPrize, setBetPrize] = useState("Vale-refeição R$50");
   const [betGoal, setBetGoal] = useState("Maior média de meta semanal (%)");
@@ -86,9 +87,11 @@ const SquadBet = ({ assessors }: Props) => {
 
   const finishBet = (betId: string) => {
     if (rankedSquads.length === 0) return;
+    // Winner = squad with best overall average performance (avgGoal)
+    const winner = rankedSquads[0];
     setBets(prev =>
       prev.map(b =>
-        b.id === betId ? { ...b, status: "finished" as const, winnerId: rankedSquads[0].id } : b
+        b.id === betId ? { ...b, status: "finished" as const, winnerId: winner.id } : b
       )
     );
   };
@@ -223,9 +226,16 @@ const SquadBet = ({ assessors }: Props) => {
             <div className="flex items-center gap-3">
               <Flame className="w-6 h-6 text-primary animate-pulse" />
               <div>
-                <p className="text-sm font-bold text-foreground">Aposta Ativa: {activeBet.round}</p>
+                <p className="text-sm font-bold text-foreground">
+                  Aposta Ativa: {activeBet.round}
+                  <span className={`ml-2 text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                    activeBet.type === "monthly" ? "bg-accent/20 text-accent" : "bg-primary/20 text-primary"
+                  }`}>
+                    {activeBet.type === "monthly" ? "MENSAL" : "SEMANAL"}
+                  </span>
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  Valor: R$ {activeBet.value} • {activeBet.type === "weekly" ? "Semanal" : "Mensal"}
+                  Valor: R$ {activeBet.value} • Vencedor: melhor desempenho médio geral
                 </p>
               </div>
             </div>
@@ -575,32 +585,66 @@ const SquadBet = ({ assessors }: Props) => {
 
             {/* Create new bet */}
             {!activeBet && (
-              <div className="flex items-center gap-3 mb-4 p-3 bg-muted/20 rounded-lg">
-                <span className="text-xs text-muted-foreground">Nova aposta:</span>
-                <span className="text-xs text-muted-foreground">R$</span>
-                <input
-                  type="number"
-                  value={newBetValue}
-                  onChange={e => setNewBetValue(Number(e.target.value))}
-                  className="w-20 bg-muted/30 border border-border/30 rounded-lg px-2 py-1 text-foreground text-sm font-mono text-center"
-                />
-                <button
-                  onClick={() => {
-                    const newBet: Bet = {
-                      id: `b${Date.now()}`,
-                      round: `Semana ${finishedBets.length + 1}`,
-                      type: "weekly",
-                      value: newBetValue,
-                      winnerId: null,
-                      date: new Date().toISOString().slice(0, 10),
-                      status: "active",
-                    };
-                    setBets(prev => [...prev, newBet]);
-                  }}
-                  className="px-3 py-1 rounded-lg gradient-primary text-primary-foreground text-xs font-bold"
-                >
-                  Iniciar Rodada
-                </button>
+              <div className="space-y-3 mb-4 p-4 bg-muted/20 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground font-semibold">Nova aposta:</span>
+                  {/* Type toggle */}
+                  <div className="flex rounded-lg overflow-hidden border border-border/30">
+                    <button
+                      onClick={() => setNewBetType("weekly")}
+                      className={`px-3 py-1 text-xs font-semibold transition-all ${
+                        newBetType === "weekly"
+                          ? "gradient-primary text-primary-foreground"
+                          : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      Semanal
+                    </button>
+                    <button
+                      onClick={() => setNewBetType("monthly")}
+                      className={`px-3 py-1 text-xs font-semibold transition-all ${
+                        newBetType === "monthly"
+                          ? "gradient-primary text-primary-foreground"
+                          : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      Mensal
+                    </button>
+                  </div>
+                  <span className="text-xs text-muted-foreground">R$</span>
+                  <input
+                    type="number"
+                    value={newBetValue}
+                    onChange={e => setNewBetValue(Number(e.target.value))}
+                    className="w-20 bg-muted/30 border border-border/30 rounded-lg px-2 py-1 text-foreground text-sm font-mono text-center"
+                  />
+                  <button
+                    onClick={() => {
+                      const weeklyCount = bets.filter(b => b.type === "weekly").length;
+                      const monthlyCount = bets.filter(b => b.type === "monthly").length;
+                      const roundName = newBetType === "weekly"
+                        ? `Semana ${weeklyCount + 1} - ${new Date().toLocaleString("pt-BR", { month: "long" }).replace(/^\w/, c => c.toUpperCase())}`
+                        : `Mês ${monthlyCount + 1} - ${new Date().toLocaleString("pt-BR", { month: "long" }).replace(/^\w/, c => c.toUpperCase())}`;
+                      const newBet: Bet = {
+                        id: `b${Date.now()}`,
+                        round: roundName,
+                        type: newBetType,
+                        value: newBetValue,
+                        winnerId: null,
+                        date: new Date().toISOString().slice(0, 10),
+                        status: "active",
+                      };
+                      setBets(prev => [...prev, newBet]);
+                    }}
+                    className="px-3 py-1 rounded-lg gradient-primary text-primary-foreground text-xs font-bold"
+                  >
+                    Iniciar Rodada
+                  </button>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  🏆 O vencedor é determinado automaticamente pelo melhor desempenho médio geral da squad.
+                  Meta atual: <span className="text-primary font-semibold">{betGoal}</span>
+                </p>
               </div>
             )}
 
@@ -618,7 +662,14 @@ const SquadBet = ({ assessors }: Props) => {
                     <div className="flex items-center gap-3">
                       <Trophy className="w-4 h-4 text-accent" />
                       <div>
-                        <p className="text-xs font-semibold text-foreground">{bet.round}</p>
+                        <p className="text-xs font-semibold text-foreground">
+                          {bet.round}
+                          <span className={`ml-2 text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
+                            bet.type === "monthly" ? "bg-accent/20 text-accent" : "bg-primary/20 text-primary"
+                          }`}>
+                            {bet.type === "monthly" ? "MENSAL" : "SEMANAL"}
+                          </span>
+                        </p>
                         <p className="text-[10px] text-muted-foreground">{bet.date}</p>
                       </div>
                     </div>
