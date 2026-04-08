@@ -62,9 +62,9 @@ const LEVEL_COLORS = {
 };
 
 const RANK_STYLES = [
-  "gradient-gold glow-gold",
-  "bg-silver/20 border-silver/30",
-  "bg-bronze/20 border-bronze/30",
+  "bg-gold/10 border-gold/40",
+  "bg-silver/10 border-silver/30",
+  "bg-bronze/10 border-bronze/30",
 ];
 
 const DayView = () => {
