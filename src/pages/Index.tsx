@@ -11,7 +11,9 @@ import DailyResults from "@/components/dashboard/DailyResults";
 import KpiAnalytics from "@/components/dashboard/KpiAnalytics";
 import AssessorManager from "@/components/dashboard/AssessorManager";
 import SquadBet from "@/components/dashboard/SquadBet";
-import { DEFAULT_ASSESSORS, type Assessor } from "@/data/mockData";
+import TvRanking from "@/components/dashboard/TvRanking";
+import { useAssessors } from "@/hooks/useAssessors";
+import { useRankingStream } from "@/hooks/useRankingStream";
 import { Settings, Tv, X, Play, Pause, SkipForward, Timer } from "lucide-react";
 
 type View = "overview" | "daily" | "results" | "kpis" | "squad";
@@ -29,19 +31,19 @@ const TV_INTERVALS = [10, 15, 20, 30, 45, 60];
 
 const Index = () => {
   const [view, setView] = useState<View>("overview");
-  const [assessors, setAssessors] = useState<Assessor[]>(DEFAULT_ASSESSORS);
+  const { assessors, addAssessor, removeAssessor } = useAssessors();
   const [showManager, setShowManager] = useState(false);
 
   // TV Mode state
   const [tvMode, setTvMode] = useState(false);
+
+  // SSE: ativa stream quando em TV mode pra updates em tempo real (<500ms)
+  useRankingStream(tvMode);
   const [tvPlaying, setTvPlaying] = useState(true);
   const [tvInterval, setTvInterval] = useState(15); // seconds
   const [tvProgress, setTvProgress] = useState(0);
   const [showTvSettings, setShowTvSettings] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const addAssessor = (a: Assessor) => setAssessors(prev => [...prev, a]);
-  const removeAssessor = (id: string) => setAssessors(prev => prev.filter(a => a.id !== id));
 
   const nextTab = useCallback(() => {
     setView(prev => {
@@ -208,19 +210,24 @@ const Index = () => {
           <KpiCards />
 
           {/* Row 2: Ranking + Chart + Heatmap */}
-          <div className="grid grid-cols-12 gap-4">
-            <div className="col-span-4">
-              <Leaderboard assessors={assessors} />
+          {tvMode ? (
+            /* TV Mode: ranking dramático full-width, máxima visibilidade na TV */
+            <TvRanking assessors={assessors} />
+          ) : (
+            <div className="grid grid-cols-12 gap-4">
+              <div className="col-span-4">
+                <Leaderboard assessors={assessors} />
+              </div>
+              <div className="col-span-5 space-y-4">
+                <PerformanceChart />
+                <BadgesPanel assessors={assessors} />
+              </div>
+              <div className="col-span-3 space-y-4">
+                <WeeklyHeatmap assessors={assessors} />
+                <ActivityFeed />
+              </div>
             </div>
-            <div className="col-span-5 space-y-4">
-              <PerformanceChart />
-              <BadgesPanel assessors={assessors} />
-            </div>
-            <div className="col-span-3 space-y-4">
-              <WeeklyHeatmap assessors={assessors} />
-              <ActivityFeed />
-            </div>
-          </div>
+          )}
         </div>
       )}
 

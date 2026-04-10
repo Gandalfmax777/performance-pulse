@@ -4,6 +4,35 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
+/* ─── Print layout (Fase 7) ────────────────────────────────────────────────
+   O AssessorProfile marca seu modal com className="printable" e esconde
+   controles com className="no-print". Ao chamar window.print(), só o
+   conteúdo printable vira visível, ocupando a página inteira. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .printable,
+  .printable * {
+    visibility: visible;
+  }
+  .printable {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    background: white !important;
+    color: black !important;
+    border: none !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
+
 @layer base {
   :root {
     --background: 160 15% 6%;

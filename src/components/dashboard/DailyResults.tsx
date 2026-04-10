@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Trophy, Medal, TrendingDown, TrendingUp, Flame } from "lucide-react";
-import { type Assessor } from "@/data/mockData";
+import { type Assessor } from "@/types/assessor";
 
 const LEVEL_COLORS = {
   gold: "text-gold border-gold/30 bg-gold/10",

@@ -1,13 +1,9 @@
-import { useState } from "react";
-import { type Assessor } from "@/data/mockData";
-import {
-  type Squad,
-  type Bet,
-  DEFAULT_SQUADS,
-  DEFAULT_BETS,
-  SQUAD_BADGES,
-  getSquadStats,
-} from "@/data/squadData";
+import { useMemo, useState } from "react";
+import { type Assessor } from "@/types/assessor";
+import { useSquads, useCreateSquad, useDeleteSquad, type ApiSquad } from "@/hooks/useSquads";
+import { useBets, useCreateBet, useFinishBet, type BetWinnerCriteria } from "@/hooks/useBets";
+import { useCofreBalance } from "@/hooks/useCofre";
+import { useBadges, useBadgeUnlocks } from "@/hooks/useBadges";
 import {
   Trophy,
   Users,
@@ -22,7 +18,7 @@ import {
   Flame,
   Shield,
   Vault,
-  Settings2,
+  Loader2,
 } from "lucide-react";
 import {
   RadarChart,
@@ -44,89 +40,171 @@ interface Props {
   assessors: Assessor[];
 }
 
+const RADAR_COLORS = [
+  "hsl(152, 70%, 45%)",
+  "hsl(200, 70%, 50%)",
+  "hsl(45, 90%, 55%)",
+  "hsl(270, 60%, 60%)",
+];
+
+const EMOJI_OPTIONS = ["🔥", "🐺", "🦅", "🦁", "🐉", "⚡", "🎯", "🚀", "💎", "🏆"];
+
+/**
+ * Critérios de vitória suportados pelo backend (Fase 6: 3 kinds).
+ */
+const CRITERIA_PRESETS: Array<{ label: string; value: BetWinnerCriteria }> = [
+  { label: "Maior média de cadência",    value: { kind: "avgKpi", kpiKey: "cadencia" } },
+  { label: "Mais pontos totais",          value: { kind: "totalPoints" } },
+  { label: "Mais leads gerados",          value: { kind: "sumKpi", kpiKey: "leads" } },
+  { label: "Mais reuniões agendadas",     value: { kind: "sumKpi", kpiKey: "reunioes" } },
+];
+
+function criteriaLabel(c: BetWinnerCriteria): string {
+  if (c.kind === "avgKpi") return `Maior média de ${c.kpiKey}`;
+  if (c.kind === "totalPoints") return "Mais pontos totais";
+  if (c.kind === "sumKpi") return `Mais ${c.kpiKey}`;
+  return "Critério customizado";
+}
+
 const SquadBet = ({ assessors }: Props) => {
-  const [squads, setSquads] = useState<Squad[]>(DEFAULT_SQUADS);
-  const [bets, setBets] = useState<Bet[]>(DEFAULT_BETS);
+  const { data: squadsData, isLoading: squadsLoading } = useSquads();
+  const { data: betsData } = useBets();
+  const { data: cofreData } = useCofreBalance();
+  const { data: badgesData } = useBadges();
+  const { data: squadUnlocksData } = useBadgeUnlocks({ periodKey: undefined });
+
+  const createSquadMut = useCreateSquad();
+  const deleteSquadMut = useDeleteSquad();
+  const createBetMut = useCreateBet();
+  const finishBetMut = useFinishBet();
+
+  const squads = squadsData ?? [];
+  const bets = betsData ?? [];
+
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [newEmoji, setNewEmoji] = useState("🔥");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
-  const [newBetValue, setNewBetValue] = useState(50);
-  const [newBetType, setNewBetType] = useState<"weekly" | "monthly">("weekly");
   const [expandedSquad, setExpandedSquad] = useState<string | null>(null);
-  const [betPrize, setBetPrize] = useState("Vale-refeição R$50");
-  const [betGoal, setBetGoal] = useState("Maior média de meta semanal (%)");
-  const [showBetConfig, setShowBetConfig] = useState(false);
 
-  // Compute rankings
-  const rankedSquads = squads
-    .map(sq => ({ ...sq, stats: getSquadStats(sq, assessors) }))
-    .sort((a, b) => b.stats.avgGoal - a.stats.avgGoal);
+  // Nova bet form
+  const [newBetValue, setNewBetValue] = useState(50);
+  const [newBetType, setNewBetType] = useState<"WEEKLY" | "MONTHLY">("WEEKLY");
+  const [newBetCriteriaIdx, setNewBetCriteriaIdx] = useState(0);
 
-  const assignedIds = squads.flatMap(s => s.memberIds);
-  const unassigned = assessors.filter(a => !assignedIds.includes(a.id));
+  // ─── Ranking de squads com estatísticas ──────────────────────────────────
+  // Usa os kpis legados que vêm do useAssessors (populados pelo weekly rollup em API mode).
+  const rankedSquads = useMemo(() => {
+    return squads
+      .map((sq) => {
+        const members = assessors.filter((a) => sq.members.some((m) => m.assessorId === a.id));
+        const n = Math.max(members.length, 1);
+        const stats = {
+          leads: +(members.reduce((s, m) => s + m.kpis.leads, 0) / n).toFixed(1),
+          cadencia: +(members.reduce((s, m) => s + m.kpis.cadencia, 0) / n).toFixed(1),
+          ligacoes: +(members.reduce((s, m) => s + m.kpis.ligacoes, 0) / n).toFixed(1),
+          reunioes: +(members.reduce((s, m) => s + m.kpis.reunioes, 0) / n).toFixed(1),
+          indicacoes: +(members.reduce((s, m) => s + m.kpis.indicacoes, 0) / n).toFixed(1),
+          boletos: +(members.reduce((s, m) => s + m.kpis.boletos, 0) / n).toFixed(1),
+          totalPoints: members.reduce((s, m) => s + m.points, 0),
+          avgGoal: +(members.reduce((s, m) => s + m.weeklyGoalPercent, 0) / n).toFixed(1),
+        };
+        return { sq, members, stats };
+      })
+      .sort((a, b) => b.stats.avgGoal - a.stats.avgGoal);
+  }, [squads, assessors]);
+
+  const assignedIds = useMemo(
+    () => squads.flatMap((s) => s.members.map((m) => m.assessorId)),
+    [squads],
+  );
 
   const createSquad = () => {
     if (!newName.trim() || selectedMembers.length === 0) return;
-    const squad: Squad = {
-      id: `s${Date.now()}`,
-      name: newName.trim(),
-      emoji: newEmoji,
-      color: `hsl(${Math.floor(Math.random() * 360)}, 70%, 50%)`,
-      leaderId: selectedMembers[0],
-      memberIds: selectedMembers,
-    };
-    setSquads(prev => [...prev, squad]);
-    setNewName("");
-    setNewEmoji("🔥");
-    setSelectedMembers([]);
-    setShowCreate(false);
-  };
-
-  const removeSquad = (id: string) => setSquads(prev => prev.filter(s => s.id !== id));
-
-  const finishBet = (betId: string) => {
-    if (rankedSquads.length === 0) return;
-    // Winner = squad with best overall average performance (avgGoal)
-    const winner = rankedSquads[0];
-    setBets(prev =>
-      prev.map(b =>
-        b.id === betId ? { ...b, status: "finished" as const, winnerId: winner.id } : b
-      )
+    const randomHsl = `hsl(${Math.floor(Math.random() * 360)}, 70%, 50%)`;
+    createSquadMut.mutate(
+      {
+        name: newName.trim(),
+        emoji: newEmoji,
+        color: randomHsl,
+        leaderId: selectedMembers[0],
+        memberIds: selectedMembers,
+      },
+      {
+        onSuccess: () => {
+          setNewName("");
+          setNewEmoji("🔥");
+          setSelectedMembers([]);
+          setShowCreate(false);
+        },
+      },
     );
   };
 
-  const activeBet = bets.find(b => b.status === "active");
-  const finishedBets = bets.filter(b => b.status === "finished");
+  const removeSquad = (id: string) => {
+    if (!confirm("Remover squad?")) return;
+    deleteSquadMut.mutate(id);
+  };
 
-  // Radar data
+  const startBet = () => {
+    const criteria = CRITERIA_PRESETS[newBetCriteriaIdx]?.value;
+    if (!criteria) return;
+    const month = new Date().toLocaleString("pt-BR", { month: "long" }).replace(/^\w/, (c) => c.toUpperCase());
+    const count = bets.filter((b) => b.type === newBetType).length;
+    const roundLabel =
+      newBetType === "WEEKLY" ? `Semana ${count + 1} - ${month}` : `Mês ${count + 1} - ${month}`;
+    createBetMut.mutate({
+      roundLabel,
+      type: newBetType,
+      value: newBetValue,
+      winnerCriteriaJson: criteria,
+    });
+  };
+
+  const activeBet = bets.find((b) => b.status === "ACTIVE");
+  const finishedBets = bets.filter((b) => b.status === "FINISHED");
+
+  // Radar + bar comparativo
   const radarData = [
-    { metric: "Leads", ...Object.fromEntries(rankedSquads.map(s => [s.id, s.stats.leads])) },
-    { metric: "Cadência", ...Object.fromEntries(rankedSquads.map(s => [s.id, s.stats.cadencia])) },
-    { metric: "Ligações", ...Object.fromEntries(rankedSquads.map(s => [s.id, s.stats.ligacoes])) },
-    { metric: "Reuniões", ...Object.fromEntries(rankedSquads.map(s => [s.id, s.stats.reunioes])) },
-    { metric: "Indicações", ...Object.fromEntries(rankedSquads.map(s => [s.id, s.stats.indicacoes])) },
-    { metric: "Boletos", ...Object.fromEntries(rankedSquads.map(s => [s.id, s.stats.boletos])) },
+    { metric: "Leads", ...Object.fromEntries(rankedSquads.map((s) => [s.sq.id, s.stats.leads])) },
+    { metric: "Cadência", ...Object.fromEntries(rankedSquads.map((s) => [s.sq.id, s.stats.cadencia])) },
+    { metric: "Ligações", ...Object.fromEntries(rankedSquads.map((s) => [s.sq.id, s.stats.ligacoes])) },
+    { metric: "Reuniões", ...Object.fromEntries(rankedSquads.map((s) => [s.sq.id, s.stats.reunioes])) },
+    { metric: "Indicações", ...Object.fromEntries(rankedSquads.map((s) => [s.sq.id, s.stats.indicacoes])) },
+    { metric: "Boletos", ...Object.fromEntries(rankedSquads.map((s) => [s.sq.id, s.stats.boletos])) },
   ];
 
-  // Bar comparison data
-  const barData = rankedSquads.map(s => ({
-    name: `${s.emoji} ${s.name}`,
+  const barData = rankedSquads.map((s) => ({
+    name: `${s.sq.emoji} ${s.sq.name}`,
     "Meta %": s.stats.avgGoal,
     Pontos: s.stats.totalPoints,
   }));
 
-  // Win count per squad
-  const winCount = (squadId: string) => finishedBets.filter(b => b.winnerId === squadId).length;
+  // Helpers pro cofre (derivado do backend)
+  const winCount = (squadId: string) =>
+    cofreData?.bySquad.find((s) => s.squadId === squadId)?.winCount ?? 0;
   const totalBetValue = (squadId: string) =>
-    finishedBets.filter(b => b.winnerId === squadId).reduce((s, b) => s + b.value, 0);
+    cofreData?.bySquad.find((s) => s.squadId === squadId)?.totalWon ?? 0;
 
-  const RADAR_COLORS = [
-    "hsl(152, 70%, 45%)",
-    "hsl(200, 70%, 50%)",
-    "hsl(45, 90%, 55%)",
-    "hsl(270, 60%, 60%)",
-  ];
+  // Badges de squad + unlocks por squad
+  const squadBadges = (badgesData ?? []).filter((b) => b.scope === "SQUAD");
+  const squadUnlocksBySquad = useMemo(() => {
+    const map: Record<string, Set<string>> = {};
+    for (const u of squadUnlocksData ?? []) {
+      if (!u.squadId) continue;
+      map[u.squadId] ??= new Set();
+      map[u.squadId].add(u.badgeSlug);
+    }
+    return map;
+  }, [squadUnlocksData]);
+
+  if (squadsLoading) {
+    return (
+      <div className="card-glass rounded-xl p-8 text-center">
+        <Loader2 className="w-8 h-8 text-primary mx-auto animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -160,10 +238,10 @@ const SquadBet = ({ assessors }: Props) => {
               <label className="text-xs text-muted-foreground mb-1 block">Emoji</label>
               <select
                 value={newEmoji}
-                onChange={e => setNewEmoji(e.target.value)}
+                onChange={(e) => setNewEmoji(e.target.value)}
                 className="w-full bg-muted/30 border border-border/30 rounded-lg px-3 py-2 text-foreground text-lg"
               >
-                {["🔥", "🐺", "🦅", "🦁", "🐉", "⚡", "🎯", "🚀", "💎", "🏆"].map(e => (
+                {EMOJI_OPTIONS.map((e) => (
                   <option key={e} value={e}>{e}</option>
                 ))}
               </select>
@@ -172,7 +250,7 @@ const SquadBet = ({ assessors }: Props) => {
               <label className="text-xs text-muted-foreground mb-1 block">Nome da Squad</label>
               <input
                 value={newName}
-                onChange={e => setNewName(e.target.value)}
+                onChange={(e) => setNewName(e.target.value)}
                 placeholder="Ex: Alfa Traders"
                 className="w-full bg-muted/30 border border-border/30 rounded-lg px-3 py-2 text-foreground text-sm placeholder:text-muted-foreground/50"
               />
@@ -183,7 +261,7 @@ const SquadBet = ({ assessors }: Props) => {
               Membros ({selectedMembers.length} selecionados)
             </label>
             <div className="flex flex-wrap gap-2">
-              {assessors.map(a => {
+              {assessors.map((a) => {
                 const assigned = assignedIds.includes(a.id) && !selectedMembers.includes(a.id);
                 const selected = selectedMembers.includes(a.id);
                 return (
@@ -191,8 +269,8 @@ const SquadBet = ({ assessors }: Props) => {
                     key={a.id}
                     disabled={assigned}
                     onClick={() =>
-                      setSelectedMembers(prev =>
-                        selected ? prev.filter(id => id !== a.id) : [...prev, a.id]
+                      setSelectedMembers((prev) =>
+                        selected ? prev.filter((id) => id !== a.id) : [...prev, a.id],
                       )
                     }
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
@@ -211,9 +289,10 @@ const SquadBet = ({ assessors }: Props) => {
           </div>
           <button
             onClick={createSquad}
-            disabled={!newName.trim() || selectedMembers.length === 0}
-            className="px-5 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-semibold disabled:opacity-40"
+            disabled={!newName.trim() || selectedMembers.length === 0 || createSquadMut.isPending}
+            className="px-5 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-semibold disabled:opacity-40 flex items-center gap-2"
           >
+            {createSquadMut.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             Criar Squad
           </button>
         </div>
@@ -227,29 +306,35 @@ const SquadBet = ({ assessors }: Props) => {
               <Flame className="w-6 h-6 text-primary animate-pulse" />
               <div>
                 <p className="text-sm font-bold text-foreground">
-                  Aposta Ativa: {activeBet.round}
-                  <span className={`ml-2 text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                    activeBet.type === "monthly" ? "bg-accent/20 text-accent" : "bg-primary/20 text-primary"
-                  }`}>
-                    {activeBet.type === "monthly" ? "MENSAL" : "SEMANAL"}
+                  Aposta Ativa: {activeBet.roundLabel}
+                  <span
+                    className={`ml-2 text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                      activeBet.type === "MONTHLY"
+                        ? "bg-accent/20 text-accent"
+                        : "bg-primary/20 text-primary"
+                    }`}
+                  >
+                    {activeBet.type === "MONTHLY" ? "MENSAL" : "SEMANAL"}
                   </span>
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Valor: R$ {activeBet.value} • Vencedor: melhor desempenho médio geral
+                  R$ {activeBet.value} • {criteriaLabel(activeBet.winnerCriteriaJson)}
                 </p>
               </div>
             </div>
             <button
-              onClick={() => finishBet(activeBet.id)}
-              className="px-4 py-2 rounded-lg bg-accent text-accent-foreground text-xs font-bold hover:opacity-90 transition-opacity"
+              onClick={() => finishBetMut.mutate(activeBet.id)}
+              disabled={finishBetMut.isPending}
+              className="px-4 py-2 rounded-lg bg-accent text-accent-foreground text-xs font-bold hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-50"
             >
+              {finishBetMut.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
               Encerrar Rodada
             </button>
           </div>
         </div>
       )}
 
-      {/* Row 1: Ranking | Radar */}
+      {/* Row 1: Ranking + Radar */}
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-5">
           <div className="card-glass rounded-xl p-5 h-full">
@@ -257,12 +342,18 @@ const SquadBet = ({ assessors }: Props) => {
               <Trophy className="w-4 h-4 text-accent" /> Ranking de Squads
             </h3>
             <div className="space-y-3">
-              {rankedSquads.map((sq, i) => {
+              {rankedSquads.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-6">
+                  Nenhuma squad criada. Clique em "Criar Squad" pra começar.
+                </p>
+              )}
+              {rankedSquads.map((row, i) => {
+                const sq = row.sq;
                 const isFirst = i === 0;
                 const expanded = expandedSquad === sq.id;
-                const members = assessors.filter(a => sq.memberIds.includes(a.id));
-                const badges = SQUAD_BADGES.filter(b => b.check(sq, assessors));
                 const wins = winCount(sq.id);
+                const unlockedSlugs = squadUnlocksBySquad[sq.id] ?? new Set();
+                const earnedBadges = squadBadges.filter((b) => unlockedSlugs.has(b.slug));
 
                 return (
                   <div key={sq.id} className="space-y-0">
@@ -276,22 +367,30 @@ const SquadBet = ({ assessors }: Props) => {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${isFirst ? "bg-accent/20" : "bg-muted/30"}`}>
+                          <div
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${
+                              isFirst ? "bg-accent/20" : "bg-muted/30"
+                            }`}
+                          >
                             {isFirst ? <Crown className="w-5 h-5 text-accent" /> : <span className="text-lg">{sq.emoji}</span>}
                           </div>
                           <div>
                             <p className="text-sm font-bold text-foreground flex items-center gap-2">
                               {sq.emoji} {sq.name}
-                              {isFirst && <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/20 text-accent font-bold">LÍDER</span>}
+                              {isFirst && (
+                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/20 text-accent font-bold">
+                                  LÍDER
+                                </span>
+                              )}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {members.length} membros • {wins} vitória{wins !== 1 ? "s" : ""} • R$ {totalBetValue(sq.id)} ganhos
+                              {row.members.length} membros • {wins} vitória{wins !== 1 ? "s" : ""} • R$ {totalBetValue(sq.id)} ganhos
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="text-right">
-                            <p className="text-lg font-bold font-mono text-foreground">{sq.stats.avgGoal}%</p>
+                            <p className="text-lg font-bold font-mono text-foreground">{row.stats.avgGoal}%</p>
                             <p className="text-[10px] text-muted-foreground">Meta Média</p>
                           </div>
                           {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
@@ -303,10 +402,12 @@ const SquadBet = ({ assessors }: Props) => {
                         <div>
                           <p className="text-xs text-muted-foreground mb-2 font-semibold">Membros</p>
                           <div className="space-y-1.5">
-                            {members.map(m => (
+                            {row.members.map((m) => (
                               <div key={m.id} className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                  <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">{m.avatar}</div>
+                                  <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">
+                                    {m.avatar}
+                                  </div>
                                   <span className="text-xs text-foreground">{m.name}</span>
                                   {m.id === sq.leaderId && <Crown className="w-3 h-3 text-accent" />}
                                 </div>
@@ -317,27 +418,36 @@ const SquadBet = ({ assessors }: Props) => {
                         </div>
                         <div className="grid grid-cols-3 gap-2">
                           {[
-                            { label: "Leads", value: sq.stats.leads },
-                            { label: "Cadência", value: `${sq.stats.cadencia}%` },
-                            { label: "Ligações", value: sq.stats.ligacoes },
-                            { label: "Reuniões", value: sq.stats.reunioes },
-                            { label: "Indicações", value: sq.stats.indicacoes },
-                            { label: "Boletos", value: sq.stats.boletos },
-                          ].map(k => (
+                            { label: "Leads", value: row.stats.leads },
+                            { label: "Cadência", value: `${row.stats.cadencia}%` },
+                            { label: "Ligações", value: row.stats.ligacoes },
+                            { label: "Reuniões", value: row.stats.reunioes },
+                            { label: "Indicações", value: row.stats.indicacoes },
+                            { label: "Boletos", value: row.stats.boletos },
+                          ].map((k) => (
                             <div key={k.label} className="bg-muted/20 rounded-lg p-2 text-center">
                               <p className="text-[10px] text-muted-foreground">{k.label}</p>
                               <p className="text-sm font-bold font-mono text-foreground">{k.value}</p>
                             </div>
                           ))}
                         </div>
-                        {badges.length > 0 && (
+                        {earnedBadges.length > 0 && (
                           <div className="flex flex-wrap gap-2">
-                            {badges.map(b => (
-                              <span key={b.id} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-lg">{b.icon} {b.name}</span>
+                            {earnedBadges.map((b) => (
+                              <span
+                                key={b.id}
+                                className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-lg"
+                                title={b.description}
+                              >
+                                {b.icon} {b.name}
+                              </span>
                             ))}
                           </div>
                         )}
-                        <button onClick={() => removeSquad(sq.id)} className="text-xs text-destructive/60 hover:text-destructive flex items-center gap-1 transition-colors">
+                        <button
+                          onClick={() => removeSquad(sq.id)}
+                          className="text-xs text-destructive/60 hover:text-destructive flex items-center gap-1 transition-colors"
+                        >
                           <Trash2 className="w-3 h-3" /> Remover Squad
                         </button>
                       </div>
@@ -360,37 +470,70 @@ const SquadBet = ({ assessors }: Props) => {
                   <PolarGrid stroke="hsl(160,10%,16%)" />
                   <PolarAngleAxis dataKey="metric" tick={{ fill: "hsl(155,12%,52%)", fontSize: 11 }} />
                   <PolarRadiusAxis tick={{ fill: "hsl(155,12%,52%)", fontSize: 9 }} />
-                  {rankedSquads.map((sq, i) => (
-                    <Radar key={sq.id} name={sq.name} dataKey={sq.id} stroke={RADAR_COLORS[i % RADAR_COLORS.length]} fill={RADAR_COLORS[i % RADAR_COLORS.length]} fillOpacity={0.15} strokeWidth={2} />
+                  {rankedSquads.map((row, i) => (
+                    <Radar
+                      key={row.sq.id}
+                      name={row.sq.name}
+                      dataKey={row.sq.id}
+                      stroke={RADAR_COLORS[i % RADAR_COLORS.length]}
+                      fill={RADAR_COLORS[i % RADAR_COLORS.length]}
+                      fillOpacity={0.15}
+                      strokeWidth={2}
+                    />
                   ))}
-                  <Legend formatter={(value) => { const sq = rankedSquads.find(s => s.name === value); return `${sq?.emoji || ""} ${value}`; }} />
-                  <Tooltip contentStyle={{ background: "hsl(160,12%,9%)", border: "1px solid hsl(160,10%,16%)", borderRadius: 8, fontSize: 11 }} />
+                  <Legend
+                    formatter={(value) => {
+                      const sq = rankedSquads.find((s) => s.sq.name === value);
+                      return `${sq?.sq.emoji || ""} ${value}`;
+                    }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: "hsl(160,12%,9%)",
+                      border: "1px solid hsl(160,10%,16%)",
+                      borderRadius: 8,
+                      fontSize: 11,
+                    }}
+                  />
                 </RadarChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-10">Crie pelo menos 2 squads para ver o comparativo</p>
+              <p className="text-sm text-muted-foreground text-center py-10">
+                Crie pelo menos 2 squads para ver o comparativo
+              </p>
             )}
           </div>
         </div>
       </div>
 
-      {/* Row 2: Performance Bar | Cofre de Apostas */}
+      {/* Row 2: Performance Bar + Cofre */}
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-7">
           <div className="card-glass rounded-xl p-5 h-full">
             <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-primary" /> Performance vs Meta
             </h3>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={barData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(160,10%,16%)" />
-                <XAxis dataKey="name" tick={{ fill: "hsl(155,12%,52%)", fontSize: 11 }} />
-                <YAxis tick={{ fill: "hsl(155,12%,52%)", fontSize: 10 }} />
-                <Tooltip contentStyle={{ background: "hsl(160,12%,9%)", border: "1px solid hsl(160,10%,16%)", borderRadius: 8, fontSize: 11 }} />
-                <Bar dataKey="Meta %" fill="hsl(152,70%,45%)" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="Pontos" fill="hsl(200,70%,50%)" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {barData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={barData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(160,10%,16%)" />
+                  <XAxis dataKey="name" tick={{ fill: "hsl(155,12%,52%)", fontSize: 11 }} />
+                  <YAxis tick={{ fill: "hsl(155,12%,52%)", fontSize: 10 }} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "hsl(160,12%,9%)",
+                      border: "1px solid hsl(160,10%,16%)",
+                      borderRadius: 8,
+                      fontSize: 11,
+                    }}
+                  />
+                  <Bar dataKey="Meta %" fill="hsl(152,70%,45%)" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="Pontos" fill="hsl(200,70%,50%)" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-10">Sem squads</p>
+            )}
           </div>
         </div>
 
@@ -400,26 +543,37 @@ const SquadBet = ({ assessors }: Props) => {
               <Vault className="w-4 h-4 text-accent" /> Cofre de Apostas
             </h3>
             <div className="space-y-3">
-              {squads.map(sq => {
-                const wins = finishedBets.filter(b => b.winnerId === sq.id);
-                const total = wins.reduce((s, b) => s + b.value, 0);
-                const maxVal = Math.max(...squads.map(s => finishedBets.filter(b => b.winnerId === s.id).reduce((acc, b) => acc + b.value, 0)), 1);
+              {squads.map((sq: ApiSquad) => {
+                const total = totalBetValue(sq.id);
+                const wins = winCount(sq.id);
+                const maxVal = Math.max(...squads.map((s) => totalBetValue(s.id)), 1);
                 const fillPercent = Math.min((total / maxVal) * 100, 100);
                 return (
-                  <div key={sq.id} className="rounded-xl border border-border/20 bg-muted/10 p-4 relative overflow-hidden">
-                    <div className="absolute bottom-0 left-0 right-0 transition-all duration-1000 ease-out opacity-15" style={{ height: `${fillPercent}%`, background: sq.color }} />
+                  <div
+                    key={sq.id}
+                    className="rounded-xl border border-border/20 bg-muted/10 p-4 relative overflow-hidden"
+                  >
+                    <div
+                      className="absolute bottom-0 left-0 right-0 transition-all duration-1000 ease-out opacity-15"
+                      style={{ height: `${fillPercent}%`, background: sq.color }}
+                    />
                     <div className="relative z-10 flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <span className="text-xl">{sq.emoji}</span>
                         <div>
                           <span className="text-xs font-bold text-foreground">{sq.name}</span>
-                          <p className="text-[10px] text-muted-foreground">{wins.length} vitória{wins.length !== 1 ? "s" : ""}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {wins} vitória{wins !== 1 ? "s" : ""}
+                          </p>
                         </div>
                       </div>
                       <p className="text-xl font-bold font-mono text-accent">R$ {total}</p>
                     </div>
                     <div className="relative z-10 mt-2 w-full bg-muted/30 rounded-full h-1.5 overflow-hidden">
-                      <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${fillPercent}%`, background: sq.color }} />
+                      <div
+                        className="h-full rounded-full transition-all duration-1000"
+                        style={{ width: `${fillPercent}%`, background: sq.color }}
+                      />
                     </div>
                   </div>
                 );
@@ -429,48 +583,75 @@ const SquadBet = ({ assessors }: Props) => {
         </div>
       </div>
 
-      {/* Row 3: Config + History | Badges */}
+      {/* Row 3: Create Bet + History + Squad Badges */}
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-4">
           <div className="card-glass rounded-xl p-5 h-full">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <Settings2 className="w-4 h-4 text-primary" /> Configurar Aposta
-              </h3>
-              <button onClick={() => setShowBetConfig(!showBetConfig)} className="text-xs text-primary hover:underline">
-                {showBetConfig ? "Fechar" : "Editar"}
-              </button>
-            </div>
-            <div className="space-y-3">
-              <div className="bg-muted/20 rounded-lg p-3 border border-border/20">
-                <p className="text-[10px] text-muted-foreground mb-1">🎁 Prêmio em jogo</p>
-                <p className="text-sm font-bold text-foreground">{betPrize}</p>
-              </div>
-              <div className="bg-muted/20 rounded-lg p-3 border border-border/20">
-                <p className="text-[10px] text-muted-foreground mb-1">🎯 Meta da aposta</p>
-                <p className="text-sm font-bold text-foreground">{betGoal}</p>
-              </div>
-            </div>
-            {showBetConfig && (
-              <div className="space-y-3 pt-3 mt-3 border-t border-border/20 animate-fade-in">
+            <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+              <Flame className="w-4 h-4 text-primary" /> Nova Aposta
+            </h3>
+            {activeBet ? (
+              <p className="text-xs text-muted-foreground text-center py-6">
+                Há uma aposta ativa. Encerre-a antes de iniciar outra.
+              </p>
+            ) : (
+              <div className="space-y-3">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">O que está sendo apostado?</label>
-                  <input value={betPrize} onChange={e => setBetPrize(e.target.value)} placeholder="Ex: Vale-refeição..." className="w-full bg-muted/30 border border-border/30 rounded-lg px-3 py-2 text-foreground text-sm placeholder:text-muted-foreground/50" />
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {["Vale-refeição R$50", "Day off sexta", "Coffee break pro rival", "Vale-compras R$100"].map(opt => (
-                      <button key={opt} onClick={() => setBetPrize(opt)} className={`text-[10px] px-2 py-1 rounded-lg border transition-all ${betPrize === opt ? "border-primary/50 bg-primary/10 text-primary" : "border-border/20 bg-muted/20 text-muted-foreground hover:bg-muted/30"}`}>{opt}</button>
-                    ))}
+                  <label className="text-xs text-muted-foreground mb-1 block">Tipo</label>
+                  <div className="flex rounded-lg overflow-hidden border border-border/30">
+                    <button
+                      onClick={() => setNewBetType("WEEKLY")}
+                      className={`flex-1 px-3 py-1.5 text-xs font-semibold transition-all ${
+                        newBetType === "WEEKLY"
+                          ? "gradient-primary text-primary-foreground"
+                          : "bg-muted/30 text-muted-foreground"
+                      }`}
+                    >
+                      Semanal
+                    </button>
+                    <button
+                      onClick={() => setNewBetType("MONTHLY")}
+                      className={`flex-1 px-3 py-1.5 text-xs font-semibold transition-all ${
+                        newBetType === "MONTHLY"
+                          ? "gradient-primary text-primary-foreground"
+                          : "bg-muted/30 text-muted-foreground"
+                      }`}
+                    >
+                      Mensal
+                    </button>
                   </div>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Valor (R$)</label>
+                  <input
+                    type="number"
+                    value={newBetValue}
+                    onChange={(e) => setNewBetValue(Number(e.target.value))}
+                    className="w-full bg-muted/30 border border-border/30 rounded-lg px-3 py-2 text-foreground text-sm font-mono"
+                  />
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">Critério de vitória</label>
-                  <input value={betGoal} onChange={e => setBetGoal(e.target.value)} placeholder="Ex: Maior média..." className="w-full bg-muted/30 border border-border/30 rounded-lg px-3 py-2 text-foreground text-sm placeholder:text-muted-foreground/50" />
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {["Maior média de meta semanal (%)", "Mais reuniões agendadas", "Maior cadência (%)", "Mais leads gerados"].map(opt => (
-                      <button key={opt} onClick={() => setBetGoal(opt)} className={`text-[10px] px-2 py-1 rounded-lg border transition-all ${betGoal === opt ? "border-primary/50 bg-primary/10 text-primary" : "border-border/20 bg-muted/20 text-muted-foreground hover:bg-muted/30"}`}>{opt}</button>
+                  <select
+                    value={newBetCriteriaIdx}
+                    onChange={(e) => setNewBetCriteriaIdx(Number(e.target.value))}
+                    className="w-full bg-muted/30 border border-border/30 rounded-lg px-3 py-2 text-foreground text-sm"
+                  >
+                    {CRITERIA_PRESETS.map((c, i) => (
+                      <option key={i} value={i}>
+                        {c.label}
+                      </option>
                     ))}
-                  </div>
+                  </select>
                 </div>
+                <button
+                  onClick={startBet}
+                  disabled={createBetMut.isPending || squads.length === 0}
+                  className="w-full px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-bold disabled:opacity-40 flex items-center justify-center gap-2"
+                >
+                  {createBetMut.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                  Iniciar Aposta
+                </button>
               </div>
             )}
           </div>
@@ -481,56 +662,40 @@ const SquadBet = ({ assessors }: Props) => {
             <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-accent" /> Histórico de Apostas
             </h3>
-            {!activeBet && (
-              <div className="space-y-3 mb-4 p-3 bg-muted/20 rounded-lg">
-                <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex rounded-lg overflow-hidden border border-border/30">
-                    <button onClick={() => setNewBetType("weekly")} className={`px-3 py-1 text-xs font-semibold transition-all ${newBetType === "weekly" ? "gradient-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground"}`}>Semanal</button>
-                    <button onClick={() => setNewBetType("monthly")} className={`px-3 py-1 text-xs font-semibold transition-all ${newBetType === "monthly" ? "gradient-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground"}`}>Mensal</button>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-muted-foreground">R$</span>
-                    <input type="number" value={newBetValue} onChange={e => setNewBetValue(Number(e.target.value))} className="w-16 bg-muted/30 border border-border/30 rounded-lg px-2 py-1 text-foreground text-xs font-mono text-center" />
-                  </div>
-                  <button
-                    onClick={() => {
-                      const count = bets.filter(b => b.type === newBetType).length;
-                      const month = new Date().toLocaleString("pt-BR", { month: "long" }).replace(/^\w/, c => c.toUpperCase());
-                      const roundName = newBetType === "weekly" ? `Semana ${count + 1} - ${month}` : `Mês ${count + 1} - ${month}`;
-                      setBets(prev => [...prev, { id: `b${Date.now()}`, round: roundName, type: newBetType, value: newBetValue, winnerId: null, date: new Date().toISOString().slice(0, 10), status: "active" }]);
-                    }}
-                    className="px-3 py-1 rounded-lg gradient-primary text-primary-foreground text-xs font-bold"
-                  >
-                    Iniciar
-                  </button>
-                </div>
-              </div>
-            )}
             <div className="space-y-2">
-              {finishedBets.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">Nenhuma rodada finalizada</p>}
-              {finishedBets.map(bet => {
-                const winner = squads.find(s => s.id === bet.winnerId);
-                return (
-                  <div key={bet.id} className="flex items-center justify-between bg-muted/15 rounded-lg px-3 py-2">
-                    <div className="flex items-center gap-2">
-                      <Trophy className="w-3.5 h-3.5 text-accent" />
-                      <div>
-                        <p className="text-xs font-semibold text-foreground">
-                          {bet.round}
-                          <span className={`ml-1.5 text-[9px] px-1.5 py-0.5 rounded-full font-bold ${bet.type === "monthly" ? "bg-accent/20 text-accent" : "bg-primary/20 text-primary"}`}>
-                            {bet.type === "monthly" ? "MÊS" : "SEM"}
-                          </span>
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">{bet.date}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-xs text-foreground">{winner ? `${winner.emoji} ${winner.name}` : "—"}</span>
-                      <p className="text-xs font-bold font-mono text-accent">R$ {bet.value}</p>
+              {finishedBets.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-4">
+                  Nenhuma rodada finalizada
+                </p>
+              )}
+              {finishedBets.slice(0, 6).map((bet) => (
+                <div key={bet.id} className="flex items-center justify-between bg-muted/15 rounded-lg px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="w-3.5 h-3.5 text-accent" />
+                    <div>
+                      <p className="text-xs font-semibold text-foreground">
+                        {bet.roundLabel}
+                        <span
+                          className={`ml-1.5 text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
+                            bet.type === "MONTHLY"
+                              ? "bg-accent/20 text-accent"
+                              : "bg-primary/20 text-primary"
+                          }`}
+                        >
+                          {bet.type === "MONTHLY" ? "MÊS" : "SEM"}
+                        </span>
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">{bet.endDate}</p>
                     </div>
                   </div>
-                );
-              })}
+                  <div className="text-right">
+                    <span className="text-xs text-foreground">
+                      {bet.winnerSquad ? `${bet.winnerSquad.emoji} ${bet.winnerSquad.name}` : "—"}
+                    </span>
+                    <p className="text-xs font-bold font-mono text-accent">R$ {bet.value}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -541,19 +706,35 @@ const SquadBet = ({ assessors }: Props) => {
               🏅 Conquistas de Squad
             </h3>
             <div className="space-y-3">
-              {SQUAD_BADGES.map(badge => {
-                const earned = rankedSquads.filter(sq => badge.check(sq, assessors));
+              {squadBadges.map((badge) => {
+                const earnedSquadIds = Object.entries(squadUnlocksBySquad)
+                  .filter(([, slugs]) => slugs.has(badge.slug))
+                  .map(([sid]) => sid);
+                const earnedSquads = squads.filter((s) => earnedSquadIds.includes(s.id));
+                const unlocked = earnedSquads.length > 0;
                 return (
-                  <div key={badge.id} className={`rounded-lg p-3 border ${earned.length > 0 ? "border-primary/30 bg-primary/5" : "border-border/20 bg-muted/10 opacity-50"}`}>
+                  <div
+                    key={badge.id}
+                    className={`rounded-lg p-3 border ${
+                      unlocked
+                        ? "border-primary/30 bg-primary/5"
+                        : "border-border/20 bg-muted/10 opacity-50"
+                    }`}
+                  >
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-lg">{badge.icon}</span>
                       <span className="text-xs font-bold text-foreground">{badge.name}</span>
                     </div>
-                    <p className="text-[10px] text-muted-foreground">{badge.desc}</p>
-                    {earned.length > 0 && (
+                    <p className="text-[10px] text-muted-foreground">{badge.description}</p>
+                    {earnedSquads.length > 0 && (
                       <div className="flex gap-1 mt-1.5">
-                        {earned.map(sq => (
-                          <span key={sq.id} className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">{sq.emoji} {sq.name}</span>
+                        {earnedSquads.map((sq) => (
+                          <span
+                            key={sq.id}
+                            className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded"
+                          >
+                            {sq.emoji} {sq.name}
+                          </span>
                         ))}
                       </div>
                     )}

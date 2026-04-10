@@ -1,9 +1,13 @@
 import { motion } from "framer-motion";
-import { Activity, Clock } from "lucide-react";
+import { Activity, Clock, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const DashboardHeader = () => {
   const [time, setTime] = useState(new Date());
+  const { isAdmin } = useCurrentUser();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000);
@@ -32,6 +36,15 @@ const DashboardHeader = () => {
       </div>
 
       <div className="flex items-center gap-2">
+        {isAdmin && (
+          <button
+            onClick={() => navigate("/admin")}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-all"
+          >
+            <Shield className="w-3.5 h-3.5" />
+            <span className="text-xs font-semibold">Admin</span>
+          </button>
+        )}
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/30 border border-border/30">
           <Clock className="w-3.5 h-3.5 text-primary" />
           <span className="font-mono text-sm font-semibold text-foreground">

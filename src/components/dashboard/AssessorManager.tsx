@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { UserPlus, Trash2, X, Users } from "lucide-react";
-import type { Assessor } from "@/data/mockData";
+import type { Assessor } from "@/types/assessor";
 
 interface AssessorManagerProps {
   assessors: Assessor[];
-  onAdd: (a: Assessor) => void;
+  /** Adiciona um assessor. ID e iniciais são gerados pelo backend (ou pelo hook em mock mode). */
+  onAdd: (input: { name: string }) => void;
   onRemove: (id: string) => void;
   onClose: () => void;
 }
@@ -14,23 +15,7 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
 
   const handleAdd = () => {
     if (!name.trim()) return;
-    const parts = name.trim().split(" ");
-    const avatar = parts.length >= 2
-      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-      : name.trim().slice(0, 2).toUpperCase();
-
-    const newAssessor: Assessor = {
-      id: Date.now().toString(),
-      name: name.trim(),
-      avatar,
-      points: 0,
-      level: "bronze",
-      streak: 0,
-      weeklyGoalPercent: 0,
-      kpis: { leads: 0, cadencia: 0, ligacoes: 0, reunioes: 0, indicacoes: 0, boletos: 0 },
-      dailyActivity: [false, false, false, false, false],
-    };
-    onAdd(newAssessor);
+    onAdd({ name: name.trim() });
     setName("");
   };
 

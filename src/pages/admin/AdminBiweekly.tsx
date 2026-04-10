@@ -1,0 +1,281 @@
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { format, addDays, startOfWeek, nextWednesday, isWednesday } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Repeat, Calendar as CalendarIcon, Loader2, Pencil } from "lucide-react";
+import { useAllActivities, useUpdateActivity } from "@/hooks/useAdminActivities";
+import { isActivityActiveOn, type ActivityCadenceFields } from "@/lib/biweekly";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import type { ApiActivity } from "@/hooks/useActivities";
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Próximas N quartas-feiras a partir de hoje (inclusive). */
+function nextNWednesdays(n: number): Date[] {
+  const today = new Date();
+  let cursor = isWednesday(today) ? today : nextWednesday(today);
+  const list: Date[] = [];
+  for (let i = 0; i < n; i++) {
+    list.push(cursor);
+    cursor = addDays(cursor, 7);
+  }
+  return list;
+}
+
+function formatYmd(d: Date): string {
+  return format(d, "yyyy-MM-dd");
+}
+
+// ─── Main component ─────────────────────────────────────────────────────────
+
+const AdminBiweekly = () => {
+  const { data: activities, isLoading } = useAllActivities();
+  const [editDialog, setEditDialog] = useState<{ activity: ApiActivity; date: Date | undefined } | null>(null);
+
+  // Filtra activities BIWEEKLY da quarta-feira (dayOfWeek 3)
+  const biweeklyActivities = useMemo(
+    () => (activities ?? []).filter((a) => a.dayOfWeek === 3 && a.cadenceType === "BIWEEKLY"),
+    [activities],
+  );
+
+  const eightWeeks = useMemo(() => nextNWednesdays(8), []);
+
+  return (
+    <div className="space-y-5">
+      {/* Page header */}
+      <div>
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Repeat className="w-6 h-6 text-primary" />
+          Indique Day (quartas alternadas)
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Felipe pediu que o Indique Day rode a cada 15 dias. Cada activity BIWEEKLY tem uma
+          âncora — todas as quartas que estão a N*14 dias da âncora são ativadas.
+        </p>
+      </div>
+
+      {isLoading ? (
+        <div className="card-glass rounded-xl p-10 flex items-center justify-center">
+          <Loader2 className="w-6 h-6 text-primary animate-spin" />
+        </div>
+      ) : biweeklyActivities.length === 0 ? (
+        <div className="card-glass rounded-xl p-10 text-center">
+          <Repeat className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-50" />
+          <p className="text-sm text-muted-foreground">
+            Nenhuma activity BIWEEKLY cadastrada nas quartas.
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Vá em <code className="text-primary">Cronograma</code> pra criar.
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* Activities atuais */}
+          <div className="grid grid-cols-2 gap-4">
+            {biweeklyActivities.map((act) => (
+              <div
+                key={act.id}
+                className="card-glass rounded-xl p-5 border border-border/30"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      {act.name}
+                      <Badge variant="outline" className="text-[9px] border-primary/30 text-primary">
+                        QUINZENAL
+                      </Badge>
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {act.startTime}–{act.endTime} • {act.kpis.map((k) => k.label).join(", ")}
+                    </p>
+                    <div className="mt-3 flex items-center gap-2 text-xs">
+                      <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                      <span className="text-muted-foreground">Âncora:</span>
+                      <span className="font-mono font-bold text-foreground">
+                        {act.biweeklyAnchorDate
+                          ? format(new Date(act.biweeklyAnchorDate + "T00:00:00Z"), "dd/MM/yyyy", {
+                              locale: ptBR,
+                            })
+                          : "—"}
+                      </span>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      setEditDialog({
+                        activity: act,
+                        date: act.biweeklyAnchorDate
+                          ? new Date(act.biweeklyAnchorDate + "T00:00:00Z")
+                          : undefined,
+                      })
+                    }
+                    className="gap-1.5"
+                  >
+                    <Pencil className="w-3 h-3" />
+                    Alterar
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Próximas 8 quartas */}
+          <div className="card-glass rounded-xl p-6 border border-border/30">
+            <h2 className="text-sm font-bold text-foreground mb-4">
+              Próximas 8 quartas-feiras
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              {eightWeeks.map((wed) => {
+                const activeActivities = biweeklyActivities.filter((a) =>
+                  isActivityActiveOn(
+                    {
+                      cadenceType: a.cadenceType,
+                      biweeklyAnchorDate: a.biweeklyAnchorDate,
+                    } as ActivityCadenceFields,
+                    wed,
+                  ),
+                );
+                return (
+                  <div
+                    key={formatYmd(wed)}
+                    className={`p-4 rounded-lg border transition-all ${
+                      activeActivities.length > 0
+                        ? "border-primary/30 bg-primary/5"
+                        : "border-border/20 bg-muted/10"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-mono text-muted-foreground">
+                        {format(wed, "EEE", { locale: ptBR })}
+                      </span>
+                      <span className="text-sm font-bold text-foreground font-mono">
+                        {format(wed, "dd/MM/yyyy")}
+                      </span>
+                    </div>
+                    {activeActivities.length > 0 ? (
+                      <div className="space-y-1">
+                        {activeActivities.map((a) => (
+                          <div
+                            key={a.id}
+                            className="flex items-center gap-1.5 text-xs text-primary font-semibold"
+                          >
+                            <span>🎯</span>
+                            {a.name}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[11px] text-muted-foreground italic">Nenhuma quinzenal</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Dialog de alterar âncora */}
+      {editDialog && (
+        <AnchorDialog
+          activity={editDialog.activity}
+          initialDate={editDialog.date}
+          onClose={() => setEditDialog(null)}
+        />
+      )}
+    </div>
+  );
+};
+
+// ─── Anchor edit dialog ──────────────────────────────────────────────────────
+
+function AnchorDialog({
+  activity,
+  initialDate,
+  onClose,
+}: {
+  activity: ApiActivity;
+  initialDate: Date | undefined;
+  onClose: () => void;
+}) {
+  const [date, setDate] = useState<Date | undefined>(initialDate);
+  const updateActivity = useUpdateActivity();
+
+  // Next valid Wednesday hint
+  const suggestion = initialDate
+    ? addDays(initialDate, 14)
+    : startOfWeek(new Date(), { weekStartsOn: 3 });
+
+  const handleSave = async () => {
+    if (!date) return;
+    try {
+      await updateActivity.mutateAsync({
+        id: activity.id,
+        input: { biweeklyAnchorDate: formatYmd(date) },
+      });
+      toast.success("Âncora atualizada");
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao atualizar");
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Alterar âncora — {activity.name}</DialogTitle>
+          <DialogDescription>
+            Escolha a data de referência. A activity será ativada nessa data e a cada 14 dias a
+            partir dela.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="py-3 space-y-3">
+          <Label className="text-xs">Data da âncora</Label>
+          <div className="flex justify-center rounded-lg border border-border/30 p-2 bg-muted/10">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              weekStartsOn={1}
+              locale={ptBR}
+              initialFocus
+            />
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Sugestão: próxima ocorrência seria{" "}
+            <span className="font-mono text-foreground">
+              {format(suggestion, "dd/MM/yyyy")}
+            </span>
+          </p>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={updateActivity.isPending}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSave} disabled={!date || updateActivity.isPending}>
+            {updateActivity.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+            Salvar âncora
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export default AdminBiweekly;

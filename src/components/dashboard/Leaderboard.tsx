@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Trophy, Flame, TrendingUp, Crown } from "lucide-react";
-import { BADGES, type Assessor } from "@/data/mockData";
+import { type Assessor } from "@/types/assessor";
+import { useBadges, useBadgeUnlocks } from "@/hooks/useBadges";
 
 const LEVEL_COLORS = {
   gold: "text-gold border-gold/40 bg-gold/10",
@@ -14,6 +15,22 @@ interface LeaderboardProps {
 
 const Leaderboard = ({ assessors }: LeaderboardProps) => {
   const sorted = [...assessors].sort((a, b) => b.points - a.points);
+  const { data: allBadges } = useBadges();
+  const { data: allUnlocks } = useBadgeUnlocks();
+
+  // Mapa assessorId → array de badges unlocked (scope INDIVIDUAL).
+  const badgesByAssessor = new Map<string, Array<{ id: string; slug: string; name: string; icon: string; description: string }>>();
+  if (allBadges && allUnlocks) {
+    const badgeBySlug = new Map(allBadges.map((b) => [b.slug, b]));
+    for (const u of allUnlocks) {
+      if (!u.assessorId || u.badgeScope !== "INDIVIDUAL") continue;
+      const badge = badgeBySlug.get(u.badgeSlug);
+      if (!badge) continue;
+      if (!badgesByAssessor.has(u.assessorId)) badgesByAssessor.set(u.assessorId, []);
+      const arr = badgesByAssessor.get(u.assessorId)!;
+      if (!arr.some((b) => b.slug === badge.slug)) arr.push(badge);
+    }
+  }
 
   return (
     <div className="card-glass rounded-xl p-5 h-full">
@@ -24,7 +41,7 @@ const Leaderboard = ({ assessors }: LeaderboardProps) => {
 
       <div className="space-y-2.5">
         {sorted.map((a, i) => {
-          const earned = BADGES.filter(b => b.check(a));
+          const earned = badgesByAssessor.get(a.id) ?? [];
           return (
             <motion.div
               key={a.id}
@@ -67,10 +84,10 @@ const Leaderboard = ({ assessors }: LeaderboardProps) => {
                 {/* Badges inline */}
                 {earned.length > 0 && (
                   <div className="flex items-center gap-1 mt-1">
-                    {earned.map(b => (
+                    {earned.map((b) => (
                       <span
                         key={b.id}
-                        title={`${b.name}: ${b.desc}`}
+                        title={`${b.name}: ${b.description}`}
                         className="text-xs bg-primary/10 border border-primary/20 rounded px-1 py-0.5 cursor-default"
                       >
                         {b.icon}
