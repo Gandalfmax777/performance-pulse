@@ -56,3 +56,28 @@ export function useGenerateInsight() {
     },
   });
 }
+
+// ─── Team insight ────────────────────────────────────────────────────────────
+
+/**
+ * Gera insight de IA pro time inteiro. Usado no KpiAnalytics.
+ */
+export function useGenerateTeamInsight() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      period,
+      force,
+    }: {
+      period?: InsightPeriod;
+      force?: boolean;
+    }) =>
+      apiFetch<ApiInsight>("/insights/team", {
+        method: "POST",
+        body: { period: period ?? "WEEK", force },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [...QUERY_KEY, "team"] });
+    },
+  });
+}

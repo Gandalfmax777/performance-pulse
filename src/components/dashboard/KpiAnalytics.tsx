@@ -21,7 +21,9 @@ import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import AssessorProfile from "./AssessorProfile";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { useOverviewReport } from "@/hooks/useReports";
-import { Filter, TrendingUp, Lightbulb, User, Users, BarChart3, Loader2 } from "lucide-react";
+import { useGenerateTeamInsight, type ApiInsight } from "@/hooks/useInsight";
+import Markdown from "react-markdown";
+import { Filter, TrendingUp, Lightbulb, Sparkles, RefreshCw, User, Users, BarChart3, Loader2 } from "lucide-react";
 
 type Scope = "geral" | "individual";
 
@@ -77,25 +79,9 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
     }));
   }, [overview]);
 
-  // Insights simples baseados no overview.byKpi (fórmulas locais, Fase 9 troca por IA real).
-  const insights = useMemo(() => {
-    if (!overview) return [];
-    const out: string[] = [];
-    for (const k of overview.byKpi) {
-      if (k.percent < 30) out.push(`⚠️ ${k.label} em ${k.percent.toFixed(0)}% da meta — crítico.`);
-      else if (k.percent < 60) out.push(`🔄 ${k.label} em ${k.percent.toFixed(0)}% — abaixo do ideal.`);
-      else if (k.percent >= 100) out.push(`🚀 ${k.label} acima de 100% — meta batida!`);
-      else out.push(`✅ ${k.label} em ${k.percent.toFixed(0)}% — bom ritmo.`);
-    }
-    if (overview.topPerformers.length > 0 && overview.bottomPerformers.length > 0) {
-      const top = overview.topPerformers[0];
-      const bot = overview.bottomPerformers[0];
-      if (top.assessorId !== bot.assessorId) {
-        out.push(`🏆 Melhor: ${top.name} (${top.points} pts). Pior: ${bot.name} (${bot.points} pts).`);
-      }
-    }
-    return out;
-  }, [overview]);
+  // IA insights pro time via OpenRouter
+  const generateTeam = useGenerateTeamInsight();
+  const [teamInsight, setTeamInsight] = useState<ApiInsight | null>(null);
 
   return (
     <div className="space-y-4">
@@ -285,28 +271,59 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
         </div>
       </div>
 
-      {/* Insights */}
+      {/* AI Insights do Time */}
       <div className="card-glass rounded-xl p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <Lightbulb className="w-5 h-5 text-chart-orange" />
-          <h3 className="text-sm font-bold text-foreground">Insights Automatizados</h3>
-          <span className="ml-auto text-[10px] text-muted-foreground px-2 py-0.5 rounded-full bg-chart-orange/10 border border-chart-orange/20">
-            Local (Fase 9 → IA)
-          </span>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-primary" />
+            <h3 className="text-sm font-bold text-foreground">Análise IA do Time</h3>
+            {teamInsight?.cached && (
+              <span className="text-[9px] text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
+                cache
+              </span>
+            )}
+          </div>
+          <button
+            onClick={() =>
+              generateTeam.mutate(
+                { period: "WEEK", force: true },
+                { onSuccess: (data) => setTeamInsight(data) },
+              )
+            }
+            disabled={generateTeam.isPending}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-primary bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all disabled:opacity-50"
+          >
+            {generateTeam.isPending ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <RefreshCw className="w-3 h-3" />
+            )}
+            {generateTeam.isPending ? "Analisando…" : "Gerar Análise"}
+          </button>
         </div>
-        <div className="space-y-2">
-          {insights.map((insight, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.08 }}
-              className="p-3 rounded-lg bg-muted/10 border border-border/20 text-sm text-foreground leading-relaxed"
-            >
-              {insight}
-            </motion.div>
-          ))}
-        </div>
+
+        {generateTeam.isPending ? (
+          <div className="flex items-center gap-3 text-sm text-muted-foreground py-6">
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+            Gemini Flash analisando desempenho do time…
+          </div>
+        ) : teamInsight ? (
+          <div className="prose prose-sm prose-invert max-w-none text-sm text-foreground/90 leading-relaxed [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-foreground [&_h3]:text-sm [&_h3]:font-semibold [&_ul]:text-xs [&_li]:text-xs [&_p]:text-sm">
+            <Markdown>{teamInsight.textMarkdown}</Markdown>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground py-4">
+            Clique em "Gerar Análise" pra que a IA analise o desempenho geral do time neste período.
+          </p>
+        )}
+
+        {generateTeam.isError && (
+          <p className="text-xs text-destructive mt-2">
+            {generateTeam.error instanceof Error
+              ? generateTeam.error.message
+              : "Erro ao gerar análise"}
+          </p>
+        )}
       </div>
 
       {profileAssessor && (
