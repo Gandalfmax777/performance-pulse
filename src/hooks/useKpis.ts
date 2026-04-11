@@ -35,6 +35,7 @@ export interface KpiSummary {
   label: string;
   target: number;
   unit: string;
+  inputMode: "ABSOLUTE" | "PERCENT" | "QUANTITY_OVER_BASE";
 }
 
 const QUERY_KEY = ["kpis"] as const;
@@ -59,6 +60,7 @@ export function useKpis(): UseKpisResult {
       label: k.label,
       target: k.activeGoal?.value ?? k.defaultTarget,
       unit: k.unit,
+      inputMode: k.inputMode,
     }));
 
   return { kpis, isLoading: query.isLoading };

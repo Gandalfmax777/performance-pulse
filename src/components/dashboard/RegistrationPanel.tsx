@@ -33,26 +33,36 @@ const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
     [kpiKeys, allKpis],
   );
 
-  // Lookup { assessorId → { kpiKey → rawValue } } a partir das entries do dia
+  // Lookup { assessorId → { kpiKey → rawValue } } + baseValue a partir das entries do dia
   const persistedValues = useMemo(() => {
     const m: Record<string, Record<string, number>> = {};
+    const b: Record<string, Record<string, number>> = {};
     for (const e of todayMetrics ?? []) {
       m[e.assessorId] ??= {};
       m[e.assessorId][e.kpiKey] = e.rawValue;
+      if (e.baseValue !== null) {
+        b[e.assessorId] ??= {};
+        b[e.assessorId][e.kpiKey] = e.baseValue;
+      }
     }
-    return m;
+    return { raw: m, base: b };
   }, [todayMetrics]);
 
-  // Estado local (otimista) — espelha persistedValues + edits inline
+  // Estados locais (otimistas)
   const [localValues, setLocalValues] = useState<Record<string, Record<string, number>>>({});
+  const [localBaseValues, setLocalBaseValues] = useState<Record<string, Record<string, number>>>({});
 
-  // Sincroniza local quando o backend retorna novos dados
+  // Sincroniza quando o backend retorna novos dados
   useEffect(() => {
-    setLocalValues(persistedValues);
+    setLocalValues(persistedValues.raw);
+    setLocalBaseValues(persistedValues.base);
   }, [persistedValues]);
 
   function getValue(assessorId: string, kpiKey: string): number {
     return localValues[assessorId]?.[kpiKey] ?? 0;
+  }
+  function getBaseValue(assessorId: string, kpiKey: string): number {
+    return localBaseValues[assessorId]?.[kpiKey] ?? 0;
   }
 
   function setValueLocal(assessorId: string, kpiKey: string, value: number) {
@@ -61,10 +71,16 @@ const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
       [assessorId]: { ...prev[assessorId], [kpiKey]: Math.max(0, value) },
     }));
   }
+  function setBaseValueLocal(assessorId: string, kpiKey: string, value: number) {
+    setLocalBaseValues((prev) => ({
+      ...prev,
+      [assessorId]: { ...prev[assessorId], [kpiKey]: Math.max(0, value) },
+    }));
+  }
 
-  function commit(assessorId: string, kpiKey: string, value: number) {
+  function commit(assessorId: string, kpiKey: string, value: number, baseValue?: number) {
     if (value < 0) return;
-    upsert.mutate({ assessorId, kpiKey, rawValue: value, date: today });
+    upsert.mutate({ assessorId, kpiKey, rawValue: value, baseValue, date: today });
   }
 
   return (
@@ -86,8 +102,13 @@ const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
             <div className="space-y-2">
               {kpisForDay.map((kpi) => {
                 const val = getValue(a.id, kpi.key);
-                const target = kpi.target || 1;
-                const pct = Math.min(100, Math.round((val / target) * 100));
+                const isQOB = kpi.inputMode === "QUANTITY_OVER_BASE";
+                const baseVal = isQOB ? getBaseValue(a.id, kpi.key) : 0;
+                const pct = isQOB
+                  ? baseVal > 0
+                    ? Math.min(100, Math.round((val / baseVal) * 100))
+                    : 0
+                  : Math.min(100, Math.round((val / (kpi.target || 1)) * 100));
                 const step = kpi.unit === "%" ? 5 : 1;
 
                 return (
@@ -96,44 +117,78 @@ const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
                       {kpi.label}
                     </span>
 
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => {
-                          const next = Math.max(0, val - step);
-                          setValueLocal(a.id, kpi.key, next);
-                          commit(a.id, kpi.key, next);
-                        }}
-                        className="w-7 h-7 rounded-md bg-muted/40 hover:bg-muted/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
+                    {isQOB ? (
+                      /* QUANTITY_OVER_BASE: 2 inputs (quantidade / base) + % auto */
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          min={0}
+                          value={val}
+                          onChange={(e) => setValueLocal(a.id, kpi.key, parseInt(e.target.value) || 0)}
+                          onBlur={() => commit(a.id, kpi.key, val, baseVal || undefined)}
+                          placeholder="Qtd"
+                          className="w-12 h-7 rounded-md bg-muted/30 border border-border/30 text-center text-sm font-mono font-semibold text-foreground focus:outline-none focus:border-primary/50"
+                        />
+                        <span className="text-[10px] text-muted-foreground">/</span>
+                        <input
+                          type="number"
+                          min={1}
+                          value={baseVal || ""}
+                          onChange={(e) => setBaseValueLocal(a.id, kpi.key, parseInt(e.target.value) || 0)}
+                          onBlur={() => {
+                            const newBase = getBaseValue(a.id, kpi.key);
+                            if (newBase > 0) commit(a.id, kpi.key, val, newBase);
+                          }}
+                          placeholder="Lista"
+                          className="w-12 h-7 rounded-md bg-muted/30 border border-border/30 text-center text-sm font-mono font-semibold text-foreground focus:outline-none focus:border-primary/50"
+                        />
+                        <span className="text-xs font-mono font-bold text-primary min-w-[32px] text-right">
+                          {pct}%
+                        </span>
+                      </div>
+                    ) : (
+                      /* ABSOLUTE / PERCENT: 1 input com +/- */
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => {
+                            const next = Math.max(0, val - step);
+                            setValueLocal(a.id, kpi.key, next);
+                            commit(a.id, kpi.key, next);
+                          }}
+                          className="w-7 h-7 rounded-md bg-muted/40 hover:bg-muted/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
 
-                      <input
-                        type="number"
-                        min={0}
-                        max={kpi.unit === "%" ? 100 : 999}
-                        value={val}
-                        onChange={(e) => setValueLocal(a.id, kpi.key, parseInt(e.target.value) || 0)}
-                        onBlur={() => commit(a.id, kpi.key, val)}
-                        className="w-14 h-7 rounded-md bg-muted/30 border border-border/30 text-center text-sm font-mono font-semibold text-foreground focus:outline-none focus:border-primary/50"
-                      />
+                        <input
+                          type="number"
+                          min={0}
+                          max={kpi.unit === "%" ? 100 : 999}
+                          value={val}
+                          onChange={(e) => setValueLocal(a.id, kpi.key, parseInt(e.target.value) || 0)}
+                          onBlur={() => commit(a.id, kpi.key, val)}
+                          className="w-14 h-7 rounded-md bg-muted/30 border border-border/30 text-center text-sm font-mono font-semibold text-foreground focus:outline-none focus:border-primary/50"
+                        />
 
-                      <button
-                        onClick={() => {
-                          const next = val + step;
-                          setValueLocal(a.id, kpi.key, next);
-                          commit(a.id, kpi.key, next);
-                        }}
-                        className="w-7 h-7 rounded-md bg-muted/40 hover:bg-muted/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
-                    </div>
+                        <button
+                          onClick={() => {
+                            const next = val + step;
+                            setValueLocal(a.id, kpi.key, next);
+                            commit(a.id, kpi.key, next);
+                          }}
+                          className="w-7 h-7 rounded-md bg-muted/40 hover:bg-muted/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
 
-                    <span className="text-[10px] text-muted-foreground">
-                      / {kpi.target}
-                      {kpi.unit}
-                    </span>
+                    {!isQOB && (
+                      <span className="text-[10px] text-muted-foreground">
+                        / {kpi.target}
+                        {kpi.unit}
+                      </span>
+                    )}
 
                     <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                       <div
