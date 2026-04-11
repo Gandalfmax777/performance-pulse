@@ -1,10 +1,9 @@
-# Performance Pulse — Frontendd
+# Performance Pulse — Frontend
 
-Dashboard de performance de vendas para TV do escritório. Tempo real,
+Dashboard de gamificação para mesa de vendas. Tempo real,
 rankings, conquistas, Squad Bet e Modo TV provocativo.
 
-Este repositório é o **frontend** (React + Vite + TS + Tailwind + shadcn/ui),
-criado originalmente no [Lovable](https://lovable.dev) e hospedado na Vercel.
+**Stack**: React 18 + Vite 5 + TypeScript + Tailwind CSS + shadcn/ui + Recharts + Framer Motion + React Query
 
 O **backend** (Fastify + Prisma + Postgres) fica em repositório separado:
 `performance-pulse-backend`, hospedado na VPS via Coolify.
@@ -47,8 +46,3 @@ assim o build da Vercel não depende do backend estar no ar durante o build.
 - Build command: `npm run build`
 - Output: `dist`
 - Env var: `VITE_API_URL=https://api.seu-dominio.com/api`
-
-## Lovable
-
-Este projeto continua compatível com o Lovable. O Felipe pode editar via
-Lovable e as mudanças sincronizam com este repositório normalmente.
