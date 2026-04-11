@@ -19,6 +19,7 @@ import {
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import { type Assessor } from "@/types/assessor";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
+import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { useAssessorReport } from "@/hooks/useReports";
 import { useBadges } from "@/hooks/useBadges";
 import { useInsight, useGenerateInsight } from "@/hooks/useInsight";
@@ -85,17 +86,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6 no-print">
           <div className="flex items-center gap-3">
-            <div
-              className={`w-14 h-14 rounded-full flex items-center justify-center font-bold text-lg border-2 ${
-                a.level === "gold"
-                  ? "text-gold border-gold/40 bg-gold/10"
-                  : a.level === "silver"
-                  ? "text-silver border-silver/40 bg-silver/10"
-                  : "text-bronze border-bronze/40 bg-bronze/10"
-              }`}
-            >
-              {a.avatar}
-            </div>
+            <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={56} />
             <div>
               <h2 className="text-xl font-bold text-foreground">{a.name}</h2>
               <div className="flex items-center gap-3 mt-0.5">
@@ -130,9 +121,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
 
         {/* Print header (só aparece no print, usa classe no-screen via hidden + print:flex) */}
         <div className="hidden print:flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-full border-2 border-gray-400 flex items-center justify-center font-bold">
-            {a.avatar}
-          </div>
+          <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={48} />
           <div>
             <h2 className="text-xl font-bold">{a.name}</h2>
             <p className="text-sm text-gray-600">

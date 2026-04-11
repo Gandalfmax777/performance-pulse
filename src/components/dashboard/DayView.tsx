@@ -7,6 +7,7 @@ import PomodoroTimer from "./PomodoroTimer";
 import RegistrationPanel from "./RegistrationPanel";
 import { useDailyRanking } from "@/hooks/useRankings";
 import { useActivities, type ApiActivity, type ApiActivityKpi } from "@/hooks/useActivities";
+import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 
 /**
  * Labels Pt-BR pros 5 dias úteis. dayOfWeek 1=segunda ... 5=sexta
@@ -207,11 +208,7 @@ const DayView = ({ assessors }: DayViewProps) => {
                         >
                           {i === 0 ? <Crown className="w-5 h-5" /> : `#${i + 1}`}
                         </div>
-                        <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 ${LEVEL_COLORS[a.level]}`}
-                        >
-                          {a.avatar}
-                        </div>
+                        <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={40} />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="font-bold text-sm truncate text-foreground">{a.name}</p>

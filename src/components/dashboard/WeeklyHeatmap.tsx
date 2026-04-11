@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { X, CheckCircle2, XCircle, TrendingUp } from "lucide-react";
 import { type Assessor } from "@/types/assessor";
+import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { useActivities } from "@/hooks/useActivities";
 import { useBadges, useBadgeUnlocks } from "@/hooks/useBadges";
 
@@ -161,9 +162,7 @@ const WeeklyHeatmap = ({ assessors }: Props) => {
                           isSelected ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted/20"
                         }`}
                       >
-                        <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">
-                          {a.avatar}
-                        </div>
+                        <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={28} />
                         <div className="flex-1 min-w-0">
                           <span className="text-xs font-bold truncate block">{a.name}</span>
                           {earned.length > 0 && (

@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Trophy, Flame, TrendingUp, Crown } from "lucide-react";
 import { type Assessor } from "@/types/assessor";
+import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { useBadges, useBadgeUnlocks } from "@/hooks/useBadges";
 
 const LEVEL_COLORS = {
@@ -66,9 +67,7 @@ const Leaderboard = ({ assessors }: LeaderboardProps) => {
               </div>
 
               {/* Avatar */}
-              <div className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm border-2 ${LEVEL_COLORS[a.level]}`}>
-                {a.avatar}
-              </div>
+              <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={44} />
 
               {/* Info */}
               <div className="flex-1 min-w-0">

@@ -57,6 +57,7 @@ function toLegacyAssessor(a: ApiAssessor, rollup: ApiRollup | undefined): Assess
     id: a.id,
     name: a.name,
     avatar: a.initials,
+    photoUrl: a.photoUrl,
     points: rollup?.points ?? 0,
     level: a.level.toLowerCase() as Assessor["level"],
     streak: rollup?.streak ?? 0,

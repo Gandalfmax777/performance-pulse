@@ -17,6 +17,8 @@ export interface Assessor {
   name: string;
   /** Iniciais (backend chama `initials`, mas o shape legacy usa `avatar`). */
   avatar: string;
+  /** URL da foto (relativa, ex: `/uploads/assessors/xxx.jpg`). Null se não tiver. */
+  photoUrl: string | null;
   points: number;
   level: "bronze" | "silver" | "gold";
   streak: number;

@@ -17,6 +17,7 @@ import {
 } from "recharts";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import { type Assessor } from "@/types/assessor";
+import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import AssessorProfile from "./AssessorProfile";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { useOverviewReport } from "@/hooks/useReports";
@@ -225,17 +226,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
                 className="p-3 rounded-lg bg-muted/20 border border-border/30 hover:border-primary/30 transition-all"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border ${
-                      a.level === "gold"
-                        ? "text-gold border-gold/30 bg-gold/10"
-                        : a.level === "silver"
-                        ? "text-silver border-silver/30 bg-silver/10"
-                        : "text-bronze border-bronze/30 bg-bronze/10"
-                    }`}
-                  >
-                    {a.avatar}
-                  </div>
+                  <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={32} />
                   <div className="flex-1 min-w-0">
                     <button
                       onClick={() => setProfileAssessor(a)}

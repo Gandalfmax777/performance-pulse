@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Crown, Flame, TrendingUp, TrendingDown } from "lucide-react";
 import { type Assessor } from "@/types/assessor";
+import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 
 /**
  * Frases provocativas mostradas quando alguém cai de posição.
@@ -134,11 +135,7 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
                 </div>
 
                 {/* Avatar */}
-                <div
-                  className={`w-14 h-14 rounded-full flex items-center justify-center font-bold text-lg border-2 ${LEVEL_COLORS[a.level]}`}
-                >
-                  {a.avatar}
-                </div>
+                <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={56} />
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">

@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { Target, Minus, Plus, Loader2 } from "lucide-react";
 import type { Assessor } from "@/types/assessor";
+import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { useMetrics, useUpsertMetric } from "@/hooks/useMetrics";
 import { useKpis } from "@/hooks/useKpis";
 
@@ -78,11 +79,7 @@ const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
         {assessors.map((a) => (
           <div key={a.id} className="p-3 rounded-lg bg-muted/20 border border-border/30">
             <div className="flex items-center gap-2 mb-3">
-              <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border ${LEVEL_COLORS[a.level]}`}
-              >
-                {a.avatar}
-              </div>
+              <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={28} />
               <span className="text-sm font-semibold text-foreground">{a.name}</span>
             </div>
 

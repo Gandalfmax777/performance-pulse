@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Trophy, Medal, TrendingDown, TrendingUp, Flame } from "lucide-react";
 import { type Assessor } from "@/types/assessor";
+import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 
 const LEVEL_COLORS = {
   gold: "text-gold border-gold/30 bg-gold/10",
@@ -50,7 +51,7 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
             const score = getScore(a);
             return (
               <motion.div key={a.id} initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.15, duration: 0.5 }} className="flex flex-col items-center">
-                <div className={`w-14 h-14 rounded-full flex items-center justify-center font-bold text-lg border-2 mb-2 ${LEVEL_COLORS[a.level]}`}>{a.avatar}</div>
+                <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={56} className="mb-2" />
                 <p className="text-sm font-semibold text-foreground mb-1">{a.name}</p>
                 <div className="flex items-center gap-1 mb-2">
                   <TrendingUp className="w-3 h-3 text-primary" />
@@ -86,7 +87,7 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
                   className="p-3 rounded-lg bg-muted/20 border border-border/30">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-lg">{i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}</span>
-                    <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm border-2 ${LEVEL_COLORS[a.level]}`}>{a.avatar}</div>
+                    <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={36} />
                     <div className="flex-1">
                       <p className="font-semibold text-sm text-foreground">{a.name}</p>
                       <p className="text-xs text-muted-foreground">{a.points} pontos • Nível {a.level}</p>
@@ -127,7 +128,7 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
                   className="p-3 rounded-lg bg-destructive/5 border border-destructive/20">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="w-7 h-7 rounded-full bg-destructive/10 flex items-center justify-center text-xs font-mono font-bold text-destructive">#{rank}</span>
-                    <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm border-2 ${LEVEL_COLORS[a.level]}`}>{a.avatar}</div>
+                    <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={36} />
                     <div className="flex-1">
                       <p className="font-semibold text-sm text-foreground">{a.name}</p>
                       <p className="text-xs text-muted-foreground">{a.points} pontos</p>
