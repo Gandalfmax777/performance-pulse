@@ -1,13 +1,15 @@
 import { motion } from "framer-motion";
-import { Activity, Clock, Shield } from "lucide-react";
+import { Activity, Clock, Shield, Sun, Moon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "next-themes";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const DashboardHeader = () => {
   const [time, setTime] = useState(new Date());
   const { isAdmin } = useCurrentUser();
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000);
@@ -45,6 +47,13 @@ const DashboardHeader = () => {
             <span className="text-xs font-semibold">Admin</span>
           </button>
         )}
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="p-2 rounded-lg bg-muted/30 border border-border/30 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+          title={theme === "dark" ? "Modo claro" : "Modo escuro"}
+        >
+          {theme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+        </button>
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/30 border border-border/30">
           <Clock className="w-3.5 h-3.5 text-primary" />
           <span className="font-mono text-sm font-semibold text-foreground">

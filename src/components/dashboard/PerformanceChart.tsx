@@ -39,8 +39,8 @@ const PerformanceChart = () => {
         <AreaChart data={data}>
           <defs>
             <linearGradient id="gradLeads" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#ED8E53" stopOpacity={0.4} />
-              <stop offset="95%" stopColor="#ED8E53" stopOpacity={0} />
+              <stop offset="5%" stopColor="hsl(152, 72%, 37%)" stopOpacity={0.4} />
+              <stop offset="95%" stopColor="hsl(152, 72%, 37%)" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="gradReunioes" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="hsl(270, 60%, 62%)" stopOpacity={0.4} />
@@ -51,18 +51,18 @@ const PerformanceChart = () => {
             dataKey="day"
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "hsl(30, 10%, 50%)", fontSize: 11 }}
+            tick={{ fill: "hsl(160, 10%, 45%)", fontSize: 11 }}
           />
           <YAxis
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "hsl(30, 10%, 50%)", fontSize: 11 }}
+            tick={{ fill: "hsl(160, 10%, 45%)", fontSize: 11 }}
             width={30}
           />
           <Tooltip
             contentStyle={{
-              background: "hsl(200, 14%, 10%)",
-              border: "1px solid hsl(200, 8%, 18%)",
+              background: "hsl(160, 16%, 9%)",
+              border: "1px solid hsl(160, 10%, 18%)",
               borderRadius: "8px",
               fontSize: "12px",
             }}
@@ -70,7 +70,7 @@ const PerformanceChart = () => {
           <Area
             type="monotone"
             dataKey="leads"
-            stroke="#ED8E53"
+            stroke="hsl(152, 72%, 37%)"
             fill="url(#gradLeads)"
             strokeWidth={2}
           />

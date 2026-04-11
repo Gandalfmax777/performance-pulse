@@ -41,9 +41,9 @@ interface Props {
 }
 
 const RADAR_COLORS = [
-  "#ED8E53",
-  "#EDD69B",
-  "#CB5B15",
+  "hsl(152, 72%, 37%)",
+  "hsl(152, 45%, 65%)",
+  "hsl(210, 70%, 55%)",
   "hsl(270, 60%, 62%)",
 ];
 

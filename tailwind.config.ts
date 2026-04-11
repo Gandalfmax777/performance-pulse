@@ -62,9 +62,9 @@ export default {
         "chart-orange": "hsl(var(--chart-orange))",
         "chart-red": "hsl(var(--chart-red))",
         "chart-purple": "hsl(var(--chart-purple))",
-        "eqi-orange": "hsl(var(--eqi-orange))",
-        "eqi-gold": "hsl(var(--eqi-gold))",
-        "eqi-deep": "hsl(var(--eqi-deep))",
+        "eqi-green": "hsl(var(--eqi-green))",
+        "eqi-mint": "hsl(var(--eqi-mint))",
+        "eqi-forest": "hsl(var(--eqi-forest))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
