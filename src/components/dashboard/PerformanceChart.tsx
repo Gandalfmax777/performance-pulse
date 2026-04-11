@@ -39,30 +39,30 @@ const PerformanceChart = () => {
         <AreaChart data={data}>
           <defs>
             <linearGradient id="gradLeads" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="hsl(190, 95%, 50%)" stopOpacity={0.4} />
-              <stop offset="95%" stopColor="hsl(190, 95%, 50%)" stopOpacity={0} />
+              <stop offset="5%" stopColor="#ED8E53" stopOpacity={0.4} />
+              <stop offset="95%" stopColor="#ED8E53" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="gradReunioes" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="hsl(330, 85%, 60%)" stopOpacity={0.4} />
-              <stop offset="95%" stopColor="hsl(330, 85%, 60%)" stopOpacity={0} />
+              <stop offset="5%" stopColor="hsl(270, 60%, 62%)" stopOpacity={0.4} />
+              <stop offset="95%" stopColor="hsl(270, 60%, 62%)" stopOpacity={0} />
             </linearGradient>
           </defs>
           <XAxis
             dataKey="day"
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "hsl(220, 8%, 50%)", fontSize: 11 }}
+            tick={{ fill: "hsl(30, 10%, 50%)", fontSize: 11 }}
           />
           <YAxis
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "hsl(220, 8%, 50%)", fontSize: 11 }}
+            tick={{ fill: "hsl(30, 10%, 50%)", fontSize: 11 }}
             width={30}
           />
           <Tooltip
             contentStyle={{
-              background: "hsl(240, 5%, 10%)",
-              border: "1px solid hsl(240, 4%, 18%)",
+              background: "hsl(200, 14%, 10%)",
+              border: "1px solid hsl(200, 8%, 18%)",
               borderRadius: "8px",
               fontSize: "12px",
             }}
@@ -70,14 +70,14 @@ const PerformanceChart = () => {
           <Area
             type="monotone"
             dataKey="leads"
-            stroke="hsl(190, 95%, 50%)"
+            stroke="#ED8E53"
             fill="url(#gradLeads)"
             strokeWidth={2}
           />
           <Area
             type="monotone"
             dataKey="reunioes"
-            stroke="hsl(330, 85%, 60%)"
+            stroke="hsl(270, 60%, 62%)"
             fill="url(#gradReunioes)"
             strokeWidth={2}
           />

@@ -9,11 +9,11 @@ import { useWeeklyRanking } from "@/hooks/useRankings";
  * o frontend só decora visualmente.
  */
 const KPI_VISUALS: Record<string, { icon: LucideIcon; color: string; bg: string }> = {
-  leads:      { icon: Users,         color: "text-neon-cyan",    bg: "bg-neon-cyan/10" },
+  leads:      { icon: Users,         color: "text-eqi-orange",   bg: "bg-eqi-orange/10" },
   cadencia:   { icon: Zap,           color: "text-success",      bg: "bg-success/10" },
   ligacoes:   { icon: PhoneCall,     color: "text-chart-blue",   bg: "bg-chart-blue/10" },
-  reunioes:   { icon: CalendarCheck, color: "text-neon-magenta", bg: "bg-neon-magenta/10" },
-  indicacoes: { icon: Gift,          color: "text-neon-amber",   bg: "bg-neon-amber/10" },
+  reunioes:   { icon: CalendarCheck, color: "text-chart-purple", bg: "bg-chart-purple/10" },
+  indicacoes: { icon: Gift,          color: "text-eqi-gold",     bg: "bg-eqi-gold/10" },
   boletos:    { icon: FileText,      color: "text-gold",         bg: "bg-gold/10" },
 };
 
