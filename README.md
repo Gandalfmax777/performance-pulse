@@ -1,4 +1,4 @@
-# Performance Pulse — Frontend
+# Performance Pulse — Frontendd
 
 Dashboard de performance de vendas para TV do escritório. Tempo real,
 rankings, conquistas, Squad Bet e Modo TV provocativo.
