@@ -4,10 +4,9 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
-/* ─── Print layout (Fase 7) ────────────────────────────────────────────────
-   O AssessorProfile marca seu modal com className="printable" e esconde
-   controles com className="no-print". Ao chamar window.print(), só o
-   conteúdo printable vira visível, ocupando a página inteira. */
+/* ─── Print layout (Fase 11) ───────────────────────────────────────────────
+   Layout otimizado pra papel A4. Background branco, sem gradientes,
+   KPIs em tabela, charts escondidos (renderizam mal em print). */
 @media print {
   body * {
     visibility: hidden;
@@ -23,13 +22,44 @@
     width: 100%;
     max-width: 100% !important;
     margin: 0 !important;
-    padding: 20px !important;
+    padding: 24px !important;
     background: white !important;
     color: black !important;
     border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
   }
-  .no-print {
+  /* Limpar visual dark mode */
+  .printable .card-glass,
+  .printable [class*="bg-muted"],
+  .printable [class*="bg-primary"] {
+    background: white !important;
+    border: 1px solid #e5e5e5 !important;
+    box-shadow: none !important;
+  }
+  /* Texto legível */
+  .printable [class*="text-foreground"],
+  .printable [class*="text-primary"],
+  .printable [class*="font-bold"] {
+    color: #111 !important;
+  }
+  .printable [class*="text-muted"] {
+    color: #666 !important;
+  }
+  /* Esconder elementos interativos e charts */
+  .no-print,
+  .print-hide {
     display: none !important;
+  }
+  /* Mostrar elementos exclusivos de print */
+  .print-show {
+    display: block !important;
+  }
+  /* Progress bars em preto pra economia de tinta */
+  .printable [class*="gradient-"],
+  .printable [class*="bg-success"],
+  .printable [class*="bg-chart-"] {
+    background: #333 !important;
   }
 }
 

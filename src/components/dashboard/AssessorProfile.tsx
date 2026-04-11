@@ -194,8 +194,36 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
               })}
             </div>
 
-            {/* Charts */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            {/* Print-only: tabela limpa dos KPIs (substitui os charts que renderizam mal em papel) */}
+            <div className="hidden print-show mb-6">
+              <h3 className="text-sm font-bold mb-2" style={{ color: "#111" }}>Detalhamento por KPI</h3>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
+                <thead>
+                  <tr style={{ borderBottom: "2px solid #333" }}>
+                    <th style={{ textAlign: "left", padding: "6px 8px" }}>KPI</th>
+                    <th style={{ textAlign: "right", padding: "6px 8px" }}>Resultado</th>
+                    <th style={{ textAlign: "right", padding: "6px 8px" }}>Meta</th>
+                    <th style={{ textAlign: "right", padding: "6px 8px" }}>%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {report.kpis.map((k) => (
+                    <tr key={k.key} style={{ borderBottom: "1px solid #ddd" }}>
+                      <td style={{ padding: "4px 8px" }}>{k.label}</td>
+                      <td style={{ textAlign: "right", padding: "4px 8px", fontFamily: "monospace" }}>{k.total}{k.unit}</td>
+                      <td style={{ textAlign: "right", padding: "4px 8px", fontFamily: "monospace" }}>{k.target}{k.unit}</td>
+                      <td style={{ textAlign: "right", padding: "4px 8px", fontFamily: "monospace", fontWeight: "bold" }}>{Math.round(k.percentOfTarget)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p style={{ fontSize: "10px", color: "#999", marginTop: "8px" }}>
+                Gerado em {new Date().toLocaleDateString("pt-BR")} • Performance Pulse
+              </p>
+            </div>
+
+            {/* Charts (hidden on print — renderizam mal em papel) */}
+            <div className="grid grid-cols-2 gap-4 mb-6 print-hide">
               <div className="p-4 rounded-xl bg-muted/10 border border-border/20">
                 <h3 className="text-sm font-bold text-foreground mb-3">KPIs vs Meta</h3>
                 <ResponsiveContainer width="100%" height={200}>
