@@ -23,6 +23,7 @@ import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { useAssessorReport } from "@/hooks/useReports";
 import { useBadges } from "@/hooks/useBadges";
 import { useInsight, useGenerateInsight } from "@/hooks/useInsight";
+import { usePrizes } from "@/hooks/usePrizes";
 
 interface AssessorProfileProps {
   assessor: Assessor;
@@ -43,6 +44,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
   const { data: allBadgesData } = useBadges();
   const { data: insightData } = useInsight(assessor.id, "WEEK");
   const generateInsight = useGenerateInsight();
+  const { data: prizes } = usePrizes({ assessorId: assessor.id });
 
   const barData = useMemo(() => {
     if (!report) return [];
@@ -373,6 +375,31 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                 </div>
               </div>
             </div>
+            {/* Prêmios individuais */}
+            {prizes && prizes.length > 0 && (
+              <div className="p-4 rounded-xl bg-muted/10 border border-primary/20 mt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-lg">🏅</span>
+                  <h3 className="text-sm font-bold text-foreground">Prêmios Recebidos</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {prizes.map((p) => (
+                    <div
+                      key={p.id}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/10 border border-accent/20"
+                    >
+                      <span className="text-lg">🎁</span>
+                      <div>
+                        <p className="text-xs font-semibold text-foreground">{p.title}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {p.period} • por {p.awardedByName}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
       </motion.div>
