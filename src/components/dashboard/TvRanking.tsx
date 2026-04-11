@@ -23,12 +23,6 @@ function getRandomPhrase(): string {
   return PROVOCATION_PHRASES[Math.floor(Math.random() * PROVOCATION_PHRASES.length)];
 }
 
-const LEVEL_COLORS = {
-  gold: "text-gold border-gold/40 bg-gold/10",
-  silver: "text-silver border-silver/40 bg-silver/10",
-  bronze: "text-bronze border-bronze/40 bg-bronze/10",
-};
-
 interface TvRankingProps {
   assessors: Assessor[];
 }

@@ -11,12 +11,6 @@ interface RegistrationPanelProps {
   kpiKeys: string[];
 }
 
-const LEVEL_COLORS = {
-  gold: "text-gold border-gold/30 bg-gold/10",
-  silver: "text-silver border-silver/30 bg-silver/10",
-  bronze: "text-bronze border-bronze/30 bg-bronze/10",
-};
-
 function todayString(): string {
   return new Date().toISOString().slice(0, 10);
 }

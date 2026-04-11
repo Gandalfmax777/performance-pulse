@@ -3,12 +3,6 @@ import { Trophy, Medal, TrendingDown, TrendingUp, Flame } from "lucide-react";
 import { type Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 
-const LEVEL_COLORS = {
-  gold: "text-gold border-gold/30 bg-gold/10",
-  silver: "text-silver border-silver/30 bg-silver/10",
-  bronze: "text-bronze border-bronze/30 bg-bronze/10",
-};
-
 interface DailyResultsProps {
   assessors: Assessor[];
 }

@@ -28,9 +28,6 @@ export function AssessorAvatar({
   className,
 }: AssessorAvatarProps) {
   const levelClass = LEVEL_COLORS[level];
-  const sizeClass = `w-[${size}px] h-[${size}px]`;
-
-  // Tailwind não suporta valores dinâmicos inline, usar style
   const sizeStyle = { width: size, height: size, minWidth: size };
 
   if (photoUrl) {

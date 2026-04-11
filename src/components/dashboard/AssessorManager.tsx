@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { UserPlus, Trash2, X, Users } from "lucide-react";
 import type { Assessor } from "@/types/assessor";
+import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 
 interface AssessorManagerProps {
   assessors: Assessor[];
@@ -55,13 +56,7 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
         <div className="space-y-2 max-h-80 overflow-y-auto">
           {assessors.map(a => (
             <div key={a.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/10 border border-border/20">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 ${
-                a.level === "gold" ? "text-gold border-gold/30 bg-gold/10" :
-                a.level === "silver" ? "text-silver border-silver/30 bg-silver/10" :
-                "text-bronze border-bronze/30 bg-bronze/10"
-              }`}>
-                {a.avatar}
-              </div>
+              <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={40} />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground truncate">{a.name}</p>
                 <p className="text-xs text-muted-foreground">{a.points} pts • {a.level}</p>
