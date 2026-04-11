@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
 
 /* ─── Print layout (Fase 11) ───────────────────────────────────────────────
    Layout otimizado pra papel A4. Background branco, sem gradientes,
@@ -65,55 +65,69 @@
 
 @layer base {
   :root {
-    --background: 160 15% 6%;
-    --foreground: 150 15% 95%;
+    /* Base: warm obsidian */
+    --background: 240 6% 7%;
+    --foreground: 220 15% 93%;
 
-    --card: 160 12% 9%;
-    --card-foreground: 150 15% 95%;
+    --card: 240 5% 10%;
+    --card-foreground: 220 15% 93%;
 
-    --popover: 160 12% 9%;
-    --popover-foreground: 150 15% 95%;
+    --popover: 240 5% 10%;
+    --popover-foreground: 220 15% 93%;
 
-    --primary: 152 70% 45%;
-    --primary-foreground: 160 15% 6%;
+    /* Primary: electric cyan */
+    --primary: 190 95% 50%;
+    --primary-foreground: 240 6% 7%;
 
-    --secondary: 170 55% 38%;
-    --secondary-foreground: 160 15% 6%;
+    /* Secondary: hot magenta */
+    --secondary: 330 85% 60%;
+    --secondary-foreground: 240 6% 7%;
 
-    --muted: 160 10% 14%;
-    --muted-foreground: 155 12% 52%;
+    /* Muted: warm gray */
+    --muted: 240 4% 16%;
+    --muted-foreground: 220 8% 50%;
 
-    --accent: 45 90% 55%;
-    --accent-foreground: 160 15% 6%;
+    /* Accent: electric amber */
+    --accent: 42 95% 55%;
+    --accent-foreground: 240 6% 7%;
 
-    --destructive: 0 70% 55%;
-    --destructive-foreground: 150 15% 95%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 220 15% 93%;
 
-    --border: 160 10% 16%;
-    --input: 160 10% 16%;
-    --ring: 152 70% 45%;
+    --border: 240 4% 18%;
+    --input: 240 4% 18%;
+    --ring: 190 95% 50%;
 
     --radius: 0.75rem;
 
-    --gold: 45 90% 55%;
-    --silver: 220 10% 72%;
-    --bronze: 25 60% 50%;
+    /* Gamification */
+    --gold: 42 95% 58%;
+    --silver: 220 12% 72%;
+    --bronze: 25 65% 48%;
     --success: 152 70% 45%;
-    --warning: 35 90% 55%;
-    --chart-blue: 200 70% 50%;
-    --chart-green: 152 70% 45%;
-    --chart-orange: 35 90% 55%;
-    --chart-red: 0 70% 55%;
-    --chart-purple: 270 60% 60%;
+    --warning: 42 95% 55%;
 
-    --sidebar-background: 160 12% 9%;
-    --sidebar-foreground: 150 15% 95%;
-    --sidebar-primary: 152 70% 45%;
-    --sidebar-primary-foreground: 160 15% 6%;
-    --sidebar-accent: 160 10% 14%;
-    --sidebar-accent-foreground: 150 15% 95%;
-    --sidebar-border: 160 10% 16%;
-    --sidebar-ring: 152 70% 45%;
+    /* Charts */
+    --chart-blue: 210 90% 56%;
+    --chart-green: 152 70% 45%;
+    --chart-orange: 25 90% 58%;
+    --chart-red: 0 75% 55%;
+    --chart-purple: 270 70% 62%;
+
+    /* Neon accents */
+    --neon-cyan: 190 95% 50%;
+    --neon-magenta: 330 85% 60%;
+    --neon-amber: 42 95% 55%;
+
+    /* Sidebar */
+    --sidebar-background: 240 5% 9%;
+    --sidebar-foreground: 220 15% 93%;
+    --sidebar-primary: 190 95% 50%;
+    --sidebar-primary-foreground: 240 6% 7%;
+    --sidebar-accent: 240 4% 16%;
+    --sidebar-accent-foreground: 220 15% 93%;
+    --sidebar-border: 240 4% 18%;
+    --sidebar-ring: 190 95% 50%;
   }
 }
 
@@ -124,41 +138,64 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'DM Sans', sans-serif;
   }
 }
 
 @layer utilities {
   .font-mono {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'IBM Plex Mono', monospace;
   }
 
+  .font-display {
+    font-family: 'Outfit', sans-serif;
+  }
+
+  /* === GLOW EFFECTS === */
   .glow-primary {
-    box-shadow: 0 0 20px hsl(var(--primary) / 0.3), 0 0 60px hsl(var(--primary) / 0.1);
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.25), 0 0 60px hsl(var(--primary) / 0.08);
+  }
+
+  .glow-secondary {
+    box-shadow: 0 0 20px hsl(var(--secondary) / 0.25), 0 0 60px hsl(var(--secondary) / 0.08);
   }
 
   .glow-success {
-    box-shadow: 0 0 20px hsl(var(--success) / 0.3), 0 0 60px hsl(var(--success) / 0.1);
+    box-shadow: 0 0 20px hsl(var(--success) / 0.25), 0 0 60px hsl(var(--success) / 0.08);
   }
 
   .glow-gold {
     box-shadow: 0 0 20px hsl(var(--gold) / 0.3), 0 0 60px hsl(var(--gold) / 0.1);
   }
 
+  .glow-accent {
+    box-shadow: 0 0 20px hsl(var(--accent) / 0.25), 0 0 60px hsl(var(--accent) / 0.08);
+  }
+
+  /* === GRADIENTS === */
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(190 80% 35%));
   }
 
   .gradient-success {
-    background: linear-gradient(135deg, hsl(var(--success)), hsl(var(--primary)));
+    background: linear-gradient(135deg, hsl(var(--success)), hsl(170 60% 35%));
   }
 
   .gradient-gold {
     background: linear-gradient(135deg, hsl(var(--gold)), hsl(var(--bronze)));
   }
 
+  .gradient-neon {
+    background: linear-gradient(135deg, hsl(var(--neon-cyan)), hsl(var(--neon-magenta)));
+  }
+
+  .gradient-fire {
+    background: linear-gradient(135deg, hsl(var(--neon-amber)), hsl(var(--destructive)));
+  }
+
+  /* === TEXT GRADIENTS === */
   .text-gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(210 90% 60%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
@@ -169,10 +206,49 @@
     -webkit-text-fill-color: transparent;
   }
 
+  .text-gradient-neon {
+    background: linear-gradient(135deg, hsl(var(--neon-cyan)), hsl(var(--neon-magenta)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* === CARD SURFACES === */
   .card-glass {
-    background: hsl(var(--card) / 0.7);
+    background: hsl(var(--card) / 0.8);
     backdrop-filter: blur(16px);
-    border: 1px solid hsl(var(--border) / 0.5);
+    border: 1px solid hsl(var(--border) / 0.6);
+  }
+
+  .card-noise {
+    position: relative;
+  }
+  .card-noise::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    background-size: 128px 128px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* === ATMOSPHERIC BACKGROUND === */
+  .bg-mesh {
+    background-image:
+      radial-gradient(ellipse at 20% 0%, hsl(var(--neon-cyan) / 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, hsl(var(--neon-magenta) / 0.03) 0%, transparent 50%);
+  }
+
+  /* === RANK RINGS === */
+  .ring-rank-1 {
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.4), 0 0 20px hsl(var(--primary) / 0.15);
+  }
+  .ring-rank-2 {
+    box-shadow: 0 0 0 2px hsl(var(--silver) / 0.4);
+  }
+  .ring-rank-3 {
+    box-shadow: 0 0 0 2px hsl(var(--bronze) / 0.4);
   }
 }
 
@@ -203,6 +279,26 @@
 
 .animate-pulse-ring {
   animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px hsl(var(--primary) / 0.15); }
+  50% { box-shadow: 0 0 30px hsl(var(--primary) / 0.35); }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, hsl(var(--primary) / 0.08) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
 }
 
 /* Print styles */

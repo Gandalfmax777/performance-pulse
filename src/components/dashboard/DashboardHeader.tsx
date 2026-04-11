@@ -24,12 +24,12 @@ const DashboardHeader = () => {
       className="flex items-center justify-between mb-5"
     >
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center glow-primary">
+        <div className="w-10 h-10 rounded-xl gradient-neon flex items-center justify-center glow-primary">
           <Activity className="w-5 h-5 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-foreground tracking-tight">
-            Dashboard <span className="text-gradient-primary">Ative+</span> Performance
+          <h1 className="text-xl font-display font-extrabold text-foreground tracking-tight">
+            Dashboard <span className="text-gradient-neon">Ative+</span> Performance
           </h1>
           <p className="text-xs text-muted-foreground capitalize">{dayName}, {dateStr}</p>
         </div>
@@ -51,7 +51,7 @@ const DashboardHeader = () => {
             {time.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
           </span>
         </div>
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success/10 border border-success/20">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success/10 border border-success/20 animate-glow-pulse">
           <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
           <span className="text-xs text-success font-semibold">AO VIVO</span>
         </div>

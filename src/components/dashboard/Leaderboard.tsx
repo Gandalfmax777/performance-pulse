@@ -37,7 +37,7 @@ const Leaderboard = ({ assessors }: LeaderboardProps) => {
     <div className="card-glass rounded-xl p-5 h-full">
       <div className="flex items-center gap-2 mb-5">
         <Trophy className="w-5 h-5 text-primary" />
-        <h2 className="text-lg font-bold text-foreground">Ranking Semanal</h2>
+        <h2 className="text-lg font-display font-bold text-foreground">Ranking Semanal</h2>
       </div>
 
       <div className="space-y-2.5">

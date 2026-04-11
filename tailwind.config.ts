@@ -13,6 +13,11 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['DM Sans', 'sans-serif'],
+        display: ['Outfit', 'sans-serif'],
+        mono: ['IBM Plex Mono', 'monospace'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -57,6 +62,9 @@ export default {
         "chart-orange": "hsl(var(--chart-orange))",
         "chart-red": "hsl(var(--chart-red))",
         "chart-purple": "hsl(var(--chart-purple))",
+        "neon-cyan": "hsl(var(--neon-cyan))",
+        "neon-magenta": "hsl(var(--neon-magenta))",
+        "neon-amber": "hsl(var(--neon-amber))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -94,6 +102,8 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "shimmer": "shimmer 2s ease-in-out infinite",
+        "glow-pulse": "glow-pulse 2s ease-in-out infinite",
       },
     },
   },

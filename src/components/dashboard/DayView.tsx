@@ -95,7 +95,7 @@ const DayView = ({ assessors }: DayViewProps) => {
               onClick={() => setActiveDay(i)}
               className={`relative px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                 activeDay === i
-                  ? "gradient-primary text-primary-foreground glow-primary"
+                  ? "gradient-neon text-white glow-primary"
                   : "bg-muted/30 text-muted-foreground hover:bg-muted/50 border border-border/30"
               }`}
             >

@@ -49,10 +49,11 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+      <div className="absolute inset-0 bg-mesh" />
+      <Card className="w-full max-w-md relative z-10">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Performance Pulse</CardTitle>
+          <CardTitle className="text-2xl font-display font-bold text-gradient-neon">Performance Pulse</CardTitle>
           <CardDescription>Login do gestor</CardDescription>
         </CardHeader>
         <CardContent>

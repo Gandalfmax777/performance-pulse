@@ -110,7 +110,7 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
                     initial={{ opacity: 0, scale: 0.8, y: -10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.8, y: -10 }}
-                    className="absolute -top-3 right-4 z-10 px-3 py-1.5 rounded-lg bg-destructive text-destructive-foreground text-xs font-bold shadow-lg"
+                    className="absolute -top-3 right-4 z-10 px-3 py-1.5 rounded-lg gradient-fire text-white text-xs font-bold shadow-lg"
                   >
                     <TrendingDown className="w-3 h-3 inline mr-1" />
                     {alert}
@@ -121,7 +121,7 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
               <div className="flex items-center gap-4">
                 {/* Posição */}
                 <div
-                  className={`w-12 h-12 rounded-xl flex items-center justify-center font-mono font-black text-lg ${
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center font-display font-black text-lg ${
                     i === 0
                       ? "bg-primary/20 text-primary"
                       : i === 1
@@ -139,7 +139,7 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-lg text-foreground truncate">{a.name}</p>
+                  <p className="font-display font-bold text-xl text-foreground truncate">{a.name}</p>
                   <div className="flex items-center gap-3 mt-1">
                     <span className="text-sm text-muted-foreground font-mono">
                       {a.points.toLocaleString()} pts

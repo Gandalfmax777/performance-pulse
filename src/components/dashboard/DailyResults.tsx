@@ -43,7 +43,7 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
       <div className="card-glass rounded-xl p-6">
         <div className="flex items-center gap-2 mb-6">
           <Trophy className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-bold text-foreground">Pódio do Dia</h2>
+          <h2 className="text-lg font-display font-bold text-foreground">Pódio do Dia</h2>
         </div>
         <div className="flex items-end justify-center gap-4 pt-8 pb-4">
           {podiumOrder.map((a, i) => {
@@ -64,7 +64,7 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
                 )}
                 <motion.div initial={{ height: 0 }} animate={{ height: podiumHeights[i] }} transition={{ delay: 0.3 + i * 0.15, duration: 0.6 }}
                   className={`w-28 rounded-t-xl bg-gradient-to-t border border-b-0 flex flex-col items-center justify-start pt-4 ${podiumColors[i]}`}>
-                  <span className={`text-3xl font-black ${podiumTextColors[i]}`}>{podiumLabels[i]}</span>
+                  <span className={`text-3xl font-display font-black ${podiumTextColors[i]}`}>{podiumLabels[i]}</span>
                   <span className="text-xs text-muted-foreground mt-1 font-mono">{a.points} pts</span>
                 </motion.div>
               </motion.div>

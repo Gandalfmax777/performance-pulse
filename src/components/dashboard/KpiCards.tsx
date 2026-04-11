@@ -9,11 +9,11 @@ import { useWeeklyRanking } from "@/hooks/useRankings";
  * o frontend só decora visualmente.
  */
 const KPI_VISUALS: Record<string, { icon: LucideIcon; color: string; bg: string }> = {
-  leads:      { icon: Users,         color: "text-primary",      bg: "bg-primary/10" },
+  leads:      { icon: Users,         color: "text-neon-cyan",    bg: "bg-neon-cyan/10" },
   cadencia:   { icon: Zap,           color: "text-success",      bg: "bg-success/10" },
   ligacoes:   { icon: PhoneCall,     color: "text-chart-blue",   bg: "bg-chart-blue/10" },
-  reunioes:   { icon: CalendarCheck, color: "text-chart-purple", bg: "bg-chart-purple/10" },
-  indicacoes: { icon: Gift,          color: "text-chart-orange", bg: "bg-chart-orange/10" },
+  reunioes:   { icon: CalendarCheck, color: "text-neon-magenta", bg: "bg-neon-magenta/10" },
+  indicacoes: { icon: Gift,          color: "text-neon-amber",   bg: "bg-neon-amber/10" },
   boletos:    { icon: FileText,      color: "text-gold",         bg: "bg-gold/10" },
 };
 
@@ -50,13 +50,13 @@ const KpiCards = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08 }}
-            className="card-glass rounded-xl p-4 relative overflow-hidden"
+            className="card-glass card-noise rounded-xl p-4 relative overflow-hidden"
           >
             <div className="flex items-center justify-between mb-2">
               <div className={`w-9 h-9 rounded-lg ${visual.bg} flex items-center justify-center`}>
                 <Icon className={`w-4.5 h-4.5 ${visual.color}`} />
               </div>
-              <span className="font-mono text-2xl font-bold text-foreground">
+              <span className="font-display text-2xl font-bold text-foreground">
                 {value}
                 {kpi.unit}
               </span>

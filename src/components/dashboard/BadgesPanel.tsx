@@ -19,7 +19,7 @@ const BadgesPanel = (_: BadgesPanelProps) => {
 
   return (
     <div className="card-glass rounded-xl p-5">
-      <h2 className="text-sm font-bold text-foreground mb-3">Conquistas</h2>
+      <h2 className="text-sm font-display font-bold text-foreground mb-3">Conquistas</h2>
       <div className="grid grid-cols-5 gap-2">
         {individualBadges.map((b, i) => {
           const unlocked = unlockedSlugs.has(b.slug);

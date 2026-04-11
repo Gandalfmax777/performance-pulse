@@ -34,35 +34,35 @@ const PerformanceChart = () => {
 
   return (
     <div className="card-glass rounded-xl p-5">
-      <h2 className="text-sm font-bold text-foreground mb-4">Tendência Semanal</h2>
+      <h2 className="text-sm font-display font-bold text-foreground mb-4">Tendência Semanal</h2>
       <ResponsiveContainer width="100%" height={180}>
         <AreaChart data={data}>
           <defs>
             <linearGradient id="gradLeads" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="hsl(200, 80%, 55%)" stopOpacity={0.4} />
-              <stop offset="95%" stopColor="hsl(200, 80%, 55%)" stopOpacity={0} />
+              <stop offset="5%" stopColor="hsl(190, 95%, 50%)" stopOpacity={0.4} />
+              <stop offset="95%" stopColor="hsl(190, 95%, 50%)" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="gradReunioes" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="hsl(270, 60%, 60%)" stopOpacity={0.4} />
-              <stop offset="95%" stopColor="hsl(270, 60%, 60%)" stopOpacity={0} />
+              <stop offset="5%" stopColor="hsl(330, 85%, 60%)" stopOpacity={0.4} />
+              <stop offset="95%" stopColor="hsl(330, 85%, 60%)" stopOpacity={0} />
             </linearGradient>
           </defs>
           <XAxis
             dataKey="day"
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "hsl(215, 15%, 55%)", fontSize: 11 }}
+            tick={{ fill: "hsl(220, 8%, 50%)", fontSize: 11 }}
           />
           <YAxis
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "hsl(215, 15%, 55%)", fontSize: 11 }}
+            tick={{ fill: "hsl(220, 8%, 50%)", fontSize: 11 }}
             width={30}
           />
           <Tooltip
             contentStyle={{
-              background: "hsl(220, 18%, 10%)",
-              border: "1px solid hsl(220, 15%, 18%)",
+              background: "hsl(240, 5%, 10%)",
+              border: "1px solid hsl(240, 4%, 18%)",
               borderRadius: "8px",
               fontSize: "12px",
             }}
@@ -70,14 +70,14 @@ const PerformanceChart = () => {
           <Area
             type="monotone"
             dataKey="leads"
-            stroke="hsl(200, 80%, 55%)"
+            stroke="hsl(190, 95%, 50%)"
             fill="url(#gradLeads)"
             strokeWidth={2}
           />
           <Area
             type="monotone"
             dataKey="reunioes"
-            stroke="hsl(270, 60%, 60%)"
+            stroke="hsl(330, 85%, 60%)"
             fill="url(#gradReunioes)"
             strokeWidth={2}
           />

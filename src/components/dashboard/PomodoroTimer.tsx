@@ -89,7 +89,7 @@ const PomodoroTimer = () => {
       {/* Header */}
       <div className="flex items-center gap-2 mb-4 self-start w-full">
         <Play className="w-4 h-4 text-primary" />
-        <h2 className="text-sm font-bold text-foreground">Pomodoro</h2>
+        <h2 className="text-sm font-display font-bold text-foreground">Pomodoro</h2>
         <span className="ml-auto text-xs text-muted-foreground font-mono">{cycles} ciclos</span>
       </div>
 
@@ -138,7 +138,7 @@ const PomodoroTimer = () => {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-mono text-3xl font-bold text-foreground">
+          <span className="font-display text-3xl font-bold text-foreground">
             {String(minutes).padStart(2, "0")}:{String(secs).padStart(2, "0")}
           </span>
           <span className="text-[10px] text-muted-foreground mt-1">FOCO</span>

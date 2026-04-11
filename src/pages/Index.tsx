@@ -105,12 +105,14 @@ const Index = () => {
   const tvTabsInfo = TABS.filter(t => TV_TABS.includes(t.key));
 
   return (
-    <div className={`min-h-screen bg-background ${tvMode ? "p-6 tv-mode" : "p-5"}`}>
+    <div className={`min-h-screen bg-background relative ${tvMode ? "p-6 tv-mode" : "p-5"}`}>
+      {/* Ambient gradient mesh */}
+      <div className="fixed inset-0 pointer-events-none bg-mesh" />
       {/* TV Mode overlay controls */}
       {tvMode && (
         <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-2 bg-background/90 backdrop-blur-md border-b border-primary/20">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-lg gradient-primary">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-lg gradient-neon">
               <Tv className="w-4 h-4 text-primary-foreground" />
               <span className="text-xs font-bold text-primary-foreground tracking-wider">TV</span>
             </div>
@@ -180,7 +182,7 @@ const Index = () => {
               onClick={() => setView(tab.key)}
               className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
                 view === tab.key
-                  ? "gradient-primary text-primary-foreground glow-primary"
+                  ? "gradient-neon text-white glow-primary"
                   : "bg-muted/30 text-muted-foreground hover:bg-muted/50 border border-border/30"
               }`}
             >
