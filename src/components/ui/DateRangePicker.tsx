@@ -1,4 +1,4 @@
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from "date-fns";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, startOfYear } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import type { DateRange } from "react-day-picker";
@@ -51,6 +51,20 @@ const PRESETS = [
     compute: () => {
       const now = new Date();
       return { from: toYmd(startOfMonth(now)), to: toYmd(endOfMonth(now)) };
+    },
+  },
+  {
+    label: "Este semestre",
+    compute: () => {
+      const now = new Date();
+      const month = now.getMonth(); // 0-11
+      const semStart = month < 6
+        ? new Date(now.getFullYear(), 0, 1)  // jan
+        : new Date(now.getFullYear(), 6, 1); // jul
+      const semEnd = month < 6
+        ? new Date(now.getFullYear(), 5, 30)  // jun 30
+        : new Date(now.getFullYear(), 11, 31); // dec 31
+      return { from: toYmd(semStart), to: toYmd(semEnd) };
     },
   },
   {

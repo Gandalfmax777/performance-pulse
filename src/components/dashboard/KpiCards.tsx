@@ -23,6 +23,9 @@ const KpiCards = () => {
   const { kpis } = useKpis();
   const { data: weeklyRanking } = useWeeklyRanking();
 
+  // Número de assessores ativos (pra escalar o target pro time todo)
+  const teamSize = weeklyRanking?.rankings.length ?? 1;
+
   /** Agrega kpiTotals do ranking semanal: soma de rawValue por kpi.key. */
   const aggregatedValues = useMemo(() => {
     const map: Record<string, number> = {};
@@ -41,8 +44,9 @@ const KpiCards = () => {
         const visual = KPI_VISUALS[kpi.key] ?? FALLBACK_VISUAL;
         const Icon = visual.icon;
         const value = aggregatedValues[kpi.key] ?? 0;
-        const target = kpi.target || 1;
-        const pct = Math.min(100, Math.round((value / target) * 100));
+        // Target escalado: meta individual × nº de assessores = meta do time
+        const teamTarget = (kpi.target || 1) * teamSize;
+        const pct = Math.min(100, Math.round((value / teamTarget) * 100));
 
         return (
           <motion.div
@@ -72,7 +76,7 @@ const KpiCards = () => {
                 />
               </div>
               <span className="text-[10px] font-mono text-muted-foreground">
-                {value}/{kpi.target}
+                {value}/{teamTarget}
               </span>
             </div>
             <div className="absolute -right-4 -bottom-4 opacity-5">

@@ -1,9 +1,10 @@
 import { useMemo, useState, useEffect } from "react";
-import { Target, Minus, Plus, Loader2 } from "lucide-react";
+import { Target, Minus, Plus, Loader2, MessageSquare } from "lucide-react";
 import type { Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { useMetrics, useUpsertMetric } from "@/hooks/useMetrics";
 import { useKpis } from "@/hooks/useKpis";
+import { apiFetch } from "@/api/client";
 
 interface RegistrationPanelProps {
   assessors: Assessor[];
@@ -45,6 +46,8 @@ const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
   // Estados locais (otimistas)
   const [localValues, setLocalValues] = useState<Record<string, Record<string, number>>>({});
   const [localBaseValues, setLocalBaseValues] = useState<Record<string, Record<string, number>>>({});
+  const [noteOpen, setNoteOpen] = useState<string | null>(null); // assessorId or null
+  const [noteText, setNoteText] = useState("");
 
   // Sincroniza quando o backend retorna novos dados
   useEffect(() => {
@@ -90,8 +93,58 @@ const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
           <div key={a.id} className="p-3 rounded-lg bg-muted/20 border border-border/30">
             <div className="flex items-center gap-2 mb-3">
               <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={28} />
-              <span className="text-sm font-semibold text-foreground">{a.name}</span>
+              <span className="text-sm font-semibold text-foreground flex-1">{a.name}</span>
+              <button
+                onClick={() => {
+                  if (noteOpen === a.id) { setNoteOpen(null); setNoteText(""); }
+                  else { setNoteOpen(a.id); setNoteText(""); }
+                }}
+                title="Observação / Justificativa"
+                className={`w-7 h-7 rounded-md flex items-center justify-center transition-all ${
+                  noteOpen === a.id
+                    ? "bg-primary/20 text-primary"
+                    : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                }`}
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+              </button>
             </div>
+
+            {/* Nota/observação inline */}
+            {noteOpen === a.id && (
+              <div className="mb-3 space-y-1.5">
+                <textarea
+                  value={noteText}
+                  onChange={(e) => setNoteText(e.target.value)}
+                  placeholder="Ex: Ausente hoje (consulta médica), Fez home office, etc."
+                  className="w-full px-3 py-2 rounded-lg bg-muted/30 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 resize-none"
+                  rows={2}
+                />
+                <button
+                  onClick={async () => {
+                    if (!noteText.trim()) return;
+                    try {
+                      await apiFetch("/metrics", {
+                        method: "POST",
+                        body: {
+                          assessorId: a.id,
+                          kpiKey: kpisForDay[0]?.key ?? "leads",
+                          rawValue: 0,
+                          notes: noteText.trim(),
+                          date: today,
+                        },
+                      });
+                      setNoteOpen(null);
+                      setNoteText("");
+                    } catch {}
+                  }}
+                  disabled={!noteText.trim()}
+                  className="px-3 py-1 rounded-md text-[10px] font-semibold gradient-primary text-primary-foreground disabled:opacity-40"
+                >
+                  Salvar observação
+                </button>
+              </div>
+            )}
 
             <div className="space-y-2">
               {kpisForDay.map((kpi) => {

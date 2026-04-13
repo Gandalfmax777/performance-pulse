@@ -105,7 +105,7 @@ const Index = () => {
   const tvTabsInfo = TABS.filter(t => TV_TABS.includes(t.key));
 
   return (
-    <div className={`min-h-screen bg-background relative ${tvMode ? "p-6 tv-mode" : "p-5"}`}>
+    <div className={`min-h-screen bg-background relative overflow-x-hidden ${tvMode ? "p-6 tv-mode" : "p-5"}`}>
       {/* Ambient gradient mesh */}
       <div className="fixed inset-0 pointer-events-none bg-mesh" />
       {/* TV Mode overlay controls */}
