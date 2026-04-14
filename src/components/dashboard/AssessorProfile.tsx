@@ -320,11 +320,14 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                 </p>
               )}
               {generateInsight.isError && (
-                <p className="text-xs text-destructive mt-2">
-                  {generateInsight.error instanceof Error
-                    ? generateInsight.error.message
-                    : "Erro ao gerar insight"}
-                </p>
+                <div className="mt-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                  <p className="text-xs text-destructive font-semibold mb-1">Não foi possível gerar o insight</p>
+                  <p className="text-[11px] text-destructive/80">
+                    {generateInsight.error instanceof Error
+                      ? generateInsight.error.message
+                      : "Erro ao gerar insight"}
+                  </p>
+                </div>
               )}
             </div>
 
