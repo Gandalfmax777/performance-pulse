@@ -87,7 +87,7 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
                   ? { duration: 0.5, times: [0, 0.1, 0.2, 0.35, 0.5, 0.65, 0.8, 1] }
                   : { duration: 0.3 },
               }}
-              className={`relative p-5 rounded-2xl border-2 transition-colors ${
+              className={`relative p-6 rounded-2xl border-2 transition-colors ${
                 i === 0
                   ? "border-primary/50 bg-primary/10 glow-primary"
                   : i === 1
@@ -112,10 +112,10 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
                 )}
               </AnimatePresence>
 
-              <div className="flex items-center gap-4">
-                {/* Posição */}
+              <div className="flex items-center gap-5">
+                {/* Posição — maior pra TV */}
                 <div
-                  className={`w-12 h-12 rounded-xl flex items-center justify-center font-display font-black text-lg ${
+                  className={`w-16 h-16 rounded-xl flex items-center justify-center font-display font-black text-2xl ${
                     i === 0
                       ? "bg-primary/20 text-primary"
                       : i === 1
@@ -125,31 +125,31 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
                       : "bg-muted/30 text-muted-foreground"
                   }`}
                 >
-                  {i === 0 ? <Crown className="w-6 h-6" /> : `#${i + 1}`}
+                  {i === 0 ? <Crown className="w-8 h-8" /> : `#${i + 1}`}
                 </div>
 
-                {/* Avatar */}
-                <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={56} />
+                {/* Avatar — 80px pra TV */}
+                <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={80} />
 
-                {/* Info */}
+                {/* Info — fontes maiores */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-display font-bold text-xl text-foreground break-words">{a.name}</p>
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="text-sm text-muted-foreground font-mono">
+                  <p className="font-display font-bold text-2xl text-foreground break-words">{a.name}</p>
+                  <div className="flex items-center gap-3 mt-1.5">
+                    <span className="text-base text-muted-foreground font-mono">
                       {a.points.toLocaleString()} pts
                     </span>
                     {a.streak > 0 && (
-                      <span className="flex items-center gap-1 text-sm text-chart-orange font-semibold">
-                        <Flame className="w-4 h-4" /> {a.streak}
+                      <span className="flex items-center gap-1.5 text-base text-chart-orange font-semibold">
+                        <Flame className="w-5 h-5" /> {a.streak}
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* Score */}
+                {/* Score — maior */}
                 <div className="text-right">
                   <div
-                    className={`flex items-center gap-1.5 text-xl font-mono font-black ${
+                    className={`flex items-center gap-2 text-3xl font-mono font-black ${
                       a.weeklyGoalPercent >= 80
                         ? "text-primary"
                         : a.weeklyGoalPercent >= 50
@@ -157,10 +157,10 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
                         : "text-destructive"
                     }`}
                   >
-                    <TrendingUp className="w-5 h-5" />
+                    <TrendingUp className="w-6 h-6" />
                     {a.weeklyGoalPercent}%
                   </div>
-                  <div className="w-28 h-3 bg-muted/40 rounded-full mt-2 overflow-hidden">
+                  <div className="w-36 h-4 bg-muted/40 rounded-full mt-2.5 overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${a.weeklyGoalPercent}%` }}

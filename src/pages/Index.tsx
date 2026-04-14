@@ -34,11 +34,21 @@ const Index = () => {
   const { assessors, addAssessor, removeAssessor } = useAssessors();
   const [showManager, setShowManager] = useState(false);
 
-  // TV Mode state
-  const [tvMode, setTvMode] = useState(false);
+  // TV Mode state — suporta kiosk mode via ?tv=1 na URL
+  const [tvMode, setTvMode] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("tv") === "1";
+  });
 
   // SSE: ativa stream quando em TV mode pra updates em tempo real (<500ms)
   useRankingStream(tvMode);
+
+  // Kiosk: se ?tv=1 na URL, entra em fullscreen automaticamente no mount
+  useEffect(() => {
+    if (tvMode && !document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.().catch(() => {});
+    }
+  }, []);
   const [tvPlaying, setTvPlaying] = useState(true);
   const [tvInterval, setTvInterval] = useState(15); // seconds
   const [tvProgress, setTvProgress] = useState(0);
@@ -164,14 +174,15 @@ const Index = () => {
             )}
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-muted/20">
-            <div className="h-full gradient-primary transition-all duration-100 ease-linear" style={{ width: `${tvProgress}%` }} />
+          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-muted/20">
+            <div className="h-full gradient-neon transition-all duration-100 ease-linear" style={{ width: `${tvProgress}%` }} />
           </div>
         </div>
       )}
 
       {!tvMode && <DashboardHeader />}
-      {tvMode && <div className="pt-12"><DashboardHeader /></div>}
+      {/* Em TV mode: header escondido pra maximizar espaço vertical. Overlay já tem controles. */}
+      {tvMode && <div className="pt-14" />}
 
       {/* View Toggle */}
       {!tvMode && (
