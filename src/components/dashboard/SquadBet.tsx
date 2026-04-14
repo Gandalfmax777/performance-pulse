@@ -233,7 +233,7 @@ const SquadBet = ({ assessors }: Props) => {
           <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
             <Users className="w-4 h-4 text-primary" /> Nova Squad
           </h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Emoji</label>
               <select
@@ -335,8 +335,8 @@ const SquadBet = ({ assessors }: Props) => {
       )}
 
       {/* Row 1: Ranking + Radar */}
-      <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div className="lg:col-span-5">
           <div className="card-glass rounded-xl p-5 h-full">
             <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
               <Trophy className="w-4 h-4 text-accent" /> Ranking de Squads
@@ -459,7 +459,7 @@ const SquadBet = ({ assessors }: Props) => {
           </div>
         </div>
 
-        <div className="col-span-7">
+        <div className="lg:col-span-7">
           <div className="card-glass rounded-xl p-5 h-full">
             <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
               <Target className="w-4 h-4 text-primary" /> Comparativo de Squads
@@ -507,8 +507,8 @@ const SquadBet = ({ assessors }: Props) => {
       </div>
 
       {/* Row 2: Performance Bar + Cofre */}
-      <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-7">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div className="lg:col-span-7">
           <div className="card-glass rounded-xl p-5 h-full">
             <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-primary" /> Performance vs Meta
@@ -537,7 +537,7 @@ const SquadBet = ({ assessors }: Props) => {
           </div>
         </div>
 
-        <div className="col-span-5">
+        <div className="lg:col-span-5">
           <div className="card-glass rounded-xl p-5 h-full">
             <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
               <Vault className="w-4 h-4 text-accent" /> Cofre de Apostas
@@ -584,8 +584,8 @@ const SquadBet = ({ assessors }: Props) => {
       </div>
 
       {/* Row 3: Create Bet + History + Squad Badges */}
-      <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div className="lg:col-span-4">
           <div className="card-glass rounded-xl p-5 h-full">
             <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
               <Flame className="w-4 h-4 text-primary" /> Nova Aposta
@@ -657,7 +657,7 @@ const SquadBet = ({ assessors }: Props) => {
           </div>
         </div>
 
-        <div className="col-span-4">
+        <div className="lg:col-span-4">
           <div className="card-glass rounded-xl p-5 h-full">
             <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-accent" /> Histórico de Apostas
@@ -700,7 +700,7 @@ const SquadBet = ({ assessors }: Props) => {
           </div>
         </div>
 
-        <div className="col-span-4">
+        <div className="lg:col-span-4">
           <div className="card-glass rounded-xl p-5 h-full">
             <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
               🏅 Conquistas de Squad

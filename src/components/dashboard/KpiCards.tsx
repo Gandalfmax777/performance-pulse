@@ -39,7 +39,7 @@ const KpiCards = () => {
   }, [weeklyRanking]);
 
   return (
-    <div className="grid grid-cols-6 gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
       {kpis.slice(0, 6).map((kpi, i) => {
         const visual = KPI_VISUALS[kpi.key] ?? FALLBACK_VISUAL;
         const Icon = visual.icon;

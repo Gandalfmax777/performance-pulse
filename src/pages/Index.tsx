@@ -216,15 +216,15 @@ const Index = () => {
             /* TV Mode: ranking dramático full-width, máxima visibilidade na TV */
             <TvRanking assessors={assessors} />
           ) : (
-            <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
+              <div className="lg:col-span-4">
                 <Leaderboard assessors={assessors} />
               </div>
-              <div className="col-span-5 space-y-4">
+              <div className="lg:col-span-5 space-y-4">
                 <PerformanceChart />
                 <BadgesPanel assessors={assessors} />
               </div>
-              <div className="col-span-3 space-y-4">
+              <div className="md:col-span-2 lg:col-span-3 space-y-4">
                 <WeeklyHeatmap assessors={assessors} />
                 <ActivityFeed />
               </div>

@@ -110,10 +110,10 @@ const DayView = ({ assessors }: DayViewProps) => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
-          className="grid grid-cols-12 gap-4"
+          className="grid grid-cols-1 lg:grid-cols-12 gap-4"
         >
           {/* ─── Schedule panel (esquerda) ─────────────────────────────────── */}
-          <div className="col-span-3 space-y-4">
+          <div className="lg:col-span-3 space-y-4">
             <div className="card-glass rounded-xl p-5">
               <div className="flex items-center gap-2 mb-4">
                 <Clock className="w-4 h-4 text-primary" />
@@ -161,7 +161,7 @@ const DayView = ({ assessors }: DayViewProps) => {
           </div>
 
           {/* ─── Ranking (centro) ──────────────────────────────────────────── */}
-          <div className="col-span-4">
+          <div className="lg:col-span-4">
             <div className="card-glass rounded-xl p-5 h-full">
               <div className="flex items-center gap-2 mb-4">
                 <Trophy className="w-5 h-5 text-primary" />
@@ -276,7 +276,7 @@ const DayView = ({ assessors }: DayViewProps) => {
           </div>
 
           {/* ─── Registration (direita) ────────────────────────────────────── */}
-          <div className="col-span-5">
+          <div className="lg:col-span-5">
             <RegistrationPanel assessors={assessors} kpiKeys={kpiKeysForDay} />
           </div>
         </motion.div>

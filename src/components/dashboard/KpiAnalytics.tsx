@@ -139,7 +139,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="card-glass rounded-xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3 className="w-4 h-4 text-primary" />
@@ -201,7 +201,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
           <h3 className="text-sm font-bold text-foreground">Comparativo de Assessores</h3>
           <span className="text-[10px] text-muted-foreground ml-2">Clique no nome para ver perfil completo</span>
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {filteredAssessors.map((a) => {
             const overallPct = a.weeklyGoalPercent;
             return (
