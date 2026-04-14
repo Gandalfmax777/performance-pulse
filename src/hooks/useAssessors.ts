@@ -90,13 +90,19 @@ export function useAssessors(): UseAssessorsResult {
   const createMutation = useMutation({
     mutationFn: (input: CreateAssessorInput) =>
       apiFetch<ApiAssessor>("/assessors", { method: "POST", body: input }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["rankings"] });
+    },
   });
 
   const removeMutation = useMutation({
     mutationFn: (id: string) =>
       apiFetch<ApiAssessor>(`/assessors/${id}`, { method: "DELETE" }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["rankings"] });
+    },
   });
 
   // Indexa o rollup por assessorId pra lookup O(1)
