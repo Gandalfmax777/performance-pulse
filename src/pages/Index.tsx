@@ -21,7 +21,7 @@ type View = "overview" | "daily" | "results" | "kpis" | "squad";
 const TABS: { key: View; label: string }[] = [
   { key: "overview", label: "Visão Geral" },
   { key: "daily", label: "Por Dia" },
-  { key: "results", label: "Resultado do Dia" },
+  { key: "results", label: "Ranking Geral" },
   { key: "kpis", label: "KPIs & Insights" },
   { key: "squad", label: "⚔️ Squad Bet" },
 ];

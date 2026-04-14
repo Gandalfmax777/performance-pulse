@@ -133,7 +133,7 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-display font-bold text-xl text-foreground truncate">{a.name}</p>
+                  <p className="font-display font-bold text-xl text-foreground break-words">{a.name}</p>
                   <div className="flex items-center gap-3 mt-1">
                     <span className="text-sm text-muted-foreground font-mono">
                       {a.points.toLocaleString()} pts

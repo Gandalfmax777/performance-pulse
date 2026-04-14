@@ -37,7 +37,7 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
       <div className="card-glass rounded-xl p-6">
         <div className="flex items-center gap-2 mb-6">
           <Trophy className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-display font-bold text-foreground">Pódio do Dia</h2>
+          <h2 className="text-lg font-display font-bold text-foreground">Ranking Geral</h2>
         </div>
         <div className="flex items-end justify-center gap-4 pt-8 pb-4">
           {podiumOrder.map((a, i) => {

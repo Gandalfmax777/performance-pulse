@@ -205,7 +205,7 @@ const DayView = ({ assessors }: DayViewProps) => {
                         <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={40} />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="font-bold text-sm truncate text-foreground">{a.name}</p>
+                            <p className="font-bold text-sm text-foreground break-words">{a.name}</p>
                             {a.streak > 0 && (
                               <span className="flex items-center gap-0.5 text-xs text-chart-orange font-semibold">
                                 <Flame className="w-3.5 h-3.5" /> {a.streak}
