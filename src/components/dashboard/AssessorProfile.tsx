@@ -403,6 +403,29 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                 </div>
               </div>
             )}
+
+            {/* Observações/justificativas */}
+            {report.observations && report.observations.length > 0 && (
+              <div className="p-4 rounded-xl bg-muted/10 border border-border/20 mt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-lg">📝</span>
+                  <h3 className="text-sm font-bold text-foreground">Observações do Período</h3>
+                </div>
+                <div className="space-y-2">
+                  {report.observations.map((obs, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/20 border border-border/20"
+                    >
+                      <span className="text-[10px] font-mono text-muted-foreground whitespace-nowrap mt-0.5">
+                        {obs.date.split("-").reverse().join("/")}
+                      </span>
+                      <p className="text-xs text-foreground flex-1">{obs.notes}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
       </motion.div>

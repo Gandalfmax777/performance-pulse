@@ -94,6 +94,11 @@ export interface ApiAssessorReport {
     periodKey: string;
     unlockedAt: string;
   }>;
+  observations: Array<{
+    date: string;
+    notes: string;
+    kpiLabel: string;
+  }>;
 }
 
 export interface ApiFunnelReport {
