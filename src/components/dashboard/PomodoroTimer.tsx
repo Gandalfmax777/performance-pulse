@@ -1,20 +1,129 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { Play, Pause, RotateCcw, Coffee, Pencil, Check } from "lucide-react";
 
-const PomodoroTimer = () => {
-  const [workMin, setWorkMin] = useState(45);
-  const [seconds, setSeconds] = useState(45 * 60);
-  const [isRunning, setIsRunning] = useState(false);
-  const [isBreak, setIsBreak] = useState(false);
-  const [cycles, setCycles] = useState(0);
-  const [editing, setEditing] = useState(false);
-  const [editValue, setEditValue] = useState("45");
+const STORAGE_KEY = "pomodoro-state-v1";
+const DEFAULT_WORK_MIN = 45;
+const BREAK_MIN = 15;
 
-  // Fixed 15-min break
-  const breakMin = 15;
-  const [breakSeconds, setBreakSeconds] = useState(15 * 60);
-  const [breakRunning, setBreakRunning] = useState(false);
+type PersistedState = {
+  workMin: number;
+  seconds: number;
+  isRunning: boolean;
+  cycles: number;
+  breakSeconds: number;
+  breakRunning: boolean;
+  lastTick: number;
+};
+
+type InitialState = {
+  workMin: number;
+  seconds: number;
+  isRunning: boolean;
+  cycles: number;
+  breakSeconds: number;
+  breakRunning: boolean;
+};
+
+function loadInitialState(): InitialState {
+  if (typeof window === "undefined") {
+    return {
+      workMin: DEFAULT_WORK_MIN,
+      seconds: DEFAULT_WORK_MIN * 60,
+      isRunning: false,
+      cycles: 0,
+      breakSeconds: BREAK_MIN * 60,
+      breakRunning: false,
+    };
+  }
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) throw new Error("no state");
+    const parsed = JSON.parse(raw) as PersistedState;
+    const elapsed = Math.max(0, Math.floor((Date.now() - parsed.lastTick) / 1000));
+
+    let { seconds, breakSeconds, cycles, isRunning, breakRunning } = parsed;
+
+    if (isRunning) {
+      if (elapsed >= seconds) {
+        // Ciclo terminou durante o reload → auto-start break (mesma lógica do tick).
+        cycles += 1;
+        seconds = parsed.workMin * 60;
+        isRunning = false;
+        const overflow = elapsed - parsed.seconds;
+        const freshBreak = BREAK_MIN * 60;
+        if (overflow >= freshBreak) {
+          breakSeconds = freshBreak;
+          breakRunning = false;
+        } else {
+          breakSeconds = freshBreak - overflow;
+          breakRunning = true;
+        }
+      } else {
+        seconds -= elapsed;
+      }
+    } else if (breakRunning) {
+      if (elapsed >= breakSeconds) {
+        breakSeconds = BREAK_MIN * 60;
+        breakRunning = false;
+      } else {
+        breakSeconds -= elapsed;
+      }
+    }
+
+    return {
+      workMin: parsed.workMin,
+      seconds,
+      isRunning,
+      cycles,
+      breakSeconds,
+      breakRunning,
+    };
+  } catch {
+    return {
+      workMin: DEFAULT_WORK_MIN,
+      seconds: DEFAULT_WORK_MIN * 60,
+      isRunning: false,
+      cycles: 0,
+      breakSeconds: BREAK_MIN * 60,
+      breakRunning: false,
+    };
+  }
+}
+
+const PomodoroTimer = () => {
+  const initialRef = useRef<InitialState>();
+  if (!initialRef.current) initialRef.current = loadInitialState();
+  const initial = initialRef.current;
+
+  const [workMin, setWorkMin] = useState(initial.workMin);
+  const [seconds, setSeconds] = useState(initial.seconds);
+  const [isRunning, setIsRunning] = useState(initial.isRunning);
+  const [cycles, setCycles] = useState(initial.cycles);
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState(String(initial.workMin));
+
+  const breakMin = BREAK_MIN;
+  const [breakSeconds, setBreakSeconds] = useState(initial.breakSeconds);
+  const [breakRunning, setBreakRunning] = useState(initial.breakRunning);
+
+  // Persiste cada mudança (escritas em localStorage são cheap).
+  useEffect(() => {
+    const snapshot: PersistedState = {
+      workMin,
+      seconds,
+      isRunning,
+      cycles,
+      breakSeconds,
+      breakRunning,
+      lastTick: Date.now(),
+    };
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+    } catch {
+      // quota exceeded ou storage desabilitado — ignorar
+    }
+  }, [workMin, seconds, isRunning, cycles, breakSeconds, breakRunning]);
 
   const totalSeconds = workMin * 60;
   const progress = ((totalSeconds - seconds) / totalSeconds) * 100;

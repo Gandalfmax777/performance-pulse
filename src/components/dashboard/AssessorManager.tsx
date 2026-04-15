@@ -66,26 +66,76 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
     fileInputRef.current?.click();
   };
 
+  // Reduz a imagem pra max 512px no maior lado + JPEG 0.85. Resolve o caso
+  // de fotos de celular (3-10MB) que estouravam o limite do backend.
+  const resizeImage = (file: File): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const MAX = 512;
+        const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("Canvas não suportado"));
+        ctx.drawImage(img, 0, 0, w, h);
+        canvas.toBlob(
+          (blob) => (blob ? resolve(blob) : reject(new Error("Falha ao converter imagem"))),
+          "image/jpeg",
+          0.85,
+        );
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("Arquivo inválido"));
+      };
+      img.src = url;
+    });
+  };
+
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !uploading) return;
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
+      if (!file.type.startsWith("image/")) {
+        throw new Error("Selecione um arquivo de imagem");
+      }
+
+      const blob = await resizeImage(file);
+      const formData = new FormData();
+      formData.append("file", blob, "photo.jpg");
+
       const url = `${apiBaseUrl}/assessors/${uploading}/photo`.replace("/api/api/", "/api/");
-      await fetch(url, {
+      const res = await fetch(url, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("pp_token")}`,
         },
         body: formData,
       });
+
+      if (!res.ok) {
+        let message = `Erro ${res.status}`;
+        try {
+          const data = await res.json();
+          if (data?.error) message = data.error;
+          else if (data?.message) message = data.message;
+        } catch {
+          // body não é JSON
+        }
+        throw new Error(message);
+      }
+
       queryClient.invalidateQueries({ queryKey: ["assessors"] });
       toast.success("Foto atualizada");
     } catch (err) {
-      toast.error("Erro ao enviar foto");
+      toast.error(err instanceof Error ? err.message : "Erro ao enviar foto");
     } finally {
       setUploading(null);
       if (fileInputRef.current) fileInputRef.current.value = "";

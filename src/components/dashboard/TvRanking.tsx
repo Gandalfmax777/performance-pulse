@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Crown, Flame, TrendingUp, TrendingDown } from "lucide-react";
 import { type Assessor } from "@/types/assessor";
@@ -36,8 +36,13 @@ interface TvRankingProps {
  * Projetado pra ficar na TV da mesa de vendas, gerando competição visual.
  */
 const TvRanking = ({ assessors }: TvRankingProps) => {
-  const sorted = [...assessors].sort((a, b) => b.points - a.points);
+  // Memoizado pra não disparar effect a cada render (SSE invalidation criava loop).
+  const sorted = useMemo(
+    () => [...assessors].sort((a, b) => b.points - a.points),
+    [assessors],
+  );
   const prevPositions = useRef<Map<string, number>>(new Map());
+  const alertTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [alerts, setAlerts] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
@@ -46,23 +51,32 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
     sorted.forEach((a, i) => {
       const prevPos = prevPositions.current.get(a.id);
       if (prevPos !== undefined && i > prevPos) {
-        // Caiu de posição → provocação
         newAlerts.set(a.id, getRandomPhrase());
       }
     });
 
+    // Sempre atualiza posições antes de sair — senão a próxima render detecta
+    // a mesma queda de novo e entra em loop de setAlerts.
+    const nextMap = new Map<string, number>();
+    sorted.forEach((a, i) => nextMap.set(a.id, i));
+    prevPositions.current = nextMap;
+
     if (newAlerts.size > 0) {
       setAlerts(newAlerts);
-      // Limpa alerts após 4s
-      const timer = setTimeout(() => setAlerts(new Map()), 4000);
-      return () => clearTimeout(timer);
+      if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
+      alertTimerRef.current = setTimeout(() => {
+        setAlerts(new Map());
+        alertTimerRef.current = null;
+      }, 4000);
     }
-
-    // Atualiza posições pro próximo render
-    const map = new Map<string, number>();
-    sorted.forEach((a, i) => map.set(a.id, i));
-    prevPositions.current = map;
   }, [sorted]);
+
+  useEffect(
+    () => () => {
+      if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
+    },
+    [],
+  );
 
   return (
     <div className="space-y-3">
@@ -163,7 +177,7 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
                   <div className="w-36 h-4 bg-muted/40 rounded-full mt-2.5 overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
-                      animate={{ width: `${a.weeklyGoalPercent}%` }}
+                      animate={{ width: `${Math.min(100, a.weeklyGoalPercent)}%` }}
                       transition={{ duration: 0.8 }}
                       className={`h-full rounded-full ${
                         a.weeklyGoalPercent >= 80 ? "gradient-success" : "gradient-primary"

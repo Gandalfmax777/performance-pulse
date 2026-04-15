@@ -16,6 +16,7 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001/api";
 export function useRankingStream(enabled: boolean = true) {
   const queryClient = useQueryClient();
   const sourceRef = useRef<EventSource | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
@@ -24,19 +25,20 @@ export function useRankingStream(enabled: boolean = true) {
     if (!token) return;
 
     // EventSource não suporta Authorization header, então passamos via query param.
-    // O backend aceita tanto header quanto query param (via um middleware opcional).
-    // Alternativa: usar fetch + ReadableStream, mas perde o auto-reconnect.
-    // Pra Fase 10 MVP: usar URL polyfill com token no query.
     const url = `${API_URL}/stream/rankings?token=${encodeURIComponent(token)}`;
 
     const source = new EventSource(url);
     sourceRef.current = source;
 
+    // Debounce 300ms: múltiplos POSTs em sequência (Felipe digitando métricas rápido)
+    // disparam várias invalidações que compõem com refetchIntervals dos hooks de
+    // ranking. Um único refetch por rajada é suficiente.
     source.addEventListener("ranking:update", () => {
-      // Invalida rankings → useDailyRanking/useWeeklyRanking refetch
-      queryClient.invalidateQueries({ queryKey: ["rankings"] });
-      // Também invalida assessors (que compõem com weekly ranking)
-      queryClient.invalidateQueries({ queryKey: ["assessors"] });
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["rankings"] });
+        debounceRef.current = null;
+      }, 300);
     });
 
     source.addEventListener("connected", () => {
@@ -44,11 +46,14 @@ export function useRankingStream(enabled: boolean = true) {
     });
 
     source.onerror = () => {
-      // EventSource reconecta automaticamente em ~3s
       console.log("[SSE] Connection lost, will auto-reconnect");
     };
 
     return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
+      }
       source.close();
       sourceRef.current = null;
     };

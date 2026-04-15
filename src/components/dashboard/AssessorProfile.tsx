@@ -24,6 +24,7 @@ import { useAssessorReport } from "@/hooks/useReports";
 import { useBadges } from "@/hooks/useBadges";
 import { useInsight, useGenerateInsight } from "@/hooks/useInsight";
 import { usePrizes } from "@/hooks/usePrizes";
+import { isMeetingNote, stripMeetingPrefix, MEETING_BONUS_POINTS } from "@/lib/meetingBonus";
 
 interface AssessorProfileProps {
   assessor: Assessor;
@@ -412,17 +413,32 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                   <h3 className="text-sm font-bold text-foreground">Observações do Período</h3>
                 </div>
                 <div className="space-y-2">
-                  {report.observations.map((obs, i) => (
-                    <div
-                      key={i}
-                      className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/20 border border-border/20"
-                    >
-                      <span className="text-[10px] font-mono text-muted-foreground whitespace-nowrap mt-0.5">
-                        {obs.date.split("-").reverse().join("/")}
-                      </span>
-                      <p className="text-xs text-foreground flex-1">{obs.notes}</p>
-                    </div>
-                  ))}
+                  {report.observations.map((obs, i) => {
+                    const isMeeting = isMeetingNote(obs.notes);
+                    const displayText = isMeeting ? stripMeetingPrefix(obs.notes) : obs.notes;
+                    return (
+                      <div
+                        key={i}
+                        className={`flex items-start gap-3 p-2.5 rounded-lg border ${
+                          isMeeting
+                            ? "bg-success/10 border-success/30"
+                            : "bg-muted/20 border-border/20"
+                        }`}
+                      >
+                        <span className="text-[10px] font-mono text-muted-foreground whitespace-nowrap mt-0.5">
+                          {obs.date.split("-").reverse().join("/")}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          {isMeeting && (
+                            <span className="inline-block mb-1 px-1.5 py-0.5 rounded bg-success/20 text-success text-[9px] font-bold">
+                              REUNIÃO DE VENDA +{MEETING_BONUS_POINTS} PTS
+                            </span>
+                          )}
+                          <p className="text-xs text-foreground">{displayText}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

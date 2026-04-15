@@ -5,6 +5,7 @@ import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { useMetrics, useUpsertMetric } from "@/hooks/useMetrics";
 import { useKpis } from "@/hooks/useKpis";
 import { apiFetch } from "@/api/client";
+import { MEETING_NOTE_PREFIX } from "@/lib/meetingBonus";
 
 interface RegistrationPanelProps {
   assessors: Assessor[];
@@ -48,6 +49,7 @@ const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
   const [localBaseValues, setLocalBaseValues] = useState<Record<string, Record<string, number>>>({});
   const [noteOpen, setNoteOpen] = useState<string | null>(null); // assessorId or null
   const [noteText, setNoteText] = useState("");
+  const [noteType, setNoteType] = useState<"observation" | "meeting">("observation");
 
   // Sincroniza quando o backend retorna novos dados
   useEffect(() => {
@@ -96,10 +98,17 @@ const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
               <span className="text-sm font-semibold text-foreground flex-1">{a.name}</span>
               <button
                 onClick={() => {
-                  if (noteOpen === a.id) { setNoteOpen(null); setNoteText(""); }
-                  else { setNoteOpen(a.id); setNoteText(""); }
+                  if (noteOpen === a.id) {
+                    setNoteOpen(null);
+                    setNoteText("");
+                    setNoteType("observation");
+                  } else {
+                    setNoteOpen(a.id);
+                    setNoteText("");
+                    setNoteType("observation");
+                  }
                 }}
-                title="Observação / Justificativa"
+                title="Observação / Reunião de venda"
                 className={`w-7 h-7 rounded-md flex items-center justify-center transition-all ${
                   noteOpen === a.id
                     ? "bg-primary/20 text-primary"
@@ -112,17 +121,48 @@ const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
 
             {/* Nota/observação inline */}
             {noteOpen === a.id && (
-              <div className="mb-3 space-y-1.5">
+              <div className="mb-3 space-y-2">
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => setNoteType("observation")}
+                    className={`flex-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-all ${
+                      noteType === "observation"
+                        ? "bg-primary/20 text-primary border border-primary/40"
+                        : "bg-muted/30 text-muted-foreground border border-border/30 hover:text-foreground"
+                    }`}
+                  >
+                    Observação
+                  </button>
+                  <button
+                    onClick={() => setNoteType("meeting")}
+                    className={`flex-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-all ${
+                      noteType === "meeting"
+                        ? "bg-success/20 text-success border border-success/40"
+                        : "bg-muted/30 text-muted-foreground border border-border/30 hover:text-foreground"
+                    }`}
+                  >
+                    Reunião de venda +10 pts
+                  </button>
+                </div>
                 <textarea
                   value={noteText}
                   onChange={(e) => setNoteText(e.target.value)}
-                  placeholder="Ex: Ausente hoje (consulta médica), Fez home office, etc."
+                  placeholder={
+                    noteType === "meeting"
+                      ? "Justificativa obrigatória (ex: cliente João, proposta enviada)"
+                      : "Ex: Ausente hoje (consulta médica), Fez home office, etc."
+                  }
                   className="w-full px-3 py-2 rounded-lg bg-muted/30 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 resize-none"
                   rows={2}
                 />
                 <button
                   onClick={async () => {
-                    if (!noteText.trim()) return;
+                    const trimmed = noteText.trim();
+                    if (!trimmed) return;
+                    const notesPayload =
+                      noteType === "meeting"
+                        ? `${MEETING_NOTE_PREFIX} ${trimmed}`
+                        : trimmed;
                     try {
                       await apiFetch("/metrics", {
                         method: "POST",
@@ -130,18 +170,19 @@ const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
                           assessorId: a.id,
                           kpiKey: kpisForDay[0]?.key ?? "leads",
                           rawValue: 0,
-                          notes: noteText.trim(),
+                          notes: notesPayload,
                           date: today,
                         },
                       });
                       setNoteOpen(null);
                       setNoteText("");
+                      setNoteType("observation");
                     } catch {}
                   }}
                   disabled={!noteText.trim()}
                   className="px-3 py-1 rounded-md text-[10px] font-semibold gradient-primary text-primary-foreground disabled:opacity-40"
                 >
-                  Salvar observação
+                  {noteType === "meeting" ? "Registrar reunião (+10 pts)" : "Salvar observação"}
                 </button>
               </div>
             )}

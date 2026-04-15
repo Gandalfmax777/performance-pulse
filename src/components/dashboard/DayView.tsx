@@ -171,7 +171,10 @@ const DayView = ({ assessors }: DayViewProps) => {
                 {sorted.map((row, i) => {
                   const a = row.assessor;
                   const dayScore = row.dayScore;
-                  const avgPct = Math.min(100, row.dayPct);
+                  // dayPct agora é soma cap 150 (refletindo esforço cumulativo).
+                  // Usamos o valor real pro display e capamos só a largura da barra em 100.
+                  const avgPct = row.dayPct;
+                  const barWidth = Math.min(100, avgPct);
                   return (
                     <motion.div
                       key={a.id}
@@ -259,7 +262,7 @@ const DayView = ({ assessors }: DayViewProps) => {
                           <div className="w-20 h-2 bg-muted/40 rounded-full mt-1.5 overflow-hidden">
                             <motion.div
                               initial={{ width: 0 }}
-                              animate={{ width: `${avgPct}%` }}
+                              animate={{ width: `${barWidth}%` }}
                               transition={{ duration: 1, delay: i * 0.1 }}
                               className={`h-full rounded-full ${
                                 avgPct >= 80 ? "gradient-success" : "gradient-primary"
