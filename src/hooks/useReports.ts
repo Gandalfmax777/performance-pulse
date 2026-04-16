@@ -54,6 +54,7 @@ export interface ApiOverviewReport {
   byKpi: ApiOverviewByKpi[];
   topPerformers: ApiOverviewPerformer[];
   bottomPerformers: ApiOverviewPerformer[];
+  allPerformers: ApiOverviewPerformer[];
 }
 
 export interface ApiAssessorKpiHistory {

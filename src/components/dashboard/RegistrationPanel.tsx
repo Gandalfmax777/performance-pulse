@@ -5,22 +5,32 @@ import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { useMetrics, useUpsertMetric } from "@/hooks/useMetrics";
 import { useKpis } from "@/hooks/useKpis";
 import { apiFetch } from "@/api/client";
-import { MEETING_NOTE_PREFIX } from "@/lib/meetingBonus";
+import { MEETING_NOTE_PREFIX, MEETING_AREA_PREFIX, type NoteType } from "@/lib/meetingBonus";
+
+export interface ActivityBlock {
+  name: string;
+  time: string;
+  kpiKeys: string[];
+}
 
 interface RegistrationPanelProps {
   assessors: Assessor[];
   /** Lista de KPI keys que aparecem nas atividades do dia. Único por dia. */
   kpiKeys: string[];
+  /** Data alvo pra registro (YYYY-MM-DD). Default: hoje. */
+  date?: string;
+  /** Blocos manhã/tarde pra discriminar atividades. */
+  blocks?: { morning: ActivityBlock[]; afternoon: ActivityBlock[] };
 }
 
 function todayString(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
+const RegistrationPanel = ({ assessors, kpiKeys, date, blocks }: RegistrationPanelProps) => {
   const { kpis: allKpis } = useKpis();
   const upsert = useUpsertMetric();
-  const today = todayString();
+  const today = date ?? todayString();
   const { data: todayMetrics } = useMetrics({ from: today, to: today });
 
   // Filtra os KPIs do dia (mantém ordem do kpiKeys)
@@ -49,7 +59,7 @@ const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
   const [localBaseValues, setLocalBaseValues] = useState<Record<string, Record<string, number>>>({});
   const [noteOpen, setNoteOpen] = useState<string | null>(null); // assessorId or null
   const [noteText, setNoteText] = useState("");
-  const [noteType, setNoteType] = useState<"observation" | "meeting">("observation");
+  const [noteType, setNoteType] = useState<NoteType>("observation");
 
   // Sincroniza quando o backend retorna novos dados
   useEffect(() => {
@@ -84,11 +94,25 @@ const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
 
   return (
     <div className="card-glass rounded-xl p-5 h-full">
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-2">
         <Target className="w-4 h-4 text-success" />
         <h2 className="text-sm font-bold text-foreground">Registrar Resultados</h2>
         {upsert.isPending && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
       </div>
+      {blocks && (blocks.morning.length > 0 || blocks.afternoon.length > 0) && (
+        <div className="flex gap-2 mb-3 text-[9px] text-muted-foreground">
+          {blocks.morning.length > 0 && (
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-chart-orange/10 text-chart-orange font-semibold">
+              ☀️ Manhã: {blocks.morning.map((b) => b.time).join(", ")}
+            </span>
+          )}
+          {blocks.afternoon.length > 0 && (
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 font-semibold">
+              🌙 Tarde: {blocks.afternoon.map((b) => b.time).join(", ")}
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-240px)]">
         {assessors.map((a) => (
@@ -141,7 +165,17 @@ const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
                         : "bg-muted/30 text-muted-foreground border border-border/30 hover:text-foreground"
                     }`}
                   >
-                    Reunião de venda +10 pts
+                    Reunião venda +10
+                  </button>
+                  <button
+                    onClick={() => setNoteType("meeting_area")}
+                    className={`flex-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-all ${
+                      noteType === "meeting_area"
+                        ? "bg-blue-500/20 text-blue-400 border border-blue-500/40"
+                        : "bg-muted/30 text-muted-foreground border border-border/30 hover:text-foreground"
+                    }`}
+                  >
+                    Reunião áreas +5
                   </button>
                 </div>
                 <textarea
@@ -150,6 +184,8 @@ const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
                   placeholder={
                     noteType === "meeting"
                       ? "Justificativa obrigatória (ex: cliente João, proposta enviada)"
+                      : noteType === "meeting_area"
+                      ? "Qual área? (ex: Seguros, Consórcio, Câmbio)"
                       : "Ex: Ausente hoje (consulta médica), Fez home office, etc."
                   }
                   className="w-full px-3 py-2 rounded-lg bg-muted/30 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 resize-none"
@@ -162,6 +198,8 @@ const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
                     const notesPayload =
                       noteType === "meeting"
                         ? `${MEETING_NOTE_PREFIX} ${trimmed}`
+                        : noteType === "meeting_area"
+                        ? `${MEETING_AREA_PREFIX} ${trimmed}`
                         : trimmed;
                     try {
                       await apiFetch("/metrics", {
@@ -182,7 +220,11 @@ const RegistrationPanel = ({ assessors, kpiKeys }: RegistrationPanelProps) => {
                   disabled={!noteText.trim()}
                   className="px-3 py-1 rounded-md text-[10px] font-semibold gradient-primary text-primary-foreground disabled:opacity-40"
                 >
-                  {noteType === "meeting" ? "Registrar reunião (+10 pts)" : "Salvar observação"}
+                  {noteType === "meeting"
+                    ? "Registrar reunião (+10 pts)"
+                    : noteType === "meeting_area"
+                    ? "Registrar reunião áreas (+5 pts)"
+                    : "Salvar observação"}
                 </button>
               </div>
             )}

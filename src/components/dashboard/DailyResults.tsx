@@ -52,16 +52,19 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
         .filter((v, i, arr) => arr.findIndex((x) => x.assessorId === v.assessorId) === i) // dedupe
     : [];
 
-  // Matching com assessors pra pegar avatar/level
+  // Matching com assessors pra pegar avatar/level.
+  // Usa allPerformers (ranking completo do período selecionado) — antes usava
+  // só topPerformers (top 3) e fazia fallback pro dado SEMANAL, misturando períodos.
   const ranked = useMemo(() => {
     if (!overview) return [];
-    // Usa todos os performers do overview (top + bottom), deduplica e ordena por points
-    const allPerformers = overview.topPerformers;
-    // O overview só retorna top 3 + bottom 3. Pra ranking completo, usamos assessors + points do rollup.
     return [...assessors]
       .map((a) => {
-        const perf = allPerformers.find((p) => p.assessorId === a.id);
-        return { ...a, overviewPoints: perf?.points ?? a.points, overviewPct: perf?.weeklyGoalPercent ?? a.weeklyGoalPercent };
+        const perf = overview.allPerformers?.find((p) => p.assessorId === a.id);
+        return {
+          ...a,
+          overviewPoints: perf?.points ?? 0,
+          overviewPct: perf?.weeklyGoalPercent ?? 0,
+        };
       })
       .sort((a, b) => b.overviewPoints - a.overviewPoints);
   }, [assessors, overview]);

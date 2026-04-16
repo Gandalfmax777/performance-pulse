@@ -24,7 +24,7 @@ import { useAssessorReport } from "@/hooks/useReports";
 import { useBadges } from "@/hooks/useBadges";
 import { useInsight, useGenerateInsight } from "@/hooks/useInsight";
 import { usePrizes } from "@/hooks/usePrizes";
-import { isMeetingNote, stripMeetingPrefix, MEETING_BONUS_POINTS } from "@/lib/meetingBonus";
+import { isMeetingNote, isMeetingAreaNote, stripMeetingPrefix, MEETING_BONUS_POINTS, MEETING_AREA_POINTS } from "@/lib/meetingBonus";
 
 interface AssessorProfileProps {
   assessor: Assessor;
@@ -414,14 +414,17 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                 </div>
                 <div className="space-y-2">
                   {report.observations.map((obs, i) => {
-                    const isMeeting = isMeetingNote(obs.notes);
-                    const displayText = isMeeting ? stripMeetingPrefix(obs.notes) : obs.notes;
+                    const meetingVenda = isMeetingNote(obs.notes);
+                    const meetingArea = isMeetingAreaNote(obs.notes);
+                    const displayText = (meetingVenda || meetingArea) ? stripMeetingPrefix(obs.notes) : obs.notes;
                     return (
                       <div
                         key={i}
                         className={`flex items-start gap-3 p-2.5 rounded-lg border ${
-                          isMeeting
+                          meetingVenda
                             ? "bg-success/10 border-success/30"
+                            : meetingArea
+                            ? "bg-blue-500/10 border-blue-500/30"
                             : "bg-muted/20 border-border/20"
                         }`}
                       >
@@ -429,9 +432,14 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                           {obs.date.split("-").reverse().join("/")}
                         </span>
                         <div className="flex-1 min-w-0">
-                          {isMeeting && (
+                          {meetingVenda && (
                             <span className="inline-block mb-1 px-1.5 py-0.5 rounded bg-success/20 text-success text-[9px] font-bold">
                               REUNIÃO DE VENDA +{MEETING_BONUS_POINTS} PTS
+                            </span>
+                          )}
+                          {meetingArea && (
+                            <span className="inline-block mb-1 px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 text-[9px] font-bold">
+                              REUNIÃO C/ ÁREAS +{MEETING_AREA_POINTS} PTS
                             </span>
                           )}
                           <p className="text-xs text-foreground">{displayText}</p>

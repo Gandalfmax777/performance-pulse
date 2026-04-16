@@ -1,13 +1,16 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Flame, TrendingUp, Clock, Crown, CalendarOff } from "lucide-react";
+import { Trophy, Flame, TrendingUp, Clock, Crown, CalendarOff, CheckCircle2 } from "lucide-react";
 import { startOfWeek, addDays, format } from "date-fns";
 import { type Assessor } from "@/types/assessor";
 import PomodoroTimer from "./PomodoroTimer";
 import RegistrationPanel from "./RegistrationPanel";
 import { useDailyRanking } from "@/hooks/useRankings";
 import { useActivities, type ApiActivity, type ApiActivityKpi } from "@/hooks/useActivities";
+import { useMetrics } from "@/hooks/useMetrics";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
+import { apiFetch } from "@/api/client";
+import { SALESFORCE_PREFIX, isSalesforceCheck } from "@/lib/meetingBonus";
 
 /**
  * Labels Pt-BR pros 5 dias úteis. dayOfWeek 1=segunda ... 5=sexta
@@ -48,6 +51,22 @@ const DayView = ({ assessors }: DayViewProps) => {
     [activities],
   );
 
+  // Blocos manhã/tarde pra discriminar no RegistrationPanel
+  const activityBlocks = useMemo(() => {
+    const morning: Array<{ name: string; time: string; kpiKeys: string[] }> = [];
+    const afternoon: Array<{ name: string; time: string; kpiKeys: string[] }> = [];
+    for (const act of activities) {
+      const hour = parseInt(act.startTime?.split(":")[0] ?? "9", 10);
+      const block = hour < 12 ? morning : afternoon;
+      block.push({
+        name: act.name,
+        time: `${act.startTime}–${act.endTime}`,
+        kpiKeys: act.kpis.map((k) => k.key),
+      });
+    }
+    return { morning, afternoon };
+  }, [activities]);
+
   // Lookup kpiKey → ApiActivityKpi (pra label/target/unit nos KPI breakdowns do ranking)
   const kpiByKey = useMemo(() => {
     const map: Record<string, ApiActivityKpi> = {};
@@ -59,8 +78,33 @@ const DayView = ({ assessors }: DayViewProps) => {
     return map;
   }, [activities]);
 
-  // ─── Ranking diário ────────────────────────────────────────────────────────
-  const { data: dailyRanking } = useDailyRanking();
+  // ─── Ranking diário (usa a data do tab selecionado, não sempre "hoje") ─────
+  const { data: dailyRanking } = useDailyRanking(activeDateString);
+  const { data: dayMetrics } = useMetrics({ from: activeDateString, to: activeDateString });
+
+  // Salesforce check: set de assessorIds que já marcaram [SALESFORCE_OK] no dia
+  const sfCheckedIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const m of dayMetrics ?? []) {
+      if (isSalesforceCheck(m.notes)) set.add(m.assessorId);
+    }
+    return set;
+  }, [dayMetrics]);
+
+  const handleSfCheck = async (assessorId: string) => {
+    try {
+      await apiFetch("/metrics", {
+        method: "POST",
+        body: {
+          assessorId,
+          kpiKey: kpiKeysForDay[0] ?? "leads",
+          rawValue: 0,
+          notes: `${SALESFORCE_PREFIX} Confirmado`,
+          date: activeDateString,
+        },
+      });
+    } catch {}
+  };
 
   const sorted = (dailyRanking?.rankings ?? [])
     .map((r) => {
@@ -102,6 +146,24 @@ const DayView = ({ assessors }: DayViewProps) => {
           );
         })}
       </div>
+
+      {/* Foco do dia — direcionamento rápido */}
+      {!activitiesLoading && activities.length > 0 && (
+        <div className="card-glass rounded-xl px-4 py-3 border border-primary/20 flex items-center gap-3 flex-wrap">
+          <span className="text-xs font-bold text-primary">🎯 Foco do dia:</span>
+          {activities.map((act) => (
+            <span key={act.id} className="text-xs text-foreground">
+              <span className="font-semibold">{act.name}</span>
+              <span className="text-muted-foreground ml-1">({act.startTime}–{act.endTime})</span>
+              {act.kpis.length > 0 && (
+                <span className="text-muted-foreground ml-1">
+                  — Meta: {act.kpis.map((k) => `${k.target} ${k.label}`).join(", ")}
+                </span>
+              )}
+            </span>
+          ))}
+        </div>
+      )}
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -217,6 +279,17 @@ const DayView = ({ assessors }: DayViewProps) => {
                             <span className="text-[10px] font-mono text-muted-foreground">
                               {dayScore} pts
                             </span>
+                            <button
+                              onClick={() => !sfCheckedIds.has(a.id) && handleSfCheck(a.id)}
+                              title={sfCheckedIds.has(a.id) ? "Salesforce OK" : "Marcar Salesforce"}
+                              className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
+                                sfCheckedIds.has(a.id)
+                                  ? "text-success"
+                                  : "text-muted-foreground/40 hover:text-success/60"
+                              }`}
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                            </button>
                           </div>
                           <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
                             {kpiKeysForDay.map((kpiKey) => {
@@ -280,7 +353,7 @@ const DayView = ({ assessors }: DayViewProps) => {
 
           {/* ─── Registration (direita) ────────────────────────────────────── */}
           <div className="lg:col-span-5">
-            <RegistrationPanel assessors={assessors} kpiKeys={kpiKeysForDay} />
+            <RegistrationPanel assessors={assessors} kpiKeys={kpiKeysForDay} date={activeDateString} blocks={activityBlocks} />
           </div>
         </motion.div>
       </AnimatePresence>

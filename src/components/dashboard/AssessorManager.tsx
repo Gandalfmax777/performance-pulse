@@ -17,6 +17,8 @@ interface EditingState {
   id: string;
   name: string;
   level: "bronze" | "silver" | "gold";
+  totalLeads: number;
+  totalClients: number;
 }
 
 const LEVELS: Array<{ value: "bronze" | "silver" | "gold"; label: string; color: string }> = [
@@ -40,7 +42,13 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
   };
 
   const startEdit = (a: Assessor) => {
-    setEditing({ id: a.id, name: a.name, level: a.level });
+    setEditing({
+      id: a.id,
+      name: a.name,
+      level: a.level,
+      totalLeads: (a as unknown as { totalLeads?: number }).totalLeads ?? 0,
+      totalClients: (a as unknown as { totalClients?: number }).totalClients ?? 0,
+    });
   };
 
   const saveEdit = async () => {
@@ -49,7 +57,12 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
     try {
       await apiFetch(`/assessors/${editing.id}`, {
         method: "PATCH",
-        body: { name: editing.name, level: editing.level.toUpperCase() },
+        body: {
+          name: editing.name,
+          level: editing.level.toUpperCase(),
+          totalLeads: editing.totalLeads,
+          totalClients: editing.totalClients,
+        },
       });
       queryClient.invalidateQueries({ queryKey: ["assessors"] });
       toast.success("Assessor atualizado");
@@ -234,6 +247,28 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
                         {lvl.label}
                       </button>
                     ))}
+                  </div>
+                  <div className="flex gap-2 mt-1">
+                    <div className="flex items-center gap-1">
+                      <span className="text-[9px] text-muted-foreground">Leads:</span>
+                      <input
+                        type="number"
+                        min={0}
+                        value={editing.totalLeads}
+                        onChange={(e) => setEditing({ ...editing, totalLeads: parseInt(e.target.value) || 0 })}
+                        className="w-14 px-1.5 py-0.5 rounded-md bg-muted/30 border border-border/30 text-[10px] font-mono text-foreground text-center focus:outline-none focus:border-primary/50"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[9px] text-muted-foreground">Clientes:</span>
+                      <input
+                        type="number"
+                        min={0}
+                        value={editing.totalClients}
+                        onChange={(e) => setEditing({ ...editing, totalClients: parseInt(e.target.value) || 0 })}
+                        className="w-14 px-1.5 py-0.5 rounded-md bg-muted/30 border border-border/30 text-[10px] font-mono text-foreground text-center focus:outline-none focus:border-primary/50"
+                      />
+                    </div>
                   </div>
                 </div>
               ) : (

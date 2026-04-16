@@ -23,7 +23,7 @@ import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { useOverviewReport } from "@/hooks/useReports";
 import { useGenerateTeamInsight, type ApiInsight } from "@/hooks/useInsight";
 import Markdown from "react-markdown";
-import { Filter, TrendingUp, Lightbulb, Sparkles, RefreshCw, User, Users, BarChart3, Loader2 } from "lucide-react";
+import { Filter, TrendingUp, Lightbulb, Sparkles, RefreshCw, User, Users, BarChart3, Loader2, Printer } from "lucide-react";
 
 type Scope = "geral" | "individual";
 
@@ -283,23 +283,33 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
               </span>
             )}
           </div>
-          <button
-            onClick={() =>
-              generateTeam.mutate(
-                { period: "WEEK", force: true },
-                { onSuccess: (data) => setTeamInsight(data) },
-              )
-            }
-            disabled={generateTeam.isPending}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-primary bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all disabled:opacity-50"
-          >
-            {generateTeam.isPending ? (
-              <Loader2 className="w-3 h-3 animate-spin" />
-            ) : (
-              <RefreshCw className="w-3 h-3" />
-            )}
-            {generateTeam.isPending ? "Analisando…" : "Gerar Análise"}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground bg-muted/20 border border-border/30 hover:bg-muted/40 transition-all"
+              title="Imprimir relatório / salvar PDF"
+            >
+              <Printer className="w-3 h-3" />
+              PDF
+            </button>
+            <button
+              onClick={() =>
+                generateTeam.mutate(
+                  { period: "WEEK", force: true },
+                  { onSuccess: (data) => setTeamInsight(data) },
+                )
+              }
+              disabled={generateTeam.isPending}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-primary bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all disabled:opacity-50"
+            >
+              {generateTeam.isPending ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <RefreshCw className="w-3 h-3" />
+              )}
+              {generateTeam.isPending ? "Analisando…" : "Gerar Análise"}
+            </button>
+          </div>
         </div>
 
         {generateTeam.isPending ? (

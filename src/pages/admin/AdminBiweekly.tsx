@@ -212,6 +212,8 @@ function AnchorDialog({
   onClose: () => void;
 }) {
   const [date, setDate] = useState<Date | undefined>(initialDate);
+  const [startTime, setStartTime] = useState(activity.startTime ?? "09:00");
+  const [endTime, setEndTime] = useState(activity.endTime ?? "09:45");
   const updateActivity = useUpdateActivity();
 
   // Next valid Wednesday hint
@@ -224,9 +226,13 @@ function AnchorDialog({
     try {
       await updateActivity.mutateAsync({
         id: activity.id,
-        input: { biweeklyAnchorDate: formatYmd(date) },
+        input: {
+          biweeklyAnchorDate: formatYmd(date),
+          startTime,
+          endTime,
+        },
       });
-      toast.success("Âncora atualizada");
+      toast.success("Atividade quinzenal atualizada");
       onClose();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao atualizar");
@@ -237,10 +243,9 @@ function AnchorDialog({
     <Dialog open onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Alterar âncora — {activity.name}</DialogTitle>
+          <DialogTitle>Editar — {activity.name}</DialogTitle>
           <DialogDescription>
-            Escolha a data de referência. A activity será ativada nessa data e a cada 14 dias a
-            partir dela.
+            Altere a data âncora e/ou o horário. A activity será ativada nessa data e a cada 14 dias.
           </DialogDescription>
         </DialogHeader>
 
@@ -262,6 +267,27 @@ function AnchorDialog({
               {format(suggestion, "dd/MM/yyyy")}
             </span>
           </p>
+
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <Label className="text-xs">Início</Label>
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="w-full mt-1 px-3 py-2 rounded-lg bg-muted/30 border border-border/30 text-sm font-mono text-foreground focus:outline-none focus:border-primary/50"
+              />
+            </div>
+            <div className="flex-1">
+              <Label className="text-xs">Fim</Label>
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="w-full mt-1 px-3 py-2 rounded-lg bg-muted/30 border border-border/30 text-sm font-mono text-foreground focus:outline-none focus:border-primary/50"
+              />
+            </div>
+          </div>
         </div>
 
         <DialogFooter>
@@ -270,7 +296,7 @@ function AnchorDialog({
           </Button>
           <Button onClick={handleSave} disabled={!date || updateActivity.isPending}>
             {updateActivity.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-            Salvar âncora
+            Salvar
           </Button>
         </DialogFooter>
       </DialogContent>
