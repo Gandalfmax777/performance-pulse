@@ -57,18 +57,17 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
     return assessors;
   }, [scope, selectedAssessor, assessors]);
 
-  // Bar chart data vem direto do overview (byKpi). Quando scope=individual,
-  // escalamos dividindo pelo teamSize (backend retorna target do time inteiro).
+  // Bar chart: mostra % de cumprimento pra TODOS os KPIs (escala uniforme 0-150).
+  // Antes mostrávamos valores absolutos misturados (ligações 0-300 vs cadência 0-100%)
+  // que distorcia visualmente o gráfico. % é universal e comparável.
   const barData = useMemo(() => {
     if (!overview) return [];
-    const teamSize = Math.max(assessors.length, 1);
-    const divisor = scope === "individual" ? teamSize : 1;
     return overview.byKpi.map((k) => ({
       name: k.label,
-      Resultado: Math.round(k.actual / divisor),
-      Meta: Math.round(k.target / divisor),
+      Realizado: Math.round(k.percent),
+      Meta: 100,
     }));
-  }, [overview, scope, assessors.length]);
+  }, [overview]);
 
   const radarData = useMemo(() => {
     if (!overview) return [];
@@ -77,6 +76,15 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
       score: Math.min(100, Math.round(k.percent)),
       fullMark: 100,
     }));
+  }, [overview]);
+
+  // Lookup performer do range selecionado (pra cards consistentes)
+  const performerById = useMemo(() => {
+    const map = new Map<string, { points: number; weeklyGoalPercent: number }>();
+    for (const p of overview?.allPerformers ?? []) {
+      map.set(p.assessorId, { points: p.points, weeklyGoalPercent: p.weeklyGoalPercent });
+    }
+    return map;
   }, [overview]);
 
   // IA insights pro time via OpenRouter
@@ -141,17 +149,24 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
       {/* Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="card-glass rounded-xl p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <BarChart3 className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-bold text-foreground">
-              KPIs vs Meta — {range.from} → {range.to}
-            </h3>
+          <div className="flex items-baseline justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-primary" />
+              <h3 className="text-sm font-bold text-foreground">
+                Cumprimento de Metas — {range.from} → {range.to}
+              </h3>
+            </div>
+            <span className="text-[10px] text-muted-foreground font-mono">% da meta</span>
           </div>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={barData} barGap={4}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
               <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-              <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+              <YAxis
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                domain={[0, 150]}
+                tickFormatter={(v) => `${v}%`}
+              />
               <Tooltip
                 contentStyle={{
                   background: "hsl(var(--card))",
@@ -161,7 +176,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
                 }}
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="Resultado" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Realizado" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
               <Bar dataKey="Meta" fill="hsl(var(--muted-foreground))" opacity={0.3} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -203,7 +218,10 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {filteredAssessors.map((a) => {
-            const overallPct = a.weeklyGoalPercent;
+            // Usa dados do RANGE selecionado, não da semana corrente
+            const perf = performerById.get(a.id);
+            const overallPct = perf?.weeklyGoalPercent ?? 0;
+            const points = perf?.points ?? 0;
             return (
               <motion.div
                 key={a.id}
@@ -220,7 +238,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
                     >
                       {a.name}
                     </button>
-                    <p className="text-xs text-muted-foreground">{a.points} pts</p>
+                    <p className="text-xs text-muted-foreground">{points} pts</p>
                   </div>
                   <span
                     className={`text-sm font-mono font-bold ${
@@ -237,10 +255,12 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
                 <div className="grid grid-cols-2 gap-1 text-[10px]">
                   {overview?.byKpi.map((kpi) => {
                     const val = (a.kpis as Record<string, number>)[kpi.key] ?? 0;
-                    const perPersonTarget = Math.max(
-                      1,
-                      Math.round(kpi.target / Math.max(assessors.length, 1)),
-                    );
+                    // Pra unit "%" (cadência, touchpoint), o target é threshold direto
+                    // (não dividir por team). Pra absolutos, dividir é razoável.
+                    const isPercent = kpi.unit === "%";
+                    const perPersonTarget = isPercent
+                      ? Math.round(kpi.target)
+                      : Math.max(1, Math.round(kpi.target / Math.max(assessors.length, 1)));
                     const pct = Math.min(100, Math.round((val / perPersonTarget) * 100));
                     return (
                       <div
