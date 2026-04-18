@@ -1,13 +1,11 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Users, PhoneCall, CalendarCheck, Gift, FileText, Zap, type LucideIcon } from "lucide-react";
+import { format, startOfWeek, endOfWeek, differenceInCalendarDays, addDays } from "date-fns";
 import { useKpis } from "@/hooks/useKpis";
 import { useWeeklyRanking } from "@/hooks/useRankings";
+import { useOverviewReport } from "@/hooks/useReports";
 
-/**
- * Mapa estável icone+cor por KPI key. O backend é fonte da label e do target;
- * o frontend só decora visualmente.
- */
 const KPI_VISUALS: Record<string, { icon: LucideIcon; color: string; bg: string }> = {
   leads:      { icon: Users,         color: "text-primary",       bg: "bg-primary/10" },
   cadencia:   { icon: Zap,           color: "text-eqi-mint",     bg: "bg-eqi-mint/10" },
@@ -19,34 +17,62 @@ const KPI_VISUALS: Record<string, { icon: LucideIcon; color: string; bg: string 
 
 const FALLBACK_VISUAL = { icon: FileText, color: "text-foreground", bg: "bg-muted/30" };
 
-const KpiCards = () => {
-  const { kpis } = useKpis();
-  const { data: weeklyRanking } = useWeeklyRanking();
+interface KpiCardsProps {
+  /** Range opcional (YYYY-MM-DD). Default: semana corrente. */
+  from?: string;
+  to?: string;
+}
 
-  // Número de assessores ativos (pra escalar o target pro time todo)
+const KpiCards = ({ from, to }: KpiCardsProps) => {
+  const { kpis } = useKpis();
+
+  // Range default: semana atual (segunda → domingo)
+  const now = new Date();
+  const defaultFrom = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
+  const defaultTo = format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
+  const fromDate = from ?? defaultFrom;
+  const toDate = to ?? defaultTo;
+
+  const { data: overview } = useOverviewReport({ from: fromDate, to: toDate });
+  // Weekly ranking mantido só pra contar teamSize e fallback
+  const { data: weeklyRanking } = useWeeklyRanking();
   const teamSize = weeklyRanking?.rankings.length ?? 1;
 
-  /** Agrega kpiTotals do ranking semanal: soma de rawValue por kpi.key. */
-  const aggregatedValues = useMemo(() => {
-    const map: Record<string, number> = {};
-    if (!weeklyRanking) return map;
-    for (const r of weeklyRanking.rankings) {
-      for (const [k, v] of Object.entries(r.rollup.kpiTotals)) {
-        map[k] = (map[k] ?? 0) + v;
-      }
-    }
-    return map;
-  }, [weeklyRanking]);
+  // Projeção: dado realizado até hoje, projeta linearmente até o fim do período.
+  // Se já passou todo o período (toDate < hoje), usa o realizado direto.
+  const projection = useMemo(() => {
+    const start = new Date(`${fromDate}T00:00:00.000Z`);
+    const end = new Date(`${toDate}T00:00:00.000Z`);
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+
+    const totalDays = Math.max(1, differenceInCalendarDays(end, start) + 1);
+    const elapsedDays = Math.max(
+      1,
+      Math.min(totalDays, differenceInCalendarDays(today, start) + 1),
+    );
+    const remaining = Math.max(0, differenceInCalendarDays(end, today));
+    return { totalDays, elapsedDays, remaining };
+  }, [fromDate, toDate]);
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
       {kpis.slice(0, 6).map((kpi, i) => {
         const visual = KPI_VISUALS[kpi.key] ?? FALLBACK_VISUAL;
         const Icon = visual.icon;
-        const value = aggregatedValues[kpi.key] ?? 0;
-        // Target escalado: meta individual × nº de assessores = meta do time
-        const teamTarget = (kpi.target || 1) * teamSize;
-        const pct = Math.min(100, Math.round((value / teamTarget) * 100));
+        const byKpi = overview?.byKpi.find((k) => k.key === kpi.key);
+        const value = Math.round(byKpi?.actual ?? 0);
+        const teamTarget = byKpi?.target ?? (kpi.target || 1) * teamSize;
+        const pct = teamTarget > 0 ? Math.min(150, Math.round((value / teamTarget) * 100)) : 0;
+        const barWidth = Math.min(100, pct);
+
+        // Projeção linear: se manter o ritmo atual, vai bater X% até o fim
+        const projected =
+          projection.elapsedDays > 0
+            ? Math.round((value / projection.elapsedDays) * projection.totalDays)
+            : value;
+        const projectedPct = teamTarget > 0 ? Math.round((projected / teamTarget) * 100) : 0;
+        const onTrack = projectedPct >= 100;
 
         return (
           <motion.div
@@ -70,7 +96,7 @@ const KpiCards = () => {
               <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
-                  animate={{ width: `${pct}%` }}
+                  animate={{ width: `${barWidth}%` }}
                   transition={{ duration: 1.2, delay: i * 0.1 }}
                   className={`h-full rounded-full ${pct >= 80 ? "gradient-success" : "gradient-primary"}`}
                 />
@@ -79,6 +105,17 @@ const KpiCards = () => {
                 {value}/{teamTarget}
               </span>
             </div>
+            {/* Projeção (só se ainda há dias restantes no período) */}
+            {projection.remaining > 0 && projection.elapsedDays > 0 && (
+              <div className="mt-1.5 flex items-center justify-between text-[10px] font-mono">
+                <span className="text-muted-foreground">
+                  📈 ~{projected} ({projectedPct}%)
+                </span>
+                <span className={onTrack ? "text-success" : "text-chart-orange"}>
+                  {onTrack ? "✅ no ritmo" : "⚠️ ritmo abaixo"}
+                </span>
+              </div>
+            )}
             <div className="absolute -right-4 -bottom-4 opacity-5">
               <Icon className="w-20 h-20" />
             </div>

@@ -12,9 +12,42 @@ import KpiAnalytics from "@/components/dashboard/KpiAnalytics";
 import AssessorManager from "@/components/dashboard/AssessorManager";
 import SquadBet from "@/components/dashboard/SquadBet";
 import TvRanking from "@/components/dashboard/TvRanking";
+import AnnouncementTicker from "@/components/dashboard/AnnouncementTicker";
 import { useAssessors } from "@/hooks/useAssessors";
 import { useRankingStream } from "@/hooks/useRankingStream";
 import { Settings, Tv, X, Play, Pause, SkipForward, Timer } from "lucide-react";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
+
+type OverviewPeriod = "daily" | "weekly" | "monthly" | "semester";
+
+const OVERVIEW_PERIODS: { value: OverviewPeriod; label: string }[] = [
+  { value: "daily", label: "Diário" },
+  { value: "weekly", label: "Semanal" },
+  { value: "monthly", label: "Mensal" },
+  { value: "semester", label: "Semestral" },
+];
+
+function rangeForPeriod(period: OverviewPeriod): { from: string; to: string } {
+  const now = new Date();
+  const fmt = (d: Date) => format(d, "yyyy-MM-dd");
+  switch (period) {
+    case "daily":
+      return { from: fmt(now), to: fmt(now) };
+    case "weekly":
+      return {
+        from: fmt(startOfWeek(now, { weekStartsOn: 1 })),
+        to: fmt(endOfWeek(now, { weekStartsOn: 1 })),
+      };
+    case "monthly":
+      return { from: fmt(startOfMonth(now)), to: fmt(endOfMonth(now)) };
+    case "semester": {
+      const m = now.getMonth();
+      const semStart = m < 6 ? new Date(now.getFullYear(), 0, 1) : new Date(now.getFullYear(), 6, 1);
+      const semEnd = m < 6 ? new Date(now.getFullYear(), 5, 30) : new Date(now.getFullYear(), 11, 31);
+      return { from: fmt(semStart), to: fmt(semEnd) };
+    }
+  }
+}
 
 type View = "overview" | "daily" | "results" | "kpis" | "squad";
 
@@ -33,6 +66,9 @@ const Index = () => {
   const [view, setView] = useState<View>("overview");
   const { assessors, addAssessor, removeAssessor } = useAssessors();
   const [showManager, setShowManager] = useState(false);
+  // Filtro de período da Visão Geral (impacta KpiCards e PerformanceChart)
+  const [overviewPeriod, setOverviewPeriod] = useState<OverviewPeriod>("weekly");
+  const overviewRange = rangeForPeriod(overviewPeriod);
 
   // TV Mode state — suporta kiosk mode via ?tv=1 na URL
   const [tvMode, setTvMode] = useState(() => {
@@ -219,8 +255,33 @@ const Index = () => {
 
       {view === "overview" && (
         <div className="space-y-4">
+          {/* Ticker de avisos no topo */}
+          <AnnouncementTicker assessors={assessors} />
+
+          {/* Filtro de período (escondido em TV mode) */}
+          {!tvMode && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Período:</span>
+              <div className="flex gap-1 bg-muted/20 rounded-lg p-1">
+                {OVERVIEW_PERIODS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setOverviewPeriod(opt.value)}
+                    className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+                      overviewPeriod === opt.value
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Row 1: KPI Cards full width */}
-          <KpiCards />
+          <KpiCards from={overviewRange.from} to={overviewRange.to} />
 
           {/* Row 2: Ranking + Chart + Heatmap */}
           {tvMode ? (
