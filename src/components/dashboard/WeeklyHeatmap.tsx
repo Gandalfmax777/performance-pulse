@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { X, CheckCircle2, XCircle, TrendingUp } from "lucide-react";
+import { format, startOfWeek, endOfWeek } from "date-fns";
 import { type Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { useActivities } from "@/hooks/useActivities";
 import { useBadges, useBadgeUnlocks } from "@/hooks/useBadges";
+import { useMetrics } from "@/hooks/useMetrics";
+import { isSalesforceCheck } from "@/lib/meetingBonus";
 
 const DAYS = ["Seg", "Ter", "Qua", "Qui", "Sex"];
 
@@ -23,6 +26,24 @@ const WeeklyHeatmap = ({ assessors }: Props) => {
   // Badges definitions + unlocks do time pra mostrar na fila do modal
   const { data: allBadges } = useBadges();
   const { data: allUnlocks } = useBadgeUnlocks();
+
+  // Salesforce check: set de "(assessorId, dayIndex 0-4)" com [SALESFORCE_OK]
+  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
+  const { data: weekMetrics } = useMetrics({
+    from: format(weekStart, "yyyy-MM-dd"),
+    to: format(weekEnd, "yyyy-MM-dd"),
+  });
+  const sfChecks = useMemo(() => {
+    const set = new Set<string>();
+    for (const m of weekMetrics ?? []) {
+      if (!isSalesforceCheck(m.notes)) continue;
+      const date = new Date(`${m.date}T00:00:00.000Z`);
+      const dow = date.getUTCDay(); // 0=dom..6=sab
+      if (dow >= 1 && dow <= 5) set.add(`${m.assessorId}|${dow - 1}`);
+    }
+    return set;
+  }, [weekMetrics]);
 
   const consistencyScore = (a: Assessor) => {
     const done = a.dailyActivity.filter(Boolean).length;
@@ -63,23 +84,35 @@ const WeeklyHeatmap = ({ assessors }: Props) => {
                 <div className="text-xs text-foreground font-medium flex items-center truncate pr-2">
                   {a.name.split(" ")[0]}
                 </div>
-                {a.dailyActivity.map((done, di) => (
-                  <motion.div
-                    key={`${a.id}-${di}`}
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: ai * 0.05 + di * 0.03 }}
-                    className={`h-8 rounded-md flex items-center justify-center text-xs font-mono ${
-                      done
-                        ? "bg-success/30 text-success border border-success/20"
-                        : di < new Date().getDay() - 1
-                        ? "bg-destructive/20 text-destructive/60 border border-destructive/10"
-                        : "bg-muted/30 text-muted-foreground/40 border border-border/20"
-                    }`}
-                  >
-                    {done ? "✓" : di < new Date().getDay() - 1 ? "✗" : "—"}
-                  </motion.div>
-                ))}
+                {a.dailyActivity.map((done, di) => {
+                  const sfOk = sfChecks.has(`${a.id}|${di}`);
+                  return (
+                    <motion.div
+                      key={`${a.id}-${di}`}
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: ai * 0.05 + di * 0.03 }}
+                      className={`relative h-8 rounded-md flex items-center justify-center text-xs font-mono ${
+                        done
+                          ? "bg-success/30 text-success border border-success/20"
+                          : di < new Date().getDay() - 1
+                          ? "bg-destructive/20 text-destructive/60 border border-destructive/10"
+                          : "bg-muted/30 text-muted-foreground/40 border border-border/20"
+                      }`}
+                      title={sfOk ? "Salesforce confirmado" : undefined}
+                    >
+                      {done ? "✓" : di < new Date().getDay() - 1 ? "✗" : "—"}
+                      {sfOk && (
+                        <span
+                          className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-3 h-3 rounded-full bg-blue-500 text-[7px] flex items-center justify-center text-white font-bold border border-background"
+                          title="Salesforce OK"
+                        >
+                          SF
+                        </span>
+                      )}
+                    </motion.div>
+                  );
+                })}
               </div>
             ))}
           </div>
