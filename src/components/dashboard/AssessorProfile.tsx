@@ -74,7 +74,9 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
   const pendingBadges = individualBadges.filter((b) => !earnedSlugs.has(b.slug));
 
   const handlePrint = () => {
-    window.print();
+    // Abre relatório individual dedicado em nova aba e dispara print automático.
+    // Página standalone evita problemas de CSS print do dashboard (saía vazio antes).
+    window.open(`/relatorio/assessor/${assessor.id}?period=weekly&autoprint=1`, "_blank");
   };
 
   const a = assessor;
@@ -109,9 +111,10 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
             <DateRangePicker value={range} onChange={setRange} />
             <button
               onClick={handlePrint}
+              title="Abre relatório PDF individual em nova aba e auto-imprime"
               className="px-4 py-2 rounded-xl bg-primary/10 border border-primary/30 text-primary font-semibold text-sm flex items-center gap-2 hover:bg-primary/20 transition-all"
             >
-              <Printer className="w-4 h-4" /> Imprimir
+              <Printer className="w-4 h-4" /> PDF
             </button>
             <button
               onClick={onClose}

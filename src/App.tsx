@@ -11,6 +11,7 @@ import Index from "./pages/Index.tsx";
 import Login from "./pages/Login.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Relatorio from "./pages/Relatorio.tsx";
+import RelatorioAssessor from "./pages/RelatorioAssessor.tsx";
 import AdminLayout from "./pages/admin/AdminLayout.tsx";
 import AdminGoals from "./pages/admin/AdminGoals.tsx";
 import AdminSchedule from "./pages/admin/AdminSchedule.tsx";
@@ -55,6 +56,14 @@ const App = () => (
             element={
               <RequireAuth>
                 <Relatorio />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/relatorio/assessor/:id"
+            element={
+              <RequireAuth>
+                <RelatorioAssessor />
               </RequireAuth>
             }
           />
