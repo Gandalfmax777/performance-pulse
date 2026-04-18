@@ -217,6 +217,18 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
   const [appliesRetroactively, setAppliesRetroactively] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Scoring rule state — começa com a regra atual ou defaults seguros
+  const initialRuleType = kpi.scoringRule?.ruleType ?? "LINEAR";
+  const [ruleType, setRuleType] = useState<"LINEAR" | "THRESHOLD_PERCENT">(initialRuleType);
+  const [divisor, setDivisor] = useState(kpi.scoringRule?.divisor ?? 1);
+  const [pointsPerBucket, setPointsPerBucket] = useState(
+    kpi.scoringRule?.pointsPerBucket ?? 1,
+  );
+  const [thresholdPct, setThresholdPct] = useState(kpi.scoringRule?.thresholdPct ?? 70);
+  const [thresholdPoints, setThresholdPoints] = useState(
+    kpi.scoringRule?.thresholdPoints ?? 5,
+  );
+
   const createGoal = useCreateGoal();
 
   const handleSave = async () => {
@@ -244,6 +256,26 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
         });
       }
 
+      // 3) PUT scoring rule se mudou (ou se o KPI não tinha regra)
+      const ruleChanged =
+        !kpi.scoringRule ||
+        kpi.scoringRule.ruleType !== ruleType ||
+        kpi.scoringRule.divisor !== divisor ||
+        kpi.scoringRule.pointsPerBucket !== pointsPerBucket ||
+        kpi.scoringRule.thresholdPct !== thresholdPct ||
+        kpi.scoringRule.thresholdPoints !== thresholdPoints;
+      if (ruleChanged) {
+        await apiFetch(`/kpis/${kpi.id}/scoring-rule`, {
+          method: "PUT",
+          body: {
+            ruleType,
+            ...(ruleType === "LINEAR"
+              ? { divisor, pointsPerBucket }
+              : { thresholdPct, thresholdPoints }),
+          },
+        });
+      }
+
       onSuccess();
       onClose();
     } catch (err) {
@@ -252,6 +284,14 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
       setSaving(false);
     }
   };
+
+  // Preview da regra em texto
+  const rulePreview =
+    ruleType === "LINEAR"
+      ? divisor === 1
+        ? `1 unidade = ${pointsPerBucket} pt${pointsPerBucket === 1 ? "" : "s"}`
+        : `A cada ${divisor} unidades = ${pointsPerBucket} pt${pointsPerBucket === 1 ? "" : "s"}`
+      : `Se ≥${thresholdPct}% da meta = ${thresholdPoints} pt${thresholdPoints === 1 ? "" : "s"} (senão 0)`;
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -358,6 +398,91 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
                     Recalcula os pontos e % de todas as métricas já registradas com a nova meta.
                   </p>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Scoring rule */}
+          <div>
+            <h3 className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-3">
+              Regra de pontuação
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs">Tipo</Label>
+                <Select
+                  value={ruleType}
+                  onValueChange={(v) => setRuleType(v as typeof ruleType)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="LINEAR">Linear (a cada N unidades = X pontos)</SelectItem>
+                    <SelectItem value="THRESHOLD_PERCENT">Threshold (≥X% da meta = Y pts)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {ruleType === "LINEAR" ? (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs">A cada N unidades…</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      step="any"
+                      value={divisor}
+                      onChange={(e) => setDivisor(Number(e.target.value))}
+                      className="mt-1 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">…vale X pontos</Label>
+                    <Input
+                      type="number"
+                      step="any"
+                      value={pointsPerBucket}
+                      onChange={(e) => setPointsPerBucket(Number(e.target.value))}
+                      className="mt-1 font-mono"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs">Threshold (% da meta)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={150}
+                      value={thresholdPct}
+                      onChange={(e) => setThresholdPct(Number(e.target.value))}
+                      className="mt-1 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Pontos quando atinge</Label>
+                    <Input
+                      type="number"
+                      step="any"
+                      value={thresholdPoints}
+                      onChange={(e) => setThresholdPoints(Number(e.target.value))}
+                      className="mt-1 font-mono"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+                  Regra atual
+                </p>
+                <p className="text-sm font-mono text-primary">{rulePreview}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Aplica em novos registros. Pra recalcular histórico, rodar
+                  <code className="mx-1 px-1 bg-muted/30 rounded">scripts/recompute-all-points.ts</code>.
+                </p>
               </div>
             </div>
           </div>

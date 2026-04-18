@@ -23,6 +23,14 @@ export interface ApiKpi {
     validFrom: string;
     validTo: string | null;
   } | null;
+  scoringRule: {
+    ruleType: "LINEAR" | "THRESHOLD_PERCENT";
+    divisor: number | null;
+    pointsPerBucket: number | null;
+    thresholdPct: number | null;
+    thresholdPoints: number | null;
+    active: boolean;
+  } | null;
 }
 
 /**
