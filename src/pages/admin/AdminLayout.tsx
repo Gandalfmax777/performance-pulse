@@ -8,6 +8,7 @@ import {
   Users,
   LogOut,
   Shield,
+  Megaphone,
 } from "lucide-react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { clearAuthToken } from "@/api/client";
@@ -19,11 +20,12 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: "/admin/goals",       label: "Metas & KPIs",  icon: Target },
-  { to: "/admin/schedule",    label: "Cronograma",    icon: Calendar },
-  { to: "/admin/biweekly",    label: "Indique Day",   icon: Repeat },
-  { to: "/admin/bets-config", label: "Apostas",       icon: Trophy },
-  { to: "/admin/users",       label: "Usuários",      icon: Users },
+  { to: "/admin/goals",         label: "Metas & KPIs",  icon: Target },
+  { to: "/admin/schedule",      label: "Cronograma",    icon: Calendar },
+  { to: "/admin/biweekly",      label: "Indique Day",   icon: Repeat },
+  { to: "/admin/bets-config",   label: "Apostas",       icon: Trophy },
+  { to: "/admin/announcements", label: "Avisos",        icon: Megaphone },
+  { to: "/admin/users",         label: "Usuários",      icon: Users },
 ];
 
 const AdminLayout = () => {

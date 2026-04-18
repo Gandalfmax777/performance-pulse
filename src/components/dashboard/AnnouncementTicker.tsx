@@ -3,6 +3,7 @@ import { Megaphone } from "lucide-react";
 import type { Assessor } from "@/types/assessor";
 import { useKpis } from "@/hooks/useKpis";
 import { useWeeklyRanking } from "@/hooks/useRankings";
+import { useAnnouncements } from "@/hooks/useAnnouncements";
 import { differenceInCalendarDays, endOfWeek } from "date-fns";
 
 interface AnnouncementTickerProps {
@@ -22,10 +23,18 @@ interface AnnouncementTickerProps {
 const AnnouncementTicker = ({ assessors }: AnnouncementTickerProps) => {
   const { kpis } = useKpis();
   const { data: weekly } = useWeeklyRanking();
+  const { data: manualAnnouncements } = useAnnouncements();
 
   const messages = useMemo(() => {
     const out: string[] = [];
 
+    // 1. Avisos manuais (criados pelo admin) — vão primeiro, na ordem do sortOrder
+    for (const a of manualAnnouncements ?? []) {
+      const prefix = a.emoji ? `${a.emoji} ` : "";
+      out.push(`${prefix}${a.message}`);
+    }
+
+    // 2. Auto-geradas baseadas no estado atual
     // Líder da semana
     const sorted = [...assessors].sort((a, b) => b.points - a.points);
     if (sorted[0] && sorted[0].points > 0) {
@@ -70,7 +79,7 @@ const AnnouncementTicker = ({ assessors }: AnnouncementTickerProps) => {
       out.push(`📊 Comece o dia registrando suas atividades`);
     }
     return out;
-  }, [assessors, weekly, kpis]);
+  }, [assessors, weekly, kpis, manualAnnouncements]);
 
   // Duplica mensagens pra criar efeito infinite scroll
   const doubled = [...messages, ...messages];

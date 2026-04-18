@@ -15,6 +15,7 @@ import AdminGoals from "./pages/admin/AdminGoals.tsx";
 import AdminSchedule from "./pages/admin/AdminSchedule.tsx";
 import AdminBiweekly from "./pages/admin/AdminBiweekly.tsx";
 import AdminBetsConfig from "./pages/admin/AdminBetsConfig.tsx";
+import AdminAnnouncements from "./pages/admin/AdminAnnouncements.tsx";
 import AdminUsers from "./pages/admin/AdminUsers.tsx";
 import type { ReactElement } from "react";
 
@@ -63,6 +64,7 @@ const App = () => (
             <Route path="schedule" element={<AdminSchedule />} />
             <Route path="biweekly" element={<AdminBiweekly />} />
             <Route path="bets-config" element={<AdminBetsConfig />} />
+            <Route path="announcements" element={<AdminAnnouncements />} />
             <Route path="users" element={<AdminUsers />} />
           </Route>
 
