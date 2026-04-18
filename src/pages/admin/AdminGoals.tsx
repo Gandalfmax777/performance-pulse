@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { Target, Pencil, ChevronDown, ChevronUp, History, Loader2 } from "lucide-react";
+import { Target, Pencil, ChevronDown, ChevronUp, History, Loader2, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useQueryClient } from "@tanstack/react-query";
@@ -54,6 +54,7 @@ const AdminGoals = () => {
   const queryClient = useQueryClient();
   const [dialog, setDialog] = useState<KpiDialogState>({ open: false, kpi: null });
   const [historyOpen, setHistoryOpen] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   // Busca KPIs completos (incluindo derivados) pra admin
   const { data: allKpisRaw, isLoading } = useQuery({
@@ -67,7 +68,7 @@ const AdminGoals = () => {
   return (
     <div className="space-y-5">
       {/* Page header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Target className="w-6 h-6 text-primary" />
@@ -78,6 +79,9 @@ const AdminGoals = () => {
             históricos.
           </p>
         </div>
+        <Button onClick={() => setCreateOpen(true)} className="gap-2">
+          <Plus className="w-4 h-4" /> Novo KPI
+        </Button>
       </div>
 
       {/* KPI list */}
@@ -178,6 +182,17 @@ const AdminGoals = () => {
           }}
         />
       )}
+
+      <CreateKpiDialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ["kpis"] });
+          queryClient.invalidateQueries({ queryKey: ["goals"] });
+          toast.success("KPI criado");
+          setCreateOpen(false);
+        }}
+      />
     </div>
   );
 };
@@ -401,6 +416,179 @@ function GoalHistoryRow({ kpiId }: { kpiId: string }) {
         )}
       </TableCell>
     </TableRow>
+  );
+}
+
+// ─── Dialog de criação ───────────────────────────────────────────────────────
+
+interface CreateKpiDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+function CreateKpiDialog({ open, onClose, onSuccess }: CreateKpiDialogProps) {
+  const [key, setKey] = useState("");
+  const [label, setLabel] = useState("");
+  const [unit, setUnit] = useState("");
+  const [inputMode, setInputMode] = useState<"ABSOLUTE" | "PERCENT" | "QUANTITY_OVER_BASE">(
+    "ABSOLUTE",
+  );
+  const [defaultTarget, setDefaultTarget] = useState(1);
+  const [period, setPeriod] = useState<"DAILY" | "WEEKLY" | "MONTHLY">("DAILY");
+  const [createGoal, setCreateGoal] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Reset ao fechar
+  const reset = () => {
+    setKey("");
+    setLabel("");
+    setUnit("");
+    setInputMode("ABSOLUTE");
+    setDefaultTarget(1);
+    setPeriod("DAILY");
+    setCreateGoal(true);
+  };
+
+  const handleSave = async () => {
+    if (!key.trim() || !label.trim()) {
+      toast.error("Preencha key e label");
+      return;
+    }
+    setSaving(true);
+    try {
+      await apiFetch("/kpis", {
+        method: "POST",
+        body: {
+          key: key.trim().toLowerCase(),
+          label: label.trim(),
+          unit,
+          inputMode,
+          defaultTarget,
+          ...(createGoal ? { goal: { value: defaultTarget, period } } : {}),
+        },
+      });
+      reset();
+      onSuccess();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao criar KPI");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) {
+          reset();
+          onClose();
+        }
+      }}
+    >
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Novo KPI</DialogTitle>
+          <DialogDescription>
+            Cria um KPI novo. Pra remover ou editar pontuação avançada, edite
+            <code className="text-[10px] mx-1 px-1 bg-muted/30 rounded">scoring.ts</code>
+            no backend.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="py-3 space-y-3">
+          <div>
+            <Label className="text-xs">Key (interna, snake_case)</Label>
+            <Input
+              value={key}
+              onChange={(e) => setKey(e.target.value)}
+              placeholder="ex: agendamento_extra"
+              className="mt-1 font-mono text-sm"
+            />
+          </div>
+          <div>
+            <Label className="text-xs">Label (visível)</Label>
+            <Input
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              placeholder="ex: Agendamento Extra"
+              className="mt-1"
+            />
+          </div>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Label className="text-xs">Unidade</Label>
+              <Input
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                placeholder="(vazio) ou %"
+                className="mt-1"
+              />
+            </div>
+            <div className="flex-1">
+              <Label className="text-xs">Meta default</Label>
+              <Input
+                type="number"
+                min={0}
+                value={defaultTarget}
+                onChange={(e) => setDefaultTarget(parseFloat(e.target.value) || 0)}
+                className="mt-1 font-mono"
+              />
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">Modo de entrada</Label>
+            <Select value={inputMode} onValueChange={(v) => setInputMode(v as typeof inputMode)}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ABSOLUTE">Absoluto (qtd)</SelectItem>
+                <SelectItem value="PERCENT">Percentual (já é %)</SelectItem>
+                <SelectItem value="QUANTITY_OVER_BASE">Qtd sobre Base (cadência, TP)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-start gap-2 pt-2 border-t border-border/30">
+            <Checkbox
+              id="createGoal"
+              checked={createGoal}
+              onCheckedChange={(v) => setCreateGoal(v === true)}
+            />
+            <div className="flex-1">
+              <Label htmlFor="createGoal" className="text-xs font-medium cursor-pointer">
+                Criar goal ativa agora
+              </Label>
+              {createGoal && (
+                <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PERIOD_OPTIONS.map((p) => (
+                      <SelectItem key={p.value} value={p.value}>
+                        {p.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={saving}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSave} disabled={saving || !key.trim() || !label.trim()}>
+            {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+            Criar KPI
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
