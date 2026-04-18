@@ -100,134 +100,138 @@
 }
 
 @layer base {
-  /* ═══ LIGHT MODE (default) ═══ */
+  /* ═══ LIGHT MODE (default — paleta EQI corporativa) ═══
+     Alinhado com o sistema EQI: off-white, verde escuro corporativo,
+     laranja âmbar pra warnings, vermelho sutil pra negativos. */
   :root {
-    --background: 0 0% 99%;
-    --foreground: 160 20% 10%;
+    --background: 220 14% 98%;            /* #F9FAFB — off-white */
+    --foreground: 220 39% 11%;            /* #111827 — quase preto */
 
-    --card: 150 8% 97%;
-    --card-foreground: 160 20% 10%;
+    --card: 0 0% 100%;                    /* #FFFFFF — cards puros */
+    --card-foreground: 220 39% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 160 20% 10%;
+    --popover-foreground: 220 39% 11%;
 
-    /* Primary: EQI green */
-    --primary: 152 72% 34%;
+    /* Primary: verde EQI escuro (logo) */
+    --primary: 148 70% 18%;               /* #0D5132 — verde corporativo */
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: lighter surface */
-    --secondary: 150 12% 92%;
-    --secondary-foreground: 160 20% 10%;
+    /* Secondary: superfície sutil */
+    --secondary: 220 14% 96%;             /* #F3F4F6 */
+    --secondary-foreground: 220 39% 11%;
 
     /* Muted */
-    --muted: 150 8% 94%;
-    --muted-foreground: 160 10% 42%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;       /* #6B7280 */
 
-    /* Accent */
-    --accent: 152 35% 92%;
-    --accent-foreground: 160 20% 10%;
+    /* Accent: verde claro hover */
+    --accent: 148 50% 95%;
+    --accent-foreground: 148 70% 18%;
 
-    --destructive: 0 75% 50%;
+    --destructive: 0 84% 50%;             /* #DC2626 */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 150 10% 88%;
-    --input: 150 10% 88%;
-    --ring: 152 72% 34%;
+    --border: 220 13% 91%;                /* #E5E7EB — divisórias sutis */
+    --input: 220 13% 91%;
+    --ring: 148 70% 18%;
 
     --radius: 0.75rem;
 
-    /* Gamification */
-    --gold: 43 80% 52%;
-    --silver: 220 12% 60%;
-    --bronze: 25 60% 42%;
-    --success: 152 72% 34%;
-    --warning: 35 90% 50%;
+    /* Gamification (mantidas pra ranking / pódio) */
+    --gold: 43 80% 50%;
+    --silver: 220 12% 65%;
+    --bronze: 25 60% 45%;
+    --success: 142 76% 36%;               /* #16A34A — verde médio EQI */
+    --warning: 38 92% 50%;                /* #F59E0B — laranja âmbar EQI */
 
-    /* Charts */
-    --chart-blue: 210 70% 50%;
-    --chart-green: 152 72% 34%;
-    --chart-orange: 25 85% 55%;
-    --chart-red: 0 75% 50%;
-    --chart-purple: 270 55% 55%;
+    /* Charts (paleta sóbria — não neon) */
+    --chart-blue: 217 91% 50%;            /* #2563EB */
+    --chart-green: 142 76% 36%;           /* #16A34A */
+    --chart-orange: 38 92% 50%;           /* #F59E0B */
+    --chart-red: 0 84% 50%;               /* #DC2626 */
+    --chart-purple: 262 83% 58%;          /* #8B5CF6 */
 
-    /* EQI brand accents */
-    --eqi-green: 152 72% 34%;
-    --eqi-mint: 152 45% 65%;
-    --eqi-forest: 152 65% 24%;
+    /* EQI brand accents — escala de verde corporativa */
+    --eqi-green: 148 70% 18%;             /* #0D5132 — primário */
+    --eqi-mint: 142 76% 36%;              /* #16A34A — médio */
+    --eqi-forest: 148 80% 12%;            /* #052E1B — escuríssimo */
 
     /* Sidebar */
-    --sidebar-background: 150 8% 96%;
-    --sidebar-foreground: 160 20% 10%;
-    --sidebar-primary: 152 72% 34%;
+    --sidebar-background: 220 14% 96%;    /* #F3F4F6 */
+    --sidebar-foreground: 220 39% 11%;
+    --sidebar-primary: 148 70% 18%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 150 10% 92%;
-    --sidebar-accent-foreground: 160 20% 10%;
-    --sidebar-border: 150 10% 88%;
-    --sidebar-ring: 152 72% 34%;
+    --sidebar-accent: 0 0% 100%;          /* item ativo = branco */
+    --sidebar-accent-foreground: 148 70% 18%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 148 70% 18%;
   }
 
-  /* ═══ DARK MODE ═══ */
+  /* ═══ DARK MODE (paleta EQI dark — opção, não default) ═══
+     Mantém legibilidade pra quem prefere dark + Modo TV em ambiente escuro.
+     Verde mais claro pra contraste no fundo escuro. */
   .dark {
-    --background: 160 20% 6%;
-    --foreground: 150 10% 93%;
+    --background: 220 27% 7%;             /* #0F141A — quase preto azulado */
+    --foreground: 220 14% 96%;            /* #F3F4F6 */
 
-    --card: 160 16% 9%;
-    --card-foreground: 150 10% 93%;
+    --card: 220 24% 11%;                  /* #161D26 */
+    --card-foreground: 220 14% 96%;
 
-    --popover: 160 16% 9%;
-    --popover-foreground: 150 10% 93%;
+    --popover: 220 24% 11%;
+    --popover-foreground: 220 14% 96%;
 
-    /* Primary: EQI green (brighter for dark bg) */
-    --primary: 152 72% 40%;
-    --primary-foreground: 160 20% 6%;
+    /* Primary: verde EQI mais claro pra contraste */
+    --primary: 142 76% 45%;               /* #1FB55B — verde médio brilhante */
+    --primary-foreground: 220 27% 7%;
 
-    /* Secondary: deep green */
-    --secondary: 152 60% 28%;
-    --secondary-foreground: 150 10% 93%;
+    /* Secondary */
+    --secondary: 220 20% 18%;
+    --secondary-foreground: 220 14% 96%;
 
     /* Muted */
-    --muted: 160 10% 15%;
-    --muted-foreground: 155 10% 52%;
+    --muted: 220 20% 16%;
+    --muted-foreground: 220 9% 60%;
 
     /* Accent */
-    --accent: 152 30% 20%;
-    --accent-foreground: 150 10% 93%;
+    --accent: 148 50% 18%;
+    --accent-foreground: 142 76% 70%;
 
-    --destructive: 0 75% 55%;
-    --destructive-foreground: 150 10% 93%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 220 14% 96%;
 
-    --border: 160 10% 18%;
-    --input: 160 10% 18%;
-    --ring: 152 72% 40%;
+    --border: 220 20% 18%;
+    --input: 220 20% 18%;
+    --ring: 142 76% 45%;
 
-    /* Gamification */
-    --gold: 43 80% 65%;
-    --silver: 220 12% 72%;
-    --bronze: 25 65% 45%;
-    --success: 152 72% 40%;
-    --warning: 35 90% 55%;
+    /* Gamification — saturadas o suficiente pra TV mode */
+    --gold: 43 90% 60%;
+    --silver: 220 12% 70%;
+    --bronze: 25 70% 50%;
+    --success: 142 76% 45%;
+    --warning: 38 95% 55%;
 
     /* Charts */
-    --chart-blue: 210 70% 55%;
-    --chart-green: 152 72% 40%;
-    --chart-orange: 25 85% 58%;
-    --chart-red: 0 75% 55%;
-    --chart-purple: 270 60% 62%;
+    --chart-blue: 217 91% 60%;
+    --chart-green: 142 76% 45%;
+    --chart-orange: 38 95% 55%;
+    --chart-red: 0 84% 60%;
+    --chart-purple: 262 83% 65%;
 
     /* EQI brand accents */
-    --eqi-green: 152 72% 40%;
-    --eqi-mint: 152 45% 70%;
-    --eqi-forest: 152 65% 28%;
+    --eqi-green: 142 76% 45%;
+    --eqi-mint: 142 60% 60%;
+    --eqi-forest: 148 60% 25%;
 
     /* Sidebar */
-    --sidebar-background: 160 16% 8%;
-    --sidebar-foreground: 150 10% 93%;
-    --sidebar-primary: 152 72% 40%;
-    --sidebar-primary-foreground: 160 20% 6%;
-    --sidebar-accent: 160 10% 15%;
-    --sidebar-accent-foreground: 150 10% 93%;
-    --sidebar-border: 160 10% 18%;
-    --sidebar-ring: 152 72% 40%;
+    --sidebar-background: 220 27% 9%;
+    --sidebar-foreground: 220 14% 96%;
+    --sidebar-primary: 142 76% 45%;
+    --sidebar-primary-foreground: 220 27% 7%;
+    --sidebar-accent: 220 20% 16%;
+    --sidebar-accent-foreground: 220 14% 96%;
+    --sidebar-border: 220 20% 18%;
+    --sidebar-ring: 142 76% 45%;
   }
 }
 
@@ -251,25 +255,39 @@
     font-family: 'Outfit', sans-serif;
   }
 
-  /* === GLOW EFFECTS === */
+  /* === GLOW EFFECTS (suavizados pra visual EQI corporativo) ===
+     Antes eram glows neon agressivos. Agora shadows discretos que indicam
+     destaque sem virar "festival de luzes". Em dark mode (TV) ficam mais
+     visíveis automaticamente porque o fundo absorve menos luz. */
   .glow-primary {
-    box-shadow: 0 0 20px hsl(var(--primary) / 0.25), 0 0 60px hsl(var(--primary) / 0.08);
+    box-shadow: 0 1px 3px hsl(var(--primary) / 0.12), 0 0 0 1px hsl(var(--primary) / 0.15);
   }
 
   .glow-secondary {
-    box-shadow: 0 0 20px hsl(var(--secondary) / 0.25), 0 0 60px hsl(var(--secondary) / 0.08);
+    box-shadow: 0 1px 3px hsl(var(--secondary) / 0.1);
   }
 
   .glow-success {
-    box-shadow: 0 0 20px hsl(var(--success) / 0.25), 0 0 60px hsl(var(--success) / 0.08);
+    box-shadow: 0 1px 3px hsl(var(--success) / 0.15), 0 0 0 1px hsl(var(--success) / 0.2);
   }
 
   .glow-gold {
-    box-shadow: 0 0 20px hsl(var(--gold) / 0.3), 0 0 60px hsl(var(--gold) / 0.1);
+    box-shadow: 0 1px 3px hsl(var(--gold) / 0.2), 0 0 0 1px hsl(var(--gold) / 0.25);
   }
 
   .glow-accent {
-    box-shadow: 0 0 20px hsl(var(--accent) / 0.25), 0 0 60px hsl(var(--accent) / 0.08);
+    box-shadow: 0 1px 3px hsl(var(--accent) / 0.1);
+  }
+
+  /* Dark mode: glows um pouco mais intensos pra destacar do fundo escuro */
+  .dark .glow-primary {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.2), 0 0 0 1px hsl(var(--primary) / 0.3);
+  }
+  .dark .glow-success {
+    box-shadow: 0 0 20px hsl(var(--success) / 0.2), 0 0 0 1px hsl(var(--success) / 0.3);
+  }
+  .dark .glow-gold {
+    box-shadow: 0 0 20px hsl(var(--gold) / 0.25), 0 0 0 1px hsl(var(--gold) / 0.35);
   }
 
   /* === GRADIENTS === */
@@ -312,12 +330,19 @@
     -webkit-text-fill-color: transparent;
   }
 
-  /* === CARD SURFACES === */
+  /* === CARD SURFACES ===
+     Light: card EQI branco com shadow sutil + borda fina (sem blur).
+     Dark: glass effect mantido pra Modo TV ter profundidade. */
   .card-glass {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 1px 2px hsl(220 39% 11% / 0.04), 0 1px 3px hsl(220 39% 11% / 0.06);
+  }
+  .dark .card-glass {
     background: hsl(var(--card) / 0.85);
     backdrop-filter: blur(16px);
     border: 1px solid hsl(var(--border) / 0.6);
-    box-shadow: 0 1px 3px hsl(var(--foreground) / 0.04);
+    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.3);
   }
 
   .card-noise {
@@ -334,11 +359,17 @@
     z-index: 0;
   }
 
-  /* === ATMOSPHERIC BACKGROUND === */
+  /* === ATMOSPHERIC BACKGROUND ===
+     Light: praticamente invisível (não polui a interface clean EQI).
+     Dark: mantém o efeito de "ambiente" que o Pulse tinha. */
   .bg-mesh {
     background-image:
-      radial-gradient(ellipse at 20% 0%, hsl(var(--eqi-green) / 0.05) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 100%, hsl(var(--eqi-mint) / 0.03) 0%, transparent 50%);
+      radial-gradient(ellipse at 20% 0%, hsl(var(--eqi-green) / 0.02) 0%, transparent 50%);
+  }
+  .dark .bg-mesh {
+    background-image:
+      radial-gradient(ellipse at 20% 0%, hsl(var(--eqi-green) / 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, hsl(var(--eqi-mint) / 0.04) 0%, transparent 50%);
   }
 
   /* === RANK RINGS === */

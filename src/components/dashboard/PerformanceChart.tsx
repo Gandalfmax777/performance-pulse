@@ -29,19 +29,20 @@ function todayYmd(): string {
 }
 
 // Paleta determinística por KPI key pra manter cores consistentes entre renders.
+// Paleta categórica EQI — cores um pouco menos saturadas pra visual corporativo.
 const KPI_COLORS: Record<string, string> = {
-  ligacoes: "hsl(200, 80%, 55%)",
-  reunioes: "hsl(270, 60%, 62%)",
-  leads: "hsl(152, 72%, 45%)",
-  cadencia: "hsl(38, 90%, 55%)",
-  boletos: "hsl(340, 75%, 60%)",
-  indicacoes: "hsl(180, 65%, 50%)",
+  ligacoes: "hsl(217, 91%, 50%)",   // chart-blue
+  reunioes: "hsl(262, 70%, 55%)",   // chart-purple
+  leads: "hsl(148, 70%, 30%)",      // primary EQI
+  cadencia: "hsl(38, 92%, 50%)",    // chart-orange
+  boletos: "hsl(340, 70%, 50%)",
+  indicacoes: "hsl(180, 60%, 40%)",
 };
 const FALLBACK_COLORS = [
-  "hsl(200, 80%, 55%)",
-  "hsl(270, 60%, 62%)",
-  "hsl(152, 72%, 45%)",
-  "hsl(38, 90%, 55%)",
+  "hsl(217, 91%, 50%)",
+  "hsl(262, 70%, 55%)",
+  "hsl(148, 70%, 30%)",
+  "hsl(38, 92%, 50%)",
 ];
 
 const PerformanceChart = () => {
@@ -138,27 +139,28 @@ const PerformanceChart = () => {
               </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="hsl(160, 10%, 22%)"
+                stroke="hsl(var(--border))"
                 vertical={false}
               />
               <XAxis
                 dataKey="day"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "hsl(160, 10%, 55%)", fontSize: 11 }}
+                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "hsl(160, 10%, 55%)", fontSize: 11 }}
+                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
                 width={34}
                 tickFormatter={(v) => `${v}%`}
                 domain={[0, 150]}
               />
               <Tooltip
                 contentStyle={{
-                  background: "hsl(160, 16%, 9%)",
-                  border: "1px solid hsl(160, 10%, 18%)",
+                  background: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
+                  color: "hsl(var(--foreground))",
                   borderRadius: "8px",
                   fontSize: "12px",
                 }}
@@ -169,7 +171,7 @@ const PerformanceChart = () => {
               />
               <ReferenceLine
                 x={todayLabel}
-                stroke="hsl(152, 72%, 45%)"
+                stroke="hsl(var(--primary))"
                 strokeDasharray="2 4"
                 strokeOpacity={0.6}
               />

@@ -467,9 +467,9 @@ const SquadBet = ({ assessors }: Props) => {
             {rankedSquads.length >= 2 ? (
               <ResponsiveContainer width="100%" height={320}>
                 <RadarChart data={radarData}>
-                  <PolarGrid stroke="hsl(160,10%,16%)" />
-                  <PolarAngleAxis dataKey="metric" tick={{ fill: "hsl(155,12%,52%)", fontSize: 11 }} />
-                  <PolarRadiusAxis tick={{ fill: "hsl(155,12%,52%)", fontSize: 9 }} />
+                  <PolarGrid stroke="hsl(var(--border))" />
+                  <PolarAngleAxis dataKey="metric" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                  <PolarRadiusAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }} />
                   {rankedSquads.map((row, i) => (
                     <Radar
                       key={row.sq.id}
@@ -489,8 +489,9 @@ const SquadBet = ({ assessors }: Props) => {
                   />
                   <Tooltip
                     contentStyle={{
-                      background: "hsl(160,12%,9%)",
-                      border: "1px solid hsl(160,10%,16%)",
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      color: "hsl(var(--foreground))",
                       borderRadius: 8,
                       fontSize: 11,
                     }}
@@ -516,13 +517,14 @@ const SquadBet = ({ assessors }: Props) => {
             {barData.length > 0 ? (
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={barData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(160,10%,16%)" />
-                  <XAxis dataKey="name" tick={{ fill: "hsl(155,12%,52%)", fontSize: 11 }} />
-                  <YAxis tick={{ fill: "hsl(155,12%,52%)", fontSize: 10 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                  <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
                   <Tooltip
                     contentStyle={{
-                      background: "hsl(160,12%,9%)",
-                      border: "1px solid hsl(160,10%,16%)",
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      color: "hsl(var(--foreground))",
                       borderRadius: 8,
                       fontSize: 11,
                     }}
