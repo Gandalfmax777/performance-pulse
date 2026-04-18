@@ -89,7 +89,16 @@ const RegistrationPanel = ({ assessors, kpiKeys, date, blocks }: RegistrationPan
 
   function commit(assessorId: string, kpiKey: string, value: number, baseValue?: number) {
     if (value < 0) return;
-    upsert.mutate({ assessorId, kpiKey, rawValue: value, baseValue, date: today });
+    // Calcula % anterior pra detectar meta batida (cruzar 100%) e disparar som de vitória.
+    // Aproximação usando o target do frontend — suficiente pro trigger sonoro.
+    const prevVal = persistedValues.raw[assessorId]?.[kpiKey] ?? 0;
+    const kpiDef = kpisForDay.find((k) => k.key === kpiKey);
+    const target = kpiDef?.target ?? 0;
+    const prevPercent = target > 0 ? Math.min(100, (prevVal / target) * 100) : 0;
+    upsert.mutate({
+      input: { assessorId, kpiKey, rawValue: value, baseValue, date: today },
+      prevPercent,
+    });
   }
 
   return (

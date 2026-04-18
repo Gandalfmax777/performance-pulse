@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/api/client";
+import { playKpiSound, playGoalHitSound } from "@/lib/sounds";
 
 /**
  * Shape vindo do backend (espelha routes/metrics.ts).
@@ -57,20 +58,56 @@ export function useMetrics(filters: {
 }
 
 /**
- * Upsert de uma metric entry. Invalida tanto a lista de metrics quanto os
- * rankings (que dependem das entries).
+ * Variante de input com contexto sonoro: caller passa `prevPercent` (% antes
+ * do upsert) pra que o hook possa disparar o som de "vitória" ao cruzar 100%.
  *
- * Mutation otimista: o caller pode passar `onMutate` adicional via opts.
+ * Mantemos compat com chamadas antigas que passam só `UpsertMetricInput`:
+ * detectamos via duck-typing se o payload tem `assessorId` direto (input antigo)
+ * ou está dentro de `input` (novo formato com prevPercent).
+ */
+export type UpsertMetricArgs =
+  | UpsertMetricInput
+  | { input: UpsertMetricInput; prevPercent: number };
+
+function normalizeArgs(args: UpsertMetricArgs): {
+  input: UpsertMetricInput;
+  prevPercent: number;
+} {
+  if ("input" in args && typeof args.input === "object") {
+    return { input: args.input, prevPercent: args.prevPercent };
+  }
+  return { input: args as UpsertMetricInput, prevPercent: 0 };
+}
+
+/**
+ * Upsert de uma metric entry. Invalida lista de metrics + rankings.
+ *
+ * Side effect sonoro (gamificação):
+ * - Sempre toca o som específico do KPI (silencioso se mudo)
+ * - Se prevPercent < 100 e novo convertedPercent >= 100: toca som de vitória
+ *
+ * Caller pode passar só `UpsertMetricInput` (sem som de vitória) OU
+ * `{ input, prevPercent }` (com detecção de meta batida).
  */
 export function useUpsertMetric() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: UpsertMetricInput) =>
-      apiFetch<ApiMetric>("/metrics", { method: "POST", body: input }),
-    onSuccess: () => {
+    mutationFn: (args: UpsertMetricArgs) => {
+      const { input } = normalizeArgs(args);
+      return apiFetch<ApiMetric>("/metrics", { method: "POST", body: input });
+    },
+    onSuccess: (data, args) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ["rankings"] });
       queryClient.invalidateQueries({ queryKey: ["assessors"] });
+
+      // Gamificação sonora — silencioso se mudo
+      const { prevPercent } = normalizeArgs(args);
+      playKpiSound(data.kpiKey);
+      const newPct = data.convertedPercent ?? 0;
+      if (prevPercent < 100 && newPct >= 100) {
+        playGoalHitSound();
+      }
     },
   });
 }

@@ -1,15 +1,17 @@
 import { motion } from "framer-motion";
-import { Activity, Clock, Shield, Sun, Moon } from "lucide-react";
+import { Activity, Clock, Shield, Sun, Moon, Volume2, VolumeX } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useSoundMuted } from "@/hooks/useSoundEffects";
 
 const DashboardHeader = () => {
   const [time, setTime] = useState(new Date());
   const { isAdmin } = useCurrentUser();
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
+  const [muted, setMuted] = useSoundMuted();
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000);
@@ -47,6 +49,17 @@ const DashboardHeader = () => {
             <span className="text-xs font-semibold">Admin</span>
           </button>
         )}
+        <button
+          onClick={() => setMuted(!muted)}
+          className={`p-2 rounded-lg border transition-all ${
+            muted
+              ? "bg-muted/30 border-border/30 text-muted-foreground hover:text-foreground"
+              : "bg-primary/10 border-primary/30 text-primary hover:bg-primary/20"
+          }`}
+          title={muted ? "Sons desligados — clique pra ligar" : "Sons ligados — clique pra silenciar"}
+        >
+          {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+        </button>
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="p-2 rounded-lg bg-muted/30 border border-border/30 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
