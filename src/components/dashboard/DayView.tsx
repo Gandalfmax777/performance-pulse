@@ -11,6 +11,7 @@ import { useMetrics } from "@/hooks/useMetrics";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { apiFetch } from "@/api/client";
 import { SALESFORCE_PREFIX, isSalesforceCheck } from "@/lib/meetingBonus";
+import DailyDirection from "./DailyDirection";
 
 /**
  * Labels Pt-BR pros 5 dias úteis. dayOfWeek 1=segunda ... 5=sexta
@@ -36,11 +37,14 @@ const DayView = ({ assessors }: DayViewProps) => {
   const defaultTab = todayDow >= 1 && todayDow <= 5 ? todayDow - 1 : 0;
   const [activeDay, setActiveDay] = useState(defaultTab);
 
-  // Calcula a data exata do tab selecionado dentro da semana corrente.
-  // weekStartsOn:1 = segunda. activeDay 0..4 → seg..sex.
+  // Date picker: data arbitrária pra editar dias passados (não só semana atual).
+  // Quando definida, sobrescreve o tab da semana.
+  const [customDate, setCustomDate] = useState<string | null>(null);
+
+  // Calcula a data exata: ou customDate (se definida) ou tab da semana corrente.
   const weekMonday = useMemo(() => startOfWeek(today, { weekStartsOn: 1 }), [today]);
-  const activeDate = useMemo(() => addDays(weekMonday, activeDay), [weekMonday, activeDay]);
-  const activeDateString = useMemo(() => format(activeDate, "yyyy-MM-dd"), [activeDate]);
+  const tabDate = useMemo(() => addDays(weekMonday, activeDay), [weekMonday, activeDay]);
+  const activeDateString = customDate ?? format(tabDate, "yyyy-MM-dd");
 
   // ─── Activities do dia (backend resolve biweekly) ──────────────────────────
   const { data: activities, isLoading: activitiesLoading } = useActivities(activeDateString);
@@ -122,29 +126,55 @@ const DayView = ({ assessors }: DayViewProps) => {
 
   return (
     <div className="space-y-4">
-      {/* Tabs dos 5 dias úteis */}
-      <div className="flex gap-2">
+      {/* Tabs dos 5 dias úteis + date picker pra navegar pra dias arbitrários */}
+      <div className="flex gap-2 items-center flex-wrap">
         {[1, 2, 3, 4, 5].map((dow) => {
           const i = dow - 1;
           const lbl = DAY_LABELS[dow];
+          const selected = !customDate && activeDay === i;
           return (
             <button
               key={dow}
-              onClick={() => setActiveDay(i)}
+              onClick={() => { setCustomDate(null); setActiveDay(i); }}
               className={`relative px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                activeDay === i
+                selected
                   ? "gradient-neon text-white glow-primary"
                   : "bg-muted/30 text-muted-foreground hover:bg-muted/50 border border-border/30"
               }`}
             >
               <span className="hidden md:inline">{lbl.label}</span>
               <span className="md:hidden">{lbl.short}</span>
-              {i === defaultTab && (
+              {i === defaultTab && !customDate && (
                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
               )}
             </button>
           );
         })}
+
+        {/* Date picker pra editar dias fora da semana atual */}
+        <div className="ml-auto flex items-center gap-2">
+          <input
+            type="date"
+            value={customDate ?? ""}
+            onChange={(e) => setCustomDate(e.target.value || null)}
+            max={format(today, "yyyy-MM-dd")}
+            className={`px-3 py-2 rounded-lg text-sm font-mono border transition-all ${
+              customDate
+                ? "bg-primary/10 border-primary/40 text-primary"
+                : "bg-muted/30 border-border/30 text-muted-foreground hover:text-foreground"
+            }`}
+            title="Editar registro de uma data específica"
+          />
+          {customDate && (
+            <button
+              onClick={() => setCustomDate(null)}
+              className="text-xs text-muted-foreground hover:text-destructive"
+              title="Voltar pra semana atual"
+            >
+              ✕ semana atual
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Foco do dia — direcionamento rápido */}
@@ -164,6 +194,9 @@ const DayView = ({ assessors }: DayViewProps) => {
           ))}
         </div>
       )}
+
+      {/* Direcionamento livre editável (orientação do coordenador) */}
+      <DailyDirection date={activeDateString} dayLabel={`${dayLabel} ${activeDateString.split("-").reverse().slice(0, 2).join("/")}`} />
 
       <AnimatePresence mode="wait">
         <motion.div
