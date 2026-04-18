@@ -229,7 +229,21 @@ const AdminSchedule = () => {
                       <TableRow key={act.id} className={`border-border/20 ${!act.active ? "opacity-50" : ""}`}>
                         <TableCell className="text-sm font-semibold text-foreground">{act.name}</TableCell>
                         <TableCell className="text-xs font-mono text-muted-foreground">
-                          {act.startTime}–{act.endTime}
+                          <InlineTimeEditor
+                            startTime={act.startTime}
+                            endTime={act.endTime}
+                            onSave={async (start, end) => {
+                              try {
+                                await updateActivity.mutateAsync({
+                                  id: act.id,
+                                  input: { startTime: start, endTime: end },
+                                });
+                                toast.success("Horário atualizado");
+                              } catch (err) {
+                                toast.error(err instanceof Error ? err.message : "Erro ao atualizar");
+                              }
+                            }}
+                          />
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className="text-[10px] font-mono border-border/40">
@@ -294,11 +308,11 @@ const AdminSchedule = () => {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs">Início</Label>
-                <Input value={formStart} onChange={(e) => setFormStart(e.target.value)} placeholder="HH:mm" className="mt-1 font-mono" />
+                <Input type="time" value={formStart} onChange={(e) => setFormStart(e.target.value)} className="mt-1 font-mono" />
               </div>
               <div>
                 <Label className="text-xs">Fim</Label>
-                <Input value={formEnd} onChange={(e) => setFormEnd(e.target.value)} placeholder="HH:mm" className="mt-1 font-mono" />
+                <Input type="time" value={formEnd} onChange={(e) => setFormEnd(e.target.value)} className="mt-1 font-mono" />
               </div>
             </div>
             <div>
@@ -466,6 +480,97 @@ function KpiManager({
           </Button>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Inline time editor ──────────────────────────────────────────────────────
+// Click no horário → abre 2 inputs type="time" inline, salva no Enter ou blur.
+// Esc cancela. Atalho rápido pra Felipe não precisar abrir o dialog completo.
+function InlineTimeEditor({
+  startTime,
+  endTime,
+  onSave,
+}: {
+  startTime: string;
+  endTime: string;
+  onSave: (start: string, end: string) => Promise<void>;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [start, setStart] = useState(startTime);
+  const [end, setEnd] = useState(endTime);
+  const [saving, setSaving] = useState(false);
+
+  const commit = async () => {
+    if (start === startTime && end === endTime) {
+      setEditing(false);
+      return;
+    }
+    if (!start || !end) {
+      setStart(startTime);
+      setEnd(endTime);
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    try {
+      await onSave(start, end);
+      setEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const cancel = () => {
+    setStart(startTime);
+    setEnd(endTime);
+    setEditing(false);
+  };
+
+  if (!editing) {
+    return (
+      <button
+        onClick={() => {
+          setStart(startTime);
+          setEnd(endTime);
+          setEditing(true);
+        }}
+        className="font-mono text-xs hover:text-primary hover:bg-primary/10 px-1.5 py-0.5 rounded transition-all"
+        title="Editar horário"
+      >
+        {startTime}–{endTime}
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      <input
+        type="time"
+        value={start}
+        onChange={(e) => setStart(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") commit();
+          if (e.key === "Escape") cancel();
+        }}
+        autoFocus
+        disabled={saving}
+        className="w-[70px] px-1 py-0.5 rounded bg-muted/30 border border-primary/30 text-xs font-mono focus:outline-none focus:border-primary"
+      />
+      <span className="text-muted-foreground">–</span>
+      <input
+        type="time"
+        value={end}
+        onChange={(e) => setEnd(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") commit();
+          if (e.key === "Escape") cancel();
+        }}
+        onBlur={commit}
+        disabled={saving}
+        className="w-[70px] px-1 py-0.5 rounded bg-muted/30 border border-primary/30 text-xs font-mono focus:outline-none focus:border-primary"
+      />
+      {saving && <Loader2 className="w-3 h-3 animate-spin text-primary" />}
     </div>
   );
 }
