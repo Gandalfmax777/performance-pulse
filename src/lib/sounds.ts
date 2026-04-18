@@ -250,6 +250,23 @@ export function playKpiSound(kpiKey: string): void {
 }
 
 /**
+ * Som de "subida no ranking" — quando assessor passa um colega na ordem.
+ * Mais discreto que goal-hit (não é meta batida, é só uma posição). 3 notas
+ * ascendentes rápidas C5-E5-G5 (acorde maior em arpejo).
+ */
+export function playRiseSound(): void {
+  if (muted) return;
+  try {
+    const v = getVolume() * 0.9;
+    tone(523.25, 120, v * 0.7, 0, "sine"); // C5
+    tone(659.25, 120, v * 0.7, 0.07, "sine"); // E5
+    tone(783.99, 200, v * 0.8, 0.14, "sine"); // G5
+  } catch {
+    // ignore
+  }
+}
+
+/**
  * Som de vitória ao bater meta (cruzar 100%). Mais cheio que os por-KPI.
  */
 export function playGoalHitSound(): void {
