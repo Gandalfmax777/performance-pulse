@@ -285,9 +285,9 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => window.print()}
+              onClick={() => window.open("/relatorio?period=weekly&autoprint=1", "_blank")}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground bg-muted/20 border border-border/30 hover:bg-muted/40 transition-all"
-              title="Imprimir relatório / salvar PDF"
+              title="Abre relatório dedicado em nova aba e auto-imprime"
             >
               <Printer className="w-3 h-3" />
               PDF
