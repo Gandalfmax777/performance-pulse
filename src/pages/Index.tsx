@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import DashboardSidebar, { type DashboardView } from "@/components/dashboard/DashboardSidebar";
+import DashboardTopbar from "@/components/dashboard/DashboardTopbar";
 import Leaderboard from "@/components/dashboard/Leaderboard";
 import KpiCards from "@/components/dashboard/KpiCards";
 import WeeklyHeatmap from "@/components/dashboard/WeeklyHeatmap";
@@ -17,7 +18,7 @@ import PresentationMode from "@/components/dashboard/PresentationMode";
 import { Presentation } from "lucide-react";
 import { useAssessors } from "@/hooks/useAssessors";
 import { useRankingStream } from "@/hooks/useRankingStream";
-import { Settings, Tv, X, Play, Pause, SkipForward, Timer } from "lucide-react";
+import { Tv, X, Play, Pause, SkipForward, Timer } from "lucide-react";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 
 type OverviewPeriod = "daily" | "weekly" | "monthly" | "semester";
@@ -51,15 +52,15 @@ function rangeForPeriod(period: OverviewPeriod): { from: string; to: string } {
   }
 }
 
-type View = "overview" | "daily" | "results" | "kpis" | "squad";
+type View = DashboardView;
 
-const TABS: { key: View; label: string }[] = [
-  { key: "overview", label: "Visão Geral" },
-  { key: "daily", label: "Por Dia" },
-  { key: "results", label: "Ranking Geral" },
-  { key: "kpis", label: "KPIs & Insights" },
-  { key: "squad", label: "⚔️ Squad Bet" },
-];
+const VIEW_LABELS: Record<View, string> = {
+  overview: "Visão Geral",
+  daily: "Por Dia",
+  results: "Ranking Geral",
+  kpis: "KPIs & Insights",
+  squad: "Squad Bet",
+};
 
 const TV_TABS: View[] = ["overview", "results", "squad"];
 const TV_INTERVALS = [10, 15, 20, 30, 45, 60];
@@ -68,6 +69,7 @@ const Index = () => {
   const [view, setView] = useState<View>("overview");
   const { assessors, addAssessor, removeAssessor } = useAssessors();
   const [showManager, setShowManager] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   // Filtro de período da Visão Geral (impacta KpiCards e PerformanceChart)
   const [overviewPeriod, setOverviewPeriod] = useState<OverviewPeriod>("weekly");
   const overviewRange = rangeForPeriod(overviewPeriod);
@@ -153,14 +155,15 @@ const Index = () => {
     return () => document.removeEventListener("fullscreenchange", handler);
   }, [tvMode]);
 
-  const tvTabsInfo = TABS.filter(t => TV_TABS.includes(t.key));
+  const tvTabsInfo = TV_TABS.map(k => ({ key: k, label: VIEW_LABELS[k] }));
 
-  return (
-    <div className={`min-h-screen bg-background relative overflow-x-hidden ${tvMode ? "p-6 tv-mode" : "p-5"}`}>
-      {/* Ambient gradient mesh */}
-      <div className="fixed inset-0 pointer-events-none bg-mesh" />
-      {/* TV Mode overlay controls */}
-      {tvMode && (
+  // ─── TV MODE: fullscreen, sem sidebar/topbar ──────────────────────────────
+  if (tvMode) {
+    return (
+      <div className="min-h-screen bg-background relative overflow-x-hidden p-6 tv-mode">
+        <div className="fixed inset-0 pointer-events-none bg-mesh" />
+
+        {/* Overlay de controles TV */}
         <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-2 bg-background/90 backdrop-blur-md border-b border-primary/20">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 px-3 py-1 rounded-lg gradient-neon">
@@ -173,7 +176,7 @@ const Index = () => {
                 onClick={() => { setView(tab.key); setTvProgress(0); }}
                 className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${
                   view === tab.key
-                    ? "bg-primary/20 text-primary border border-primary/30"
+                    ? "bg-primary text-secondary border border-primary"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -205,7 +208,7 @@ const Index = () => {
                     key={sec}
                     onClick={() => { setTvInterval(sec); setTvProgress(0); setShowTvSettings(false); }}
                     className={`block w-full text-left px-3 py-1 rounded-lg text-sm transition-all ${
-                      tvInterval === sec ? "gradient-primary text-primary-foreground font-bold" : "text-foreground hover:bg-muted/30"
+                      tvInterval === sec ? "bg-primary text-secondary font-bold" : "text-foreground hover:bg-muted/30"
                     }`}
                   >
                     {sec}s
@@ -219,109 +222,99 @@ const Index = () => {
             <div className="h-full gradient-neon transition-all duration-100 ease-linear" style={{ width: `${tvProgress}%` }} />
           </div>
         </div>
-      )}
 
-      {!tvMode && <DashboardHeader />}
-      {/* Em TV mode: header escondido pra maximizar espaço vertical. Overlay já tem controles. */}
-      {tvMode && <div className="pt-14" />}
+        <div className="pt-14" />
 
-      {/* View Toggle */}
-      {!tvMode && (
-        <div className="flex items-center gap-2 mb-5">
-          {TABS.map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setView(tab.key)}
-              className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-                view === tab.key
-                  ? "gradient-neon text-white glow-primary"
-                  : "bg-muted/30 text-muted-foreground hover:bg-muted/50 border border-border/30"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-
-          <button
-            onClick={enterTvMode}
-            className="px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 text-sm font-semibold flex items-center gap-2 transition-all"
-          >
-            <Tv className="w-4 h-4" /> Modo TV
-          </button>
-
-          <button
-            onClick={() => setShowManager(true)}
-            className="ml-auto px-4 py-2 rounded-lg bg-muted/30 text-muted-foreground hover:bg-muted/50 border border-border/30 text-sm font-semibold flex items-center gap-2 transition-all hover:text-foreground"
-          >
-            <Settings className="w-4 h-4" /> Assessores
-          </button>
-        </div>
-      )}
-
-      {view === "overview" && (
-        <div className="space-y-4">
-          {/* Ticker de avisos no topo */}
-          <AnnouncementTicker assessors={assessors} />
-
-          {/* Filtro de período + botão Apresentação (escondidos em TV mode) */}
-          {!tvMode && (
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-muted-foreground">Período:</span>
-              <div className="flex gap-1 bg-muted/20 rounded-lg p-1">
-                {OVERVIEW_PERIODS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setOverviewPeriod(opt.value)}
-                    className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
-                      overviewPeriod === opt.value
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={() => setPresentationOpen(true)}
-                className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 text-xs font-semibold transition-all"
-                title="Modo Apresentação — slides full-screen pra reunião de fechamento"
-              >
-                <Presentation className="w-3.5 h-3.5" />
-                Apresentação
-              </button>
-            </div>
-          )}
-
-          {/* Row 1: KPI Cards full width */}
-          <KpiCards from={overviewRange.from} to={overviewRange.to} />
-
-          {/* Row 2: Ranking + Chart + Heatmap */}
-          {tvMode ? (
-            /* TV Mode: ranking dramático full-width, máxima visibilidade na TV */
+        {view === "overview" && (
+          <div className="space-y-4">
+            <AnnouncementTicker assessors={assessors} />
+            <KpiCards from={overviewRange.from} to={overviewRange.to} />
             <TvRanking assessors={assessors} />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
-              <div className="lg:col-span-4">
-                <Leaderboard assessors={assessors} />
+          </div>
+        )}
+        {view === "results" && <DailyResults assessors={assessors} />}
+        {view === "squad" && <SquadBet assessors={assessors} />}
+      </div>
+    );
+  }
+
+  // ─── DASHBOARD MODE: sidebar fixa + main ─────────────────────────────────
+  return (
+    <div className="min-h-screen bg-background flex relative overflow-x-hidden">
+      <div className="fixed inset-0 pointer-events-none bg-mesh" />
+
+      <DashboardSidebar
+        view={view}
+        onViewChange={setView}
+        onEnterTv={enterTvMode}
+        onOpenAssessors={() => setShowManager(true)}
+        mobileOpen={mobileNavOpen}
+        onMobileClose={() => setMobileNavOpen(false)}
+      />
+
+      <main className="flex-1 min-w-0 flex flex-col">
+        <DashboardTopbar
+          title={VIEW_LABELS[view]}
+          onMenuClick={() => setMobileNavOpen(true)}
+        />
+
+        <div className="flex-1 p-5 space-y-4">
+          {view === "overview" && (
+            <div className="space-y-4">
+              <AnnouncementTicker assessors={assessors} />
+
+              {/* Filtro de período + botão Apresentação */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-muted-foreground">Período:</span>
+                <div className="flex gap-1 bg-muted/20 rounded-lg p-1">
+                  {OVERVIEW_PERIODS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setOverviewPeriod(opt.value)}
+                      className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+                        overviewPeriod === opt.value
+                          ? "bg-primary text-secondary"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setPresentationOpen(true)}
+                  className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 text-xs font-semibold transition-all"
+                  title="Modo Apresentação — slides full-screen pra reunião de fechamento"
+                >
+                  <Presentation className="w-3.5 h-3.5" />
+                  Apresentação
+                </button>
               </div>
-              <div className="lg:col-span-5 space-y-4">
-                <PerformanceChart />
-                <BadgesPanel assessors={assessors} />
-              </div>
-              <div className="md:col-span-2 lg:col-span-3 space-y-4">
-                <WeeklyHeatmap assessors={assessors} />
-                <ActivityFeed />
+
+              <KpiCards from={overviewRange.from} to={overviewRange.to} />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
+                <div className="lg:col-span-4">
+                  <Leaderboard assessors={assessors} />
+                </div>
+                <div className="lg:col-span-5 space-y-4">
+                  <PerformanceChart />
+                  <BadgesPanel assessors={assessors} />
+                </div>
+                <div className="md:col-span-2 lg:col-span-3 space-y-4">
+                  <WeeklyHeatmap assessors={assessors} />
+                  <ActivityFeed />
+                </div>
               </div>
             </div>
           )}
-        </div>
-      )}
 
-      {view === "daily" && <DayView assessors={assessors} />}
-      {view === "results" && <DailyResults assessors={assessors} />}
-      {view === "kpis" && <KpiAnalytics assessors={assessors} />}
-      {view === "squad" && <SquadBet assessors={assessors} />}
+          {view === "daily" && <DayView assessors={assessors} />}
+          {view === "results" && <DailyResults assessors={assessors} />}
+          {view === "kpis" && <KpiAnalytics assessors={assessors} />}
+          {view === "squad" && <SquadBet assessors={assessors} />}
+        </div>
+      </main>
 
       {showManager && (
         <AssessorManager
