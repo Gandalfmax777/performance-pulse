@@ -4,62 +4,78 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
 
-/* ─── Print layout (Fase 11) ───────────────────────────────────────────────
-   Layout otimizado pra papel A4. Background branco, sem gradientes,
-   KPIs em tabela, charts escondidos (renderizam mal em print). */
+/* ─── Print layout ──────────────────────────────────────────────────────────
+   Estratégia: NÃO esconder tudo (causava página em branco). Em vez disso,
+   esconder explicitamente .no-print e converter dark mode → branco/preto. */
 @media print {
-  body * {
-    visibility: hidden;
-  }
-  .printable,
-  .printable * {
-    visibility: visible;
-  }
-  .printable {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 24px !important;
+  /* Reset background pra economizar tinta */
+  body {
     background: white !important;
     color: black !important;
-    border: none !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
   }
-  /* Limpar visual dark mode */
-  .printable .card-glass,
-  .printable [class*="bg-muted"],
-  .printable [class*="bg-primary"] {
-    background: white !important;
-    border: 1px solid #e5e5e5 !important;
-    box-shadow: none !important;
-  }
-  /* Texto legível */
-  .printable [class*="text-foreground"],
-  .printable [class*="text-primary"],
-  .printable [class*="font-bold"] {
-    color: #111 !important;
-  }
-  .printable [class*="text-muted"] {
-    color: #666 !important;
-  }
-  /* Esconder elementos interativos e charts */
+
+  /* Esconder elementos interativos/decorativos */
   .no-print,
-  .print-hide {
+  .print-hide,
+  nav,
+  header,
+  button,
+  .fixed,
+  .sticky {
     display: none !important;
   }
+
   /* Mostrar elementos exclusivos de print */
   .print-show {
     display: block !important;
   }
-  /* Progress bars em preto pra economia de tinta */
-  .printable [class*="gradient-"],
-  .printable [class*="bg-success"],
-  .printable [class*="bg-chart-"] {
+
+  /* Cards: fundo branco, borda fina */
+  .card-glass,
+  [class*="bg-muted"],
+  [class*="bg-primary/"],
+  [class*="bg-success/"] {
+    background: white !important;
+    border: 1px solid #e5e5e5 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Texto sempre escuro */
+  body,
+  body * {
+    color: #111 !important;
+  }
+  [class*="text-muted"] {
+    color: #666 !important;
+  }
+
+  /* Progress bars em preto */
+  [class*="gradient-"],
+  [class*="bg-success"]:not(.bg-success\/0),
+  [class*="bg-chart-"] {
     background: #333 !important;
+  }
+
+  /* Layout fluido, sem max-width */
+  main,
+  .container,
+  [class*="max-w-"] {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* Page breaks razoáveis */
+  .card-glass {
+    page-break-inside: avoid;
+  }
+
+  /* Compatibilidade com sistema antigo de .printable (Fase 11) */
+  .printable {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 16px !important;
   }
 }
 
