@@ -77,6 +77,26 @@
     margin: 0 !important;
     padding: 16px !important;
   }
+
+  /* PresentationMode: ao imprimir, mostra TODOS os slides em sequência (1 por página),
+     não só o atual. Cada slide vira uma página A4 dedicada. */
+  .presentation-mode .presentation-slide {
+    display: none !important;
+  }
+  .presentation-mode .print-all-slides {
+    display: block !important;
+  }
+  .presentation-mode .presentation-slide-print {
+    page-break-after: always;
+    padding: 24px 32px;
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .presentation-mode .presentation-slide-print:last-child {
+    page-break-after: auto;
+  }
 }
 
 @layer base {

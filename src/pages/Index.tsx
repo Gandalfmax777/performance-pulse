@@ -13,6 +13,8 @@ import AssessorManager from "@/components/dashboard/AssessorManager";
 import SquadBet from "@/components/dashboard/SquadBet";
 import TvRanking from "@/components/dashboard/TvRanking";
 import AnnouncementTicker from "@/components/dashboard/AnnouncementTicker";
+import PresentationMode from "@/components/dashboard/PresentationMode";
+import { Presentation } from "lucide-react";
 import { useAssessors } from "@/hooks/useAssessors";
 import { useRankingStream } from "@/hooks/useRankingStream";
 import { Settings, Tv, X, Play, Pause, SkipForward, Timer } from "lucide-react";
@@ -69,6 +71,9 @@ const Index = () => {
   // Filtro de período da Visão Geral (impacta KpiCards e PerformanceChart)
   const [overviewPeriod, setOverviewPeriod] = useState<OverviewPeriod>("weekly");
   const overviewRange = rangeForPeriod(overviewPeriod);
+
+  // Modo Apresentação: full-screen com slides pra reunião de fechamento
+  const [presentationOpen, setPresentationOpen] = useState(false);
 
   // TV Mode state — suporta kiosk mode via ?tv=1 na URL
   const [tvMode, setTvMode] = useState(() => {
@@ -258,9 +263,9 @@ const Index = () => {
           {/* Ticker de avisos no topo */}
           <AnnouncementTicker assessors={assessors} />
 
-          {/* Filtro de período (escondido em TV mode) */}
+          {/* Filtro de período + botão Apresentação (escondidos em TV mode) */}
           {!tvMode && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs text-muted-foreground">Período:</span>
               <div className="flex gap-1 bg-muted/20 rounded-lg p-1">
                 {OVERVIEW_PERIODS.map((opt) => (
@@ -277,6 +282,14 @@ const Index = () => {
                   </button>
                 ))}
               </div>
+              <button
+                onClick={() => setPresentationOpen(true)}
+                className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 text-xs font-semibold transition-all"
+                title="Modo Apresentação — slides full-screen pra reunião de fechamento"
+              >
+                <Presentation className="w-3.5 h-3.5" />
+                Apresentação
+              </button>
             </div>
           )}
 
@@ -316,6 +329,13 @@ const Index = () => {
           onAdd={addAssessor}
           onRemove={removeAssessor}
           onClose={() => setShowManager(false)}
+        />
+      )}
+
+      {presentationOpen && (
+        <PresentationMode
+          assessors={assessors}
+          onClose={() => setPresentationOpen(false)}
         />
       )}
     </div>
