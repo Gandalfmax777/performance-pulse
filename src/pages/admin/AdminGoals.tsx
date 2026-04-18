@@ -564,6 +564,14 @@ function CreateKpiDialog({ open, onClose, onSuccess }: CreateKpiDialogProps) {
   const [createGoal, setCreateGoal] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Scoring rule (opcional). Default: LINEAR 1:1 (= 1 unidade vale 1 ponto).
+  const [createRule, setCreateRule] = useState(true);
+  const [ruleType, setRuleType] = useState<"LINEAR" | "THRESHOLD_PERCENT">("LINEAR");
+  const [divisor, setDivisor] = useState(1);
+  const [pointsPerBucket, setPointsPerBucket] = useState(1);
+  const [thresholdPct, setThresholdPct] = useState(70);
+  const [thresholdPoints, setThresholdPoints] = useState(5);
+
   // Reset ao fechar
   const reset = () => {
     setKey("");
@@ -573,6 +581,12 @@ function CreateKpiDialog({ open, onClose, onSuccess }: CreateKpiDialogProps) {
     setDefaultTarget(1);
     setPeriod("DAILY");
     setCreateGoal(true);
+    setCreateRule(true);
+    setRuleType("LINEAR");
+    setDivisor(1);
+    setPointsPerBucket(1);
+    setThresholdPct(70);
+    setThresholdPoints(5);
   };
 
   const handleSave = async () => {
@@ -591,6 +605,14 @@ function CreateKpiDialog({ open, onClose, onSuccess }: CreateKpiDialogProps) {
           inputMode,
           defaultTarget,
           ...(createGoal ? { goal: { value: defaultTarget, period } } : {}),
+          ...(createRule
+            ? {
+                scoringRule:
+                  ruleType === "LINEAR"
+                    ? { ruleType, divisor, pointsPerBucket }
+                    : { ruleType, thresholdPct, thresholdPoints },
+              }
+            : {}),
         },
       });
       reset();
@@ -700,6 +722,90 @@ function CreateKpiDialog({ open, onClose, onSuccess }: CreateKpiDialogProps) {
                 </Select>
               )}
             </div>
+          </div>
+
+          {/* Scoring rule (opcional) */}
+          <div className="pt-2 border-t border-border/30 space-y-2">
+            <div className="flex items-start gap-2">
+              <Checkbox
+                id="createRule"
+                checked={createRule}
+                onCheckedChange={(v) => setCreateRule(v === true)}
+              />
+              <div className="flex-1">
+                <Label htmlFor="createRule" className="text-xs font-medium cursor-pointer">
+                  Definir regra de pontuação
+                </Label>
+                <p className="text-[10px] text-muted-foreground">
+                  Sem regra, KPI cai no fallback proporcional (cap 150).
+                </p>
+              </div>
+            </div>
+            {createRule && (
+              <div className="space-y-2 pl-6">
+                <Select
+                  value={ruleType}
+                  onValueChange={(v) => setRuleType(v as typeof ruleType)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="LINEAR">Linear (a cada N = X pts)</SelectItem>
+                    <SelectItem value="THRESHOLD_PERCENT">Threshold (≥X% = Y pts)</SelectItem>
+                  </SelectContent>
+                </Select>
+                {ruleType === "LINEAR" ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-[10px]">A cada N</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        step="any"
+                        value={divisor}
+                        onChange={(e) => setDivisor(Number(e.target.value))}
+                        className="mt-1 font-mono h-8 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-[10px]">vale X pts</Label>
+                      <Input
+                        type="number"
+                        step="any"
+                        value={pointsPerBucket}
+                        onChange={(e) => setPointsPerBucket(Number(e.target.value))}
+                        className="mt-1 font-mono h-8 text-xs"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-[10px]">Threshold (% meta)</Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={150}
+                        value={thresholdPct}
+                        onChange={(e) => setThresholdPct(Number(e.target.value))}
+                        className="mt-1 font-mono h-8 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-[10px]">Pontos</Label>
+                      <Input
+                        type="number"
+                        step="any"
+                        value={thresholdPoints}
+                        onChange={(e) => setThresholdPoints(Number(e.target.value))}
+                        className="mt-1 font-mono h-8 text-xs"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
