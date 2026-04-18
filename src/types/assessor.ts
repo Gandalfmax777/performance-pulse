@@ -17,12 +17,18 @@ export interface Assessor {
   name: string;
   /** Iniciais (backend chama `initials`, mas o shape legacy usa `avatar`). */
   avatar: string;
-  /** URL da foto (relativa, ex: `/uploads/assessors/xxx.jpg`). Null se não tiver. */
+  /** URL da foto. Null se não tiver. */
   photoUrl: string | null;
   points: number;
   level: "bronze" | "silver" | "gold";
   streak: number;
   weeklyGoalPercent: number;
+  /** Banco de leads do assessor (usado na cadência). */
+  totalLeads?: number;
+  /** Banco de clientes do assessor (usado em touch point). */
+  totalClients?: number;
+  /** Data de retorno de férias (YYYY-MM-DD). Null = não está de férias. */
+  vacationUntil?: string | null;
   kpis: {
     leads: number;
     cadencia: number;

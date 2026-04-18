@@ -19,6 +19,7 @@ interface EditingState {
   level: "bronze" | "silver" | "gold";
   totalLeads: number;
   totalClients: number;
+  vacationUntil: string; // YYYY-MM-DD ou ""
 }
 
 const LEVELS: Array<{ value: "bronze" | "silver" | "gold"; label: string; color: string }> = [
@@ -46,8 +47,9 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
       id: a.id,
       name: a.name,
       level: a.level,
-      totalLeads: (a as unknown as { totalLeads?: number }).totalLeads ?? 0,
-      totalClients: (a as unknown as { totalClients?: number }).totalClients ?? 0,
+      totalLeads: a.totalLeads ?? 0,
+      totalClients: a.totalClients ?? 0,
+      vacationUntil: a.vacationUntil ?? "",
     });
   };
 
@@ -62,6 +64,7 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
           level: editing.level.toUpperCase(),
           totalLeads: editing.totalLeads,
           totalClients: editing.totalClients,
+          vacationUntil: editing.vacationUntil ? editing.vacationUntil : null,
         },
       });
       queryClient.invalidateQueries({ queryKey: ["assessors"] });
@@ -248,7 +251,7 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
                       </button>
                     ))}
                   </div>
-                  <div className="flex gap-2 mt-1">
+                  <div className="flex gap-2 mt-1 flex-wrap">
                     <div className="flex items-center gap-1">
                       <span className="text-[9px] text-muted-foreground">Leads:</span>
                       <input
@@ -268,6 +271,26 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
                         onChange={(e) => setEditing({ ...editing, totalClients: parseInt(e.target.value) || 0 })}
                         className="w-14 px-1.5 py-0.5 rounded-md bg-muted/30 border border-border/30 text-[10px] font-mono text-foreground text-center focus:outline-none focus:border-primary/50"
                       />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[9px] text-muted-foreground" title="Esconde do ranking até essa data">
+                        🏖️ até:
+                      </span>
+                      <input
+                        type="date"
+                        value={editing.vacationUntil}
+                        onChange={(e) => setEditing({ ...editing, vacationUntil: e.target.value })}
+                        className="px-1.5 py-0.5 rounded-md bg-muted/30 border border-border/30 text-[10px] font-mono text-foreground focus:outline-none focus:border-primary/50"
+                      />
+                      {editing.vacationUntil && (
+                        <button
+                          onClick={() => setEditing({ ...editing, vacationUntil: "" })}
+                          className="text-[9px] text-muted-foreground hover:text-destructive"
+                          title="Limpar férias"
+                        >
+                          ✕
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

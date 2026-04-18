@@ -13,6 +13,9 @@ export interface ApiAssessor {
   photoUrl: string | null;
   level: "BRONZE" | "SILVER" | "GOLD";
   active: boolean;
+  totalLeads: number;
+  totalClients: number;
+  vacationUntil: string | null;
   hiredAt: string;
   createdAt: string;
   updatedAt: string;
@@ -62,6 +65,9 @@ function toLegacyAssessor(a: ApiAssessor, rollup: ApiRollup | undefined): Assess
     level: a.level.toLowerCase() as Assessor["level"],
     streak: rollup?.streak ?? 0,
     weeklyGoalPercent: rollup?.weeklyGoalPercent ?? 0,
+    totalLeads: a.totalLeads,
+    totalClients: a.totalClients,
+    vacationUntil: a.vacationUntil,
     kpis,
     dailyActivity: rollup
       ? buildDailyActivityFlags(rollup.activeDays)
