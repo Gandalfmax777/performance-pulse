@@ -82,13 +82,16 @@ function normalizeArgs(args: UpsertMetricArgs): {
 /**
  * Upsert de uma metric entry. Invalida lista de metrics + rankings.
  *
- * Side effect sonoro (gamificação):
- * - Sempre toca o som específico do KPI (silencioso se mudo)
- * - Se prevPercent < 100 e novo convertedPercent >= 100: toca som de vitória
+ * Side effect sonoro (gamificação) — Felipe pediu som APENAS em "ativacao_conta"
+ * (representa uma venda fechada). Antes tocava em todo KPI, mas isso ficou
+ * poluído em uso real. Ativação de conta é o evento celebrável por excelência.
+ * Meta batida (100%) também toca — é um marco independente.
  *
  * Caller pode passar só `UpsertMetricInput` (sem som de vitória) OU
  * `{ input, prevPercent }` (com detecção de meta batida).
  */
+const SOUND_KPI_KEYS = new Set(["ativacao_conta"]);
+
 export function useUpsertMetric() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -103,7 +106,9 @@ export function useUpsertMetric() {
 
       // Gamificação sonora — silencioso se mudo
       const { prevPercent } = normalizeArgs(args);
-      playKpiSound(data.kpiKey);
+      if (SOUND_KPI_KEYS.has(data.kpiKey)) {
+        playKpiSound(data.kpiKey);
+      }
       const newPct = data.convertedPercent ?? 0;
       if (prevPercent < 100 && newPct >= 100) {
         playGoalHitSound();
