@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import DashboardSidebar, { type DashboardView } from "@/components/dashboard/DashboardSidebar";
 import DashboardTopbar from "@/components/dashboard/DashboardTopbar";
 import Leaderboard from "@/components/dashboard/Leaderboard";
@@ -7,14 +7,17 @@ import WeeklyHeatmap from "@/components/dashboard/WeeklyHeatmap";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import PerformanceChart from "@/components/dashboard/PerformanceChart";
 import BadgesPanel from "@/components/dashboard/BadgesPanel";
-import DayView from "@/components/dashboard/DayView";
-import DailyResults from "@/components/dashboard/DailyResults";
-import KpiAnalytics from "@/components/dashboard/KpiAnalytics";
-import AssessorManager from "@/components/dashboard/AssessorManager";
-import SquadBet from "@/components/dashboard/SquadBet";
-import TvRanking from "@/components/dashboard/TvRanking";
 import AnnouncementTicker from "@/components/dashboard/AnnouncementTicker";
-import PresentationMode from "@/components/dashboard/PresentationMode";
+
+// Lazy: views condicionais (não-overview) e modais carregam só quando o user navega.
+// Reduz o bundle inicial e mantém a "Visão Geral" instantânea.
+const DayView = lazy(() => import("@/components/dashboard/DayView"));
+const DailyResults = lazy(() => import("@/components/dashboard/DailyResults"));
+const KpiAnalytics = lazy(() => import("@/components/dashboard/KpiAnalytics"));
+const SquadBet = lazy(() => import("@/components/dashboard/SquadBet"));
+const TvRanking = lazy(() => import("@/components/dashboard/TvRanking"));
+const PresentationMode = lazy(() => import("@/components/dashboard/PresentationMode"));
+const AssessorManager = lazy(() => import("@/components/dashboard/AssessorManager"));
 import { Presentation } from "lucide-react";
 import { useAssessors } from "@/hooks/useAssessors";
 import { useRankingStream } from "@/hooks/useRankingStream";
@@ -225,15 +228,17 @@ const Index = () => {
 
         <div className="pt-14" />
 
-        {view === "overview" && (
-          <div className="space-y-4">
-            <AnnouncementTicker assessors={assessors} />
-            <KpiCards from={overviewRange.from} to={overviewRange.to} />
-            <TvRanking assessors={assessors} />
-          </div>
-        )}
-        {view === "results" && <DailyResults assessors={assessors} />}
-        {view === "squad" && <SquadBet assessors={assessors} />}
+        <Suspense fallback={<InlineLoader />}>
+          {view === "overview" && (
+            <div className="space-y-4">
+              <AnnouncementTicker assessors={assessors} />
+              <KpiCards from={overviewRange.from} to={overviewRange.to} />
+              <TvRanking assessors={assessors} />
+            </div>
+          )}
+          {view === "results" && <DailyResults assessors={assessors} />}
+          {view === "squad" && <SquadBet assessors={assessors} />}
+        </Suspense>
       </div>
     );
   }
@@ -312,30 +317,43 @@ const Index = () => {
             </div>
           )}
 
-          {view === "daily" && <DayView assessors={assessors} />}
-          {view === "results" && <DailyResults assessors={assessors} />}
-          {view === "kpis" && <KpiAnalytics assessors={assessors} />}
-          {view === "squad" && <SquadBet assessors={assessors} />}
+          <Suspense fallback={<InlineLoader />}>
+            {view === "daily" && <DayView assessors={assessors} />}
+            {view === "results" && <DailyResults assessors={assessors} />}
+            {view === "kpis" && <KpiAnalytics assessors={assessors} />}
+            {view === "squad" && <SquadBet assessors={assessors} />}
+          </Suspense>
         </div>
       </main>
 
       {showManager && (
-        <AssessorManager
-          assessors={assessors}
-          onAdd={addAssessor}
-          onRemove={removeAssessor}
-          onClose={() => setShowManager(false)}
-        />
+        <Suspense fallback={null}>
+          <AssessorManager
+            assessors={assessors}
+            onAdd={addAssessor}
+            onRemove={removeAssessor}
+            onClose={() => setShowManager(false)}
+          />
+        </Suspense>
       )}
 
       {presentationOpen && (
-        <PresentationMode
-          assessors={assessors}
-          onClose={() => setPresentationOpen(false)}
-        />
+        <Suspense fallback={null}>
+          <PresentationMode
+            assessors={assessors}
+            onClose={() => setPresentationOpen(false)}
+          />
+        </Suspense>
       )}
     </div>
   );
 };
+
+// Loader inline simples pra fallback de Suspense em views lazy.
+const InlineLoader = () => (
+  <div className="flex items-center justify-center py-12">
+    <div className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+  </div>
+);
 
 export default Index;

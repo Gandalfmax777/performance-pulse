@@ -1,3 +1,4 @@
+import { lazy, Suspense, type ReactElement } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
@@ -7,19 +8,22 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { getAuthToken } from "@/api/client";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { RequireAdmin } from "@/components/layouts/RequireAdmin";
-import Index from "./pages/Index.tsx";
-import Login from "./pages/Login.tsx";
-import NotFound from "./pages/NotFound.tsx";
-import Relatorio from "./pages/Relatorio.tsx";
-import RelatorioAssessor from "./pages/RelatorioAssessor.tsx";
-import AdminLayout from "./pages/admin/AdminLayout.tsx";
-import AdminGoals from "./pages/admin/AdminGoals.tsx";
-import AdminSchedule from "./pages/admin/AdminSchedule.tsx";
-import AdminBiweekly from "./pages/admin/AdminBiweekly.tsx";
-import AdminBetsConfig from "./pages/admin/AdminBetsConfig.tsx";
-import AdminAnnouncements from "./pages/admin/AdminAnnouncements.tsx";
-import AdminUsers from "./pages/admin/AdminUsers.tsx";
-import type { ReactElement } from "react";
+import FullScreenLoader from "@/components/ui/FullScreenLoader";
+
+// Páginas lazy: cada rota vira seu próprio chunk, reduzindo bundle inicial.
+// /admin/* é usado só por admins mas era baixado junto — agora só quando navega.
+const Index = lazy(() => import("./pages/Index"));
+const Login = lazy(() => import("./pages/Login"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Relatorio = lazy(() => import("./pages/Relatorio"));
+const RelatorioAssessor = lazy(() => import("./pages/RelatorioAssessor"));
+const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
+const AdminGoals = lazy(() => import("./pages/admin/AdminGoals"));
+const AdminSchedule = lazy(() => import("./pages/admin/AdminSchedule"));
+const AdminBiweekly = lazy(() => import("./pages/admin/AdminBiweekly"));
+const AdminBetsConfig = lazy(() => import("./pages/admin/AdminBetsConfig"));
+const AdminAnnouncements = lazy(() => import("./pages/admin/AdminAnnouncements"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 
 const queryClient = new QueryClient();
 
@@ -39,57 +43,59 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/"
-            element={
-              <RequireAuth>
-                <Index />
-              </RequireAuth>
-            }
-          />
+        <Suspense fallback={<FullScreenLoader />}>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/"
+              element={
+                <RequireAuth>
+                  <Index />
+                </RequireAuth>
+              }
+            />
 
-          {/* Relatório PDF dedicado (auth obrigatório) */}
-          <Route
-            path="/relatorio"
-            element={
-              <RequireAuth>
-                <Relatorio />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/relatorio/assessor/:id"
-            element={
-              <RequireAuth>
-                <RelatorioAssessor />
-              </RequireAuth>
-            }
-          />
+            {/* Relatório PDF dedicado (auth obrigatório) */}
+            <Route
+              path="/relatorio"
+              element={
+                <RequireAuth>
+                  <Relatorio />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/relatorio/assessor/:id"
+              element={
+                <RequireAuth>
+                  <RelatorioAssessor />
+                </RequireAuth>
+              }
+            />
 
-          {/* Admin routes */}
-          <Route
-            path="/admin"
-            element={
-              <RequireAuth>
-                <RequireAdmin>
-                  <AdminLayout />
-                </RequireAdmin>
-              </RequireAuth>
-            }
-          >
-            <Route index element={<Navigate to="goals" replace />} />
-            <Route path="goals" element={<AdminGoals />} />
-            <Route path="schedule" element={<AdminSchedule />} />
-            <Route path="biweekly" element={<AdminBiweekly />} />
-            <Route path="bets-config" element={<AdminBetsConfig />} />
-            <Route path="announcements" element={<AdminAnnouncements />} />
-            <Route path="users" element={<AdminUsers />} />
-          </Route>
+            {/* Admin routes */}
+            <Route
+              path="/admin"
+              element={
+                <RequireAuth>
+                  <RequireAdmin>
+                    <AdminLayout />
+                  </RequireAdmin>
+                </RequireAuth>
+              }
+            >
+              <Route index element={<Navigate to="goals" replace />} />
+              <Route path="goals" element={<AdminGoals />} />
+              <Route path="schedule" element={<AdminSchedule />} />
+              <Route path="biweekly" element={<AdminBiweekly />} />
+              <Route path="bets-config" element={<AdminBetsConfig />} />
+              <Route path="announcements" element={<AdminAnnouncements />} />
+              <Route path="users" element={<AdminUsers />} />
+            </Route>
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
