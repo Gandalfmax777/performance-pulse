@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { X, Printer, Trophy, TrendingUp, Flame, Award, Loader2, Sparkles, RefreshCw } from "lucide-react";
 import Markdown from "react-markdown";
@@ -80,10 +80,37 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
     window.open(`/relatorio/assessor/${assessor.id}?period=weekly&autoprint=1`, "_blank");
   };
 
+  // ESC fecha — padrão UX de modal
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
   const a = assessor;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm overflow-y-auto py-8">
+    <div
+      // Click no backdrop (fora do modal) fecha. target === currentTarget evita
+      // fechar quando clique vier de dentro do modal bubble-up.
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-start justify-center bg-background/80 backdrop-blur-sm overflow-y-auto py-8"
+    >
+      {/* Botão X flutuante fixo no topo da viewport — sempre acessível,
+          mesmo quando o user scrolla dentro do modal. */}
+      <button
+        onClick={onClose}
+        aria-label="Fechar"
+        title="Fechar (ESC)"
+        className="fixed top-4 right-4 z-[60] w-10 h-10 rounded-full bg-card border border-border shadow-lg hover:bg-muted/60 flex items-center justify-center text-foreground transition-all"
+      >
+        <X className="w-5 h-5" />
+      </button>
+
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -117,12 +144,8 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
             >
               <Printer className="w-4 h-4" /> PDF
             </button>
-            <button
-              onClick={onClose}
-              className="w-9 h-9 rounded-lg bg-muted/30 hover:bg-muted/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            {/* X inline removido — usa o botão floating fixo no canto superior
+                da viewport pra não sumir quando user scrolla. */}
           </div>
         </div>
 
