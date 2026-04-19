@@ -10,7 +10,9 @@ import PerformanceChart from "@/components/dashboard/PerformanceChart";
 import BadgesPanel from "@/components/dashboard/BadgesPanel";
 import AnnouncementTicker from "@/components/dashboard/AnnouncementTicker";
 import TournamentCard from "@/components/dashboard/TournamentCard";
+import TournamentFinishedOverlay from "@/components/dashboard/TournamentFinishedOverlay";
 import { useActiveTournaments } from "@/hooks/useTournaments";
+import { useTournamentFinishedStream } from "@/hooks/useTournamentFinishedStream";
 
 // Lazy: views condicionais (não-overview) e modais carregam só quando o user navega.
 // Reduz o bundle inicial e mantém a "Visão Geral" instantânea.
@@ -113,6 +115,7 @@ const Index = () => {
 
   const { assessors, addAssessor, removeAssessor } = useAssessors();
   const { data: activeTournaments = [] } = useActiveTournaments();
+  const { event: finishedEvent, dismiss: dismissFinished } = useTournamentFinishedStream(true);
   const [showManager, setShowManager] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const overviewRange = rangeForPeriod(overviewPeriod);
@@ -240,6 +243,9 @@ const Index = () => {
           />
         </Suspense>
       )}
+
+      {/* Celebração fullscreen quando torneio finaliza (SSE tournament:finished) */}
+      <TournamentFinishedOverlay event={finishedEvent} onDismiss={dismissFinished} />
     </div>
   );
 };

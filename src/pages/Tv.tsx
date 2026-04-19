@@ -4,9 +4,11 @@ import { format, startOfWeek, endOfWeek } from "date-fns";
 import KpiCards from "@/components/dashboard/KpiCards";
 import AnnouncementTicker from "@/components/dashboard/AnnouncementTicker";
 import TournamentCard from "@/components/dashboard/TournamentCard";
+import TournamentFinishedOverlay from "@/components/dashboard/TournamentFinishedOverlay";
 import { useAssessors } from "@/hooks/useAssessors";
 import { useRankingStream } from "@/hooks/useRankingStream";
 import { useActiveTournaments } from "@/hooks/useTournaments";
+import { useTournamentFinishedStream } from "@/hooks/useTournamentFinishedStream";
 
 // Lazy: componentes pesados só baixam quando a rotação chega neles.
 const TvRanking = lazy(() => import("@/components/dashboard/TvRanking"));
@@ -62,6 +64,7 @@ const TvPage = () => {
 
   // SSE: updates em tempo real
   useRankingStream(true);
+  const { event: finishedEvent, dismiss: dismissFinished } = useTournamentFinishedStream(true);
 
   // Fullscreen automático no mount — experiência de kiosk
   useEffect(() => {
@@ -208,6 +211,9 @@ const TvPage = () => {
           </div>
         )}
       </Suspense>
+
+      {/* Overlay fullscreen de celebração quando torneio finaliza */}
+      <TournamentFinishedOverlay event={finishedEvent} onDismiss={dismissFinished} />
     </div>
   );
 };
