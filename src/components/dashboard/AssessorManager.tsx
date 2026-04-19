@@ -192,7 +192,7 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
           <button
             onClick={handleAdd}
             disabled={!name.trim()}
-            className="px-4 py-2.5 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm flex items-center gap-2 disabled:opacity-40 transition-all hover:glow-primary"
+            className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm flex items-center gap-2 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors"
           >
             <UserPlus className="w-4 h-4" /> Adicionar
           </button>

@@ -98,7 +98,7 @@ const KpiCards = ({ from, to }: KpiCardsProps) => {
                   initial={{ width: 0 }}
                   animate={{ width: `${barWidth}%` }}
                   transition={{ duration: 1.2, delay: i * 0.1 }}
-                  className={`h-full rounded-full ${pct >= 80 ? "gradient-success" : "gradient-primary"}`}
+                  className={`h-full rounded-full ${pct >= 80 ? "bg-success" : "bg-primary"}`}
                 />
               </div>
               <span className="text-[10px] font-mono text-muted-foreground">

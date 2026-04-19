@@ -371,7 +371,7 @@ const DayView = ({ assessors }: DayViewProps) => {
                               animate={{ width: `${barWidth}%` }}
                               transition={{ duration: 1, delay: i * 0.1 }}
                               className={`h-full rounded-full ${
-                                avgPct >= 80 ? "gradient-success" : "gradient-primary"
+                                avgPct >= 80 ? "bg-success" : "bg-primary"
                               }`}
                             />
                           </div>

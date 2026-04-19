@@ -227,7 +227,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, date, blocks }: RegistrationPan
                     } catch {}
                   }}
                   disabled={!noteText.trim()}
-                  className="px-3 py-1 rounded-md text-[10px] font-semibold gradient-primary text-primary-foreground disabled:opacity-40"
+                  className="px-3 py-1 rounded-md text-[10px] font-semibold bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors"
                 >
                   {noteType === "meeting"
                     ? "Registrar reunião (+10 pts)"

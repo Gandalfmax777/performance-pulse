@@ -167,7 +167,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
               </div>
               <div className="w-32 h-3 bg-muted/40 rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-full gradient-primary"
+                  className="h-full rounded-full bg-primary"
                   style={{ width: `${overallPct}%` }}
                 />
               </div>

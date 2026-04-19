@@ -290,7 +290,7 @@ const SquadBet = ({ assessors }: Props) => {
           <button
             onClick={createSquad}
             disabled={!newName.trim() || selectedMembers.length === 0 || createSquadMut.isPending}
-            className="px-5 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-semibold disabled:opacity-40 flex items-center gap-2"
+            className="px-5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors flex items-center gap-2"
           >
             {createSquadMut.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             Criar Squad
@@ -465,11 +465,22 @@ const SquadBet = ({ assessors }: Props) => {
               <Target className="w-4 h-4 text-primary" /> Comparativo de Squads
             </h3>
             {rankedSquads.length >= 2 ? (
-              <ResponsiveContainer width="100%" height={320}>
-                <RadarChart data={radarData}>
+              <ResponsiveContainer width="100%" height={380}>
+                <RadarChart data={radarData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
                   <PolarGrid stroke="hsl(var(--border))" />
-                  <PolarAngleAxis dataKey="metric" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
-                  <PolarRadiusAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }} />
+                  {/* Labels dos eixos (Leads, Cadência, etc) em fontWeight bold
+                      + cor foreground pra ganhar contraste. Antes eram muted-sm
+                      e ficavam quase invisíveis. */}
+                  <PolarAngleAxis
+                    dataKey="metric"
+                    tick={{ fill: "hsl(var(--foreground))", fontSize: 14, fontWeight: 600 }}
+                  />
+                  {/* Valores radiais (9, 12, etc): font-size 11, ainda discreto
+                      mas legível. */}
+                  <PolarRadiusAxis
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                    angle={90}
+                  />
                   {rankedSquads.map((row, i) => (
                     <Radar
                       key={row.sq.id}
@@ -649,7 +660,7 @@ const SquadBet = ({ assessors }: Props) => {
                 <button
                   onClick={startBet}
                   disabled={createBetMut.isPending || squads.length === 0}
-                  className="w-full px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-bold disabled:opacity-40 flex items-center justify-center gap-2"
+                  className="w-full px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                 >
                   {createBetMut.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                   Iniciar Aposta

@@ -66,7 +66,7 @@ const DailyDirection = ({ date, dayLabel }: DailyDirectionProps) => {
           <button
             onClick={handleSave}
             disabled={upsert.isPending}
-            className="flex items-center gap-1 px-3 py-1 rounded-md text-[11px] font-semibold gradient-primary text-primary-foreground disabled:opacity-40"
+            className="flex items-center gap-1 px-3 py-1 rounded-md text-[11px] font-semibold bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors"
           >
             {upsert.isPending ? <Check className="w-3 h-3 animate-pulse" /> : <Save className="w-3 h-3" />}
             Salvar

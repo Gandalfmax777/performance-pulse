@@ -103,7 +103,7 @@ const Leaderboard = ({ assessors }: LeaderboardProps) => {
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min(100, a.weeklyGoalPercent)}%` }}
                     transition={{ duration: 1, delay: i * 0.1 }}
-                    className={`h-full rounded-full ${a.weeklyGoalPercent >= 80 ? "gradient-success" : "gradient-primary"}`}
+                    className={`h-full rounded-full ${a.weeklyGoalPercent >= 80 ? "bg-success" : "bg-primary"}`}
                   />
                 </div>
               </div>
