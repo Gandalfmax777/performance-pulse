@@ -23,6 +23,7 @@ const AdminGoals = lazy(() => import("./pages/admin/AdminGoals"));
 const AdminSchedule = lazy(() => import("./pages/admin/AdminSchedule"));
 const AdminBiweekly = lazy(() => import("./pages/admin/AdminBiweekly"));
 const AdminBetsConfig = lazy(() => import("./pages/admin/AdminBetsConfig"));
+const AdminTournaments = lazy(() => import("./pages/admin/AdminTournaments"));
 const AdminAnnouncements = lazy(() => import("./pages/admin/AdminAnnouncements"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 
@@ -96,6 +97,7 @@ const App = () => (
               <Route path="schedule" element={<AdminSchedule />} />
               <Route path="biweekly" element={<AdminBiweekly />} />
               <Route path="bets-config" element={<AdminBetsConfig />} />
+              <Route path="tournaments" element={<AdminTournaments />} />
               <Route path="announcements" element={<AdminAnnouncements />} />
               <Route path="users" element={<AdminUsers />} />
             </Route>

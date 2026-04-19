@@ -9,6 +9,7 @@ import {
   LogOut,
   Shield,
   Megaphone,
+  Swords,
 } from "lucide-react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { clearAuthToken } from "@/api/client";
@@ -24,6 +25,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: "/admin/schedule",      label: "Cronograma",    icon: Calendar },
   { to: "/admin/biweekly",      label: "Indique Day",   icon: Repeat },
   { to: "/admin/bets-config",   label: "Apostas",       icon: Trophy },
+  { to: "/admin/tournaments",   label: "Torneios",      icon: Swords },
   { to: "/admin/announcements", label: "Avisos",        icon: Megaphone },
   { to: "/admin/users",         label: "Usuários",      icon: Users },
 ];
