@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Crown, Flame, TrendingUp, TrendingDown, ArrowUp } from "lucide-react";
+import { Crown, Flame, TrendingUp, TrendingDown, ArrowUp, Target } from "lucide-react";
 import { type Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
-import { playRiseSound } from "@/lib/sounds";
+import { playRiseSound, playGoalHitSound } from "@/lib/sounds";
 
 /**
  * Frases provocativas mostradas quando alguém cai de posição.
@@ -59,14 +59,21 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
     [assessors],
   );
   const prevPositions = useRef<Map<string, number>>(new Map());
+  // Track de % anterior pra detectar cruzamento de 100% (meta batida).
+  // Diferente de rank: % é mais "personal best" — não importa onde está
+  // no ranking, importa se cruzou a linha da meta semanal.
+  const prevPercents = useRef<Map<string, number>>(new Map());
   const alertTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const riserTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const goalTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const [alerts, setAlerts] = useState<Map<string, string>>(new Map());
   const [risers, setRisers] = useState<Map<string, string>>(new Map());
+  const [goalHits, setGoalHits] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const newAlerts = new Map<string, string>();
     const newRisers = new Map<string, string>();
+    const newGoalHits = new Set<string>();
 
     sorted.forEach((a, i) => {
       const prevPos = prevPositions.current.get(a.id);
@@ -79,6 +86,14 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
           newRisers.set(a.id, getRandomRisePhrase());
         }
       }
+
+      // Cruzou 100%? prev < 100 && curr >= 100 = meta batida agora.
+      // O cap em 0 no prev evita falso positivo no primeiro render.
+      const prevPct = prevPercents.current.get(a.id) ?? 0;
+      const currPct = a.weeklyGoalPercent ?? 0;
+      if (prevPct < 100 && currPct >= 100) {
+        newGoalHits.add(a.id);
+      }
     });
 
     // Sempre atualiza posições antes de sair — senão a próxima render detecta
@@ -86,6 +101,11 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
     const nextMap = new Map<string, number>();
     sorted.forEach((a, i) => nextMap.set(a.id, i));
     prevPositions.current = nextMap;
+
+    // Atualiza percents anteriores em paralelo
+    const nextPctMap = new Map<string, number>();
+    sorted.forEach((a) => nextPctMap.set(a.id, a.weeklyGoalPercent ?? 0));
+    prevPercents.current = nextPctMap;
 
     if (newAlerts.size > 0) {
       setAlerts(newAlerts);
@@ -106,12 +126,40 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
         riserTimerRef.current = null;
       }, 3000);
     }
+
+    if (newGoalHits.size > 0) {
+      setGoalHits((prev) => {
+        const merged = new Set(prev);
+        newGoalHits.forEach((id) => merged.add(id));
+        return merged;
+      });
+      // Toca som de meta batida no navegador da TV pra equipe ouvir.
+      // 1x mesmo se vários baterem simultaneamente.
+      playGoalHitSound();
+      // Cada celebração tem timer próprio — se outro bater meta no meio,
+      // não cancela a anterior.
+      newGoalHits.forEach((id) => {
+        const existing = goalTimersRef.current.get(id);
+        if (existing) clearTimeout(existing);
+        const timer = setTimeout(() => {
+          setGoalHits((prev) => {
+            const next = new Set(prev);
+            next.delete(id);
+            return next;
+          });
+          goalTimersRef.current.delete(id);
+        }, 5000);
+        goalTimersRef.current.set(id, timer);
+      });
+    }
   }, [sorted]);
 
   useEffect(
     () => () => {
       if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
       if (riserTimerRef.current) clearTimeout(riserTimerRef.current);
+      goalTimersRef.current.forEach((t) => clearTimeout(t));
+      goalTimersRef.current.clear();
     },
     [],
   );
@@ -124,6 +172,7 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
           const rise = risers.get(a.id);
           const isShaking = Boolean(alert);
           const isRising = Boolean(rise);
+          const isCelebrating = goalHits.has(a.id);
 
           return (
             <motion.div
@@ -191,6 +240,73 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
                     <ArrowUp className="w-3 h-3" />
                     {rise}
                   </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Celebration overlay (bateu meta — cruzou 100%) */}
+              <AnimatePresence>
+                {isCelebrating && (
+                  <>
+                    {/* Badge "META BATIDA" flutuando no topo do card */}
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0, y: -30 }}
+                      animate={{
+                        opacity: 1,
+                        scale: [0, 1.2, 1],
+                        y: [-30, 0, -4, 0],
+                      }}
+                      exit={{ opacity: 0, scale: 0.5, y: -20 }}
+                      transition={{
+                        duration: 0.7,
+                        scale: { times: [0, 0.6, 1] },
+                        y: { times: [0, 0.4, 0.7, 1] },
+                      }}
+                      className="absolute -top-5 left-1/2 -translate-x-1/2 z-20 px-5 py-2 rounded-full bg-primary text-secondary font-display font-black text-base shadow-2xl flex items-center gap-2 border-2 border-secondary/40"
+                    >
+                      <Target className="w-5 h-5" />
+                      META BATIDA!
+                    </motion.div>
+
+                    {/* Pulse dourado expandindo em ondas — chama atenção na TV */}
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{
+                        opacity: [0, 1, 0, 1, 0, 1, 0],
+                        boxShadow: [
+                          "0 0 0 0px hsl(var(--secondary) / 0)",
+                          "0 0 0 8px hsl(var(--secondary) / 0.5)",
+                          "0 0 0 24px hsl(var(--secondary) / 0)",
+                          "0 0 0 8px hsl(var(--secondary) / 0.5)",
+                          "0 0 0 24px hsl(var(--secondary) / 0)",
+                          "0 0 0 8px hsl(var(--secondary) / 0.5)",
+                          "0 0 0 36px hsl(var(--secondary) / 0)",
+                        ],
+                      }}
+                      transition={{ duration: 4.5, ease: "easeOut" }}
+                      className="absolute inset-0 rounded-2xl pointer-events-none"
+                    />
+
+                    {/* "Confetti" minimalista: 8 sparks dourados spawnados em ângulos */}
+                    {[...Array(8)].map((_, idx) => {
+                      const angle = (idx / 8) * Math.PI * 2;
+                      const dist = 80;
+                      return (
+                        <motion.div
+                          key={idx}
+                          initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+                          animate={{
+                            opacity: [0, 1, 0],
+                            scale: [0, 1.4, 0],
+                            x: Math.cos(angle) * dist,
+                            y: Math.sin(angle) * dist,
+                          }}
+                          transition={{ duration: 1.2, ease: "easeOut" }}
+                          className="absolute top-1/2 left-1/2 w-2.5 h-2.5 rounded-full bg-secondary pointer-events-none"
+                          style={{ boxShadow: "0 0 8px hsl(var(--secondary))" }}
+                        />
+                      );
+                    })}
+                  </>
                 )}
               </AnimatePresence>
 
