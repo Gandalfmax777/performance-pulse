@@ -112,7 +112,7 @@ const DashboardSidebar = ({
         {/* Brand + close mobile */}
         <div className="px-4 py-5 border-b border-border/30 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 shrink-0 rounded-lg gradient-neon flex items-center justify-center glow-primary">
+            <div className="w-8 h-8 shrink-0 rounded-lg bg-primary flex items-center justify-center">
               <Activity className="w-4 h-4 text-primary-foreground" />
             </div>
             {!collapsed && (

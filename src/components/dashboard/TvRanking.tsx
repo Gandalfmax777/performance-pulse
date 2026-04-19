@@ -220,7 +220,7 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
                     initial={{ opacity: 0, scale: 0.8, y: -10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.8, y: -10 }}
-                    className="absolute -top-3 right-4 z-10 px-3 py-1.5 rounded-lg gradient-fire text-white text-xs font-bold shadow-lg"
+                    className="absolute -top-3 right-4 z-10 px-3 py-1.5 rounded-lg bg-destructive text-white text-xs font-bold shadow-lg"
                   >
                     <TrendingDown className="w-3 h-3 inline mr-1" />
                     {alert}
@@ -364,7 +364,7 @@ const TvRanking = ({ assessors }: TvRankingProps) => {
                       animate={{ width: `${Math.min(100, a.weeklyGoalPercent)}%` }}
                       transition={{ duration: 0.8 }}
                       className={`h-full rounded-full ${
-                        a.weeklyGoalPercent >= 80 ? "gradient-success" : "gradient-primary"
+                        a.weeklyGoalPercent >= 80 ? "bg-success" : "bg-primary"
                       }`}
                     />
                   </div>

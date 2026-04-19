@@ -57,7 +57,7 @@ const Login = () => {
 
         {/* Logo */}
         <div className="flex items-center gap-2.5 relative z-10">
-          <div className="w-9 h-9 rounded-lg gradient-neon flex items-center justify-center">
+          <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
             <Activity className="w-4.5 h-4.5 text-primary-foreground" />
           </div>
           <span className="font-display font-bold text-foreground text-sm tracking-tight">
@@ -100,7 +100,7 @@ const Login = () => {
         <div className="w-full max-w-sm">
           {/* Mobile logo (hidden on lg) */}
           <div className="flex items-center gap-2.5 mb-10 lg:hidden">
-            <div className="w-9 h-9 rounded-lg gradient-neon flex items-center justify-center">
+            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
               <Activity className="w-4.5 h-4.5 text-primary-foreground" />
             </div>
             <span className="font-display font-bold text-foreground text-sm tracking-tight">
@@ -163,7 +163,7 @@ const Login = () => {
 
             <Button
               type="submit"
-              className="w-full h-11 font-semibold text-sm gradient-primary text-primary-foreground hover:opacity-90 transition-opacity"
+              className="w-full h-11 font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
               disabled={loading}
             >
               {loading ? (

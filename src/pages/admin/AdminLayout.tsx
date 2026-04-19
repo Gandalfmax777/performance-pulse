@@ -46,7 +46,7 @@ const AdminLayout = () => {
         {/* Brand */}
         <div className="px-5 py-5 border-b border-border/30">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg gradient-neon flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Shield className="w-4 h-4 text-primary-foreground" />
             </div>
             <div>

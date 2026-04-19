@@ -223,7 +223,7 @@ const TournamentCard = ({ tournament, tvMode = false }: Props) => {
                         animate={{ width: `${pctOfLeader}%` }}
                         transition={{ duration: 0.6 }}
                         className={`h-full rounded-full ${
-                          rank === 1 ? "gradient-neon" : "gradient-primary"
+                          rank === 1 ? "bg-primary" : "bg-primary/70"
                         }`}
                       />
                     </div>

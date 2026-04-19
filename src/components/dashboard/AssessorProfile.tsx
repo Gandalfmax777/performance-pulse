@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useModalDismiss } from "@/hooks/useModalDismiss";
+import { VerticalRadiusTick } from "@/components/ui/VerticalRadiusTick";
 import { motion } from "framer-motion";
 import { X, Printer, Trophy, TrendingUp, Flame, Award, Loader2, Sparkles, RefreshCw } from "lucide-react";
 import Markdown from "react-markdown";
@@ -204,7 +205,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                     <div className="w-full h-1.5 bg-muted/30 rounded-full mt-2 overflow-hidden">
                       <div
                         className={`h-full rounded-full ${
-                          pct >= 80 ? "gradient-success" : "gradient-primary"
+                          pct >= 80 ? "bg-success" : "bg-primary"
                         }`}
                         style={{ width: `${pct}%` }}
                       />
@@ -271,14 +272,14 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
               </div>
               <div className="p-4 rounded-xl bg-muted/10 border border-border/20">
                 <h3 className="text-sm font-bold text-foreground mb-3">Radar de Desempenho</h3>
-                <ResponsiveContainer width="100%" height={200}>
-                  <RadarChart data={radarData}>
+                <ResponsiveContainer width="100%" height={240}>
+                  <RadarChart data={radarData} margin={{ top: 15, right: 25, bottom: 15, left: 25 }}>
                     <PolarGrid stroke="hsl(var(--border))" opacity={0.3} />
-                    <PolarAngleAxis dataKey="kpi" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} />
+                    <PolarAngleAxis dataKey="kpi" tick={{ fontSize: 11, fill: "hsl(var(--foreground))", fontWeight: 600 }} />
                     <PolarRadiusAxis
                       angle={30}
                       domain={[0, 100]}
-                      tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }}
+                      tick={<VerticalRadiusTick />}
                     />
                     <Radar
                       dataKey="score"

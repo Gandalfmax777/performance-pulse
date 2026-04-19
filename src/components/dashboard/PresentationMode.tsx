@@ -311,7 +311,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                   <div className="h-2 bg-muted/40 rounded-full overflow-hidden">
                     <div
                       style={{ width: `${Math.min(100, pct)}%` }}
-                      className={`h-full rounded-full ${pct >= 80 ? "gradient-success" : pct >= 50 ? "bg-chart-orange" : "bg-destructive"}`}
+                      className={`h-full rounded-full ${pct >= 80 ? "bg-success" : pct >= 50 ? "bg-chart-orange" : "bg-destructive"}`}
                     />
                   </div>
                   <p className="text-xs font-mono text-muted-foreground mt-1 text-right">{pct}%</p>
@@ -520,7 +520,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                     { onSuccess: (data) => setTeamInsight(data) },
                   )
                 }
-                className="px-6 py-3 rounded-xl gradient-primary text-primary-foreground font-bold"
+                className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors"
               >
                 <Sparkles className="w-5 h-5 inline mr-2" />
                 Gerar análise agora

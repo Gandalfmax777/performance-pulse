@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { type Assessor } from "@/types/assessor";
+import { VerticalRadiusTick } from "@/components/ui/VerticalRadiusTick";
 import { useSquads, useCreateSquad, useDeleteSquad, type ApiSquad } from "@/hooks/useSquads";
 import { useBets, useCreateBet, useFinishBet, type BetWinnerCriteria } from "@/hooks/useBets";
 import { useCofreBalance } from "@/hooks/useCofre";
@@ -211,7 +212,7 @@ const SquadBet = ({ assessors }: Props) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
             <Shield className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
@@ -221,7 +222,7 @@ const SquadBet = ({ assessors }: Props) => {
         </div>
         <button
           onClick={() => setShowCreate(!showCreate)}
-          className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-semibold flex items-center gap-2 hover:opacity-90 transition-opacity"
+          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold flex items-center gap-2 hover:bg-primary/90 transition-colors"
         >
           <Plus className="w-4 h-4" /> Criar Squad
         </button>
@@ -277,7 +278,7 @@ const SquadBet = ({ assessors }: Props) => {
                       assigned
                         ? "bg-muted/20 text-muted-foreground/40 cursor-not-allowed"
                         : selected
-                        ? "gradient-primary text-primary-foreground"
+                        ? "bg-primary text-primary-foreground"
                         : "bg-muted/30 text-foreground border border-border/30 hover:bg-muted/50"
                     }`}
                   >
@@ -475,12 +476,9 @@ const SquadBet = ({ assessors }: Props) => {
                     dataKey="metric"
                     tick={{ fill: "hsl(var(--foreground))", fontSize: 14, fontWeight: 600 }}
                   />
-                  {/* Valores radiais (9, 12, etc): font-size 11, ainda discreto
-                      mas legível. */}
-                  <PolarRadiusAxis
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
-                    angle={90}
-                  />
+                  {/* Valores radiais (0, 3, 6, 9, 12) rotacionados 90° pra
+                      não se sobrepor ao label "Leads" do topo. */}
+                  <PolarRadiusAxis tick={<VerticalRadiusTick />} angle={90} />
                   {rankedSquads.map((row, i) => (
                     <Radar
                       key={row.sq.id}
@@ -616,7 +614,7 @@ const SquadBet = ({ assessors }: Props) => {
                       onClick={() => setNewBetType("WEEKLY")}
                       className={`flex-1 px-3 py-1.5 text-xs font-semibold transition-all ${
                         newBetType === "WEEKLY"
-                          ? "gradient-primary text-primary-foreground"
+                          ? "bg-primary text-primary-foreground"
                           : "bg-muted/30 text-muted-foreground"
                       }`}
                     >
@@ -626,7 +624,7 @@ const SquadBet = ({ assessors }: Props) => {
                       onClick={() => setNewBetType("MONTHLY")}
                       className={`flex-1 px-3 py-1.5 text-xs font-semibold transition-all ${
                         newBetType === "MONTHLY"
-                          ? "gradient-primary text-primary-foreground"
+                          ? "bg-primary text-primary-foreground"
                           : "bg-muted/30 text-muted-foreground"
                       }`}
                     >

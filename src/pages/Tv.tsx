@@ -128,7 +128,7 @@ const TvPage = () => {
       {/* Overlay de controles TV */}
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-2 bg-background/90 backdrop-blur-md border-b border-primary/20">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-lg gradient-neon">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-primary">
             <Tv className="w-4 h-4 text-primary-foreground" />
             <span className="text-xs font-bold text-primary-foreground tracking-wider">TV</span>
           </div>
@@ -181,7 +181,7 @@ const TvPage = () => {
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-muted/20">
-          <div className="h-full gradient-neon transition-all duration-100 ease-linear" style={{ width: `${progress}%` }} />
+          <div className="h-full bg-primary transition-all duration-100 ease-linear" style={{ width: `${progress}%` }} />
         </div>
       </div>
 
