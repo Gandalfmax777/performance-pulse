@@ -466,7 +466,11 @@ const SquadBet = ({ assessors }: Props) => {
             </h3>
             {rankedSquads.length >= 2 ? (
               <ResponsiveContainer width="100%" height={380}>
-                <RadarChart data={radarData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+                <RadarChart
+                  data={radarData}
+                  margin={{ top: 20, right: 30, bottom: 20, left: 30 }}
+                  outerRadius="72%"
+                >
                   <PolarGrid stroke="hsl(var(--border))" />
                   {/* Labels dos eixos (Leads, Cadência, etc) em fontWeight bold
                       + cor foreground pra ganhar contraste. Antes eram muted-sm
@@ -477,11 +481,14 @@ const SquadBet = ({ assessors }: Props) => {
                   />
                   {/* Valores radiais: eixo vertical apontando pra cima (angle=90)
                       pros números ficarem empilhados na vertical com texto
-                      horizontal. Domain com +15% sobre o max pra criar espaço
-                      entre o último número e o label do topo. */}
+                      horizontal. outerRadius do RadarChart=72% encolhe o
+                      polígono deixando espaço entre as extremidades e as
+                      labels externas (Leads, Cadência, etc). Domain +30%
+                      garante que o último tick numérico fique abaixo do
+                      outer edge, não grudando no label. */}
                   <PolarRadiusAxis
                     angle={90}
-                    domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.15)]}
+                    domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.3) || 5]}
                     tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
                   />
                   {rankedSquads.map((row, i) => (
