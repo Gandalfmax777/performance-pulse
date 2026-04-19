@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
+import { useSearchParams } from "react-router-dom";
 import DashboardSidebar, { type DashboardView } from "@/components/dashboard/DashboardSidebar";
 import DashboardTopbar from "@/components/dashboard/DashboardTopbar";
 import Leaderboard from "@/components/dashboard/Leaderboard";
@@ -68,13 +69,44 @@ const VIEW_LABELS: Record<View, string> = {
 const TV_TABS: View[] = ["overview", "results", "squad"];
 const TV_INTERVALS = [10, 15, 20, 30, 45, 60];
 
+const VALID_VIEWS: ReadonlySet<View> = new Set(["overview", "daily", "results", "kpis", "squad"]);
+const VALID_PERIODS: ReadonlySet<OverviewPeriod> = new Set(["daily", "weekly", "monthly", "semester"]);
+
+function parseView(raw: string | null): View {
+  return raw && VALID_VIEWS.has(raw as View) ? (raw as View) : "overview";
+}
+function parsePeriod(raw: string | null): OverviewPeriod {
+  return raw && VALID_PERIODS.has(raw as OverviewPeriod) ? (raw as OverviewPeriod) : "weekly";
+}
+
 const Index = () => {
-  const [view, setView] = useState<View>("overview");
+  // ─── URL state: view + period viram deep-linkáveis ────────────────────────
+  // Permite compartilhar /?view=kpis&period=monthly e abrir direto na KPIs
+  // com filtro mensal. Refresh mantém estado. Botão voltar do navegador
+  // navega entre views. TV mode (`?tv=1`) convive — `?tv=1&view=squad` ok.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view = parseView(searchParams.get("view"));
+  const overviewPeriod = parsePeriod(searchParams.get("period"));
+
+  const setView = useCallback((v: View) => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.set("view", v);
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const setOverviewPeriod = useCallback((p: OverviewPeriod) => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.set("period", p);
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
   const { assessors, addAssessor, removeAssessor } = useAssessors();
   const [showManager, setShowManager] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  // Filtro de período da Visão Geral (impacta KpiCards e PerformanceChart)
-  const [overviewPeriod, setOverviewPeriod] = useState<OverviewPeriod>("weekly");
   const overviewRange = rangeForPeriod(overviewPeriod);
 
   // Modo Apresentação: full-screen com slides pra reunião de fechamento
@@ -102,13 +134,11 @@ const Index = () => {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const nextTab = useCallback(() => {
-    setView(prev => {
-      const idx = TV_TABS.indexOf(prev);
-      const nextIdx = idx === -1 ? 0 : (idx + 1) % TV_TABS.length;
-      return TV_TABS[nextIdx];
-    });
+    const idx = TV_TABS.indexOf(view);
+    const nextIdx = idx === -1 ? 0 : (idx + 1) % TV_TABS.length;
+    setView(TV_TABS[nextIdx]);
     setTvProgress(0);
-  }, []);
+  }, [view, setView]);
 
   // Auto-rotation
   useEffect(() => {
@@ -135,9 +165,9 @@ const Index = () => {
     setTvMode(true);
     setTvPlaying(true);
     setTvProgress(0);
-    setView(prev => TV_TABS.includes(prev) ? prev : TV_TABS[0]);
+    if (!TV_TABS.includes(view)) setView(TV_TABS[0]);
     document.documentElement.requestFullscreen?.().catch(() => {});
-  }, []);
+  }, [view, setView]);
 
   const exitTvMode = useCallback(() => {
     setTvMode(false);
