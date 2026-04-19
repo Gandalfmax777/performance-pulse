@@ -1,23 +1,27 @@
-import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
-import { Tv, X, Play, Pause, SkipForward, Timer } from "lucide-react";
+import { useState, useEffect, useCallback, useRef, useMemo, lazy, Suspense } from "react";
+import { Tv, X, Play, Pause, SkipForward, Timer, Swords } from "lucide-react";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import KpiCards from "@/components/dashboard/KpiCards";
 import AnnouncementTicker from "@/components/dashboard/AnnouncementTicker";
+import TournamentCard from "@/components/dashboard/TournamentCard";
 import { useAssessors } from "@/hooks/useAssessors";
 import { useRankingStream } from "@/hooks/useRankingStream";
+import { useActiveTournaments } from "@/hooks/useTournaments";
 
 // Lazy: componentes pesados só baixam quando a rotação chega neles.
 const TvRanking = lazy(() => import("@/components/dashboard/TvRanking"));
 const DailyResults = lazy(() => import("@/components/dashboard/DailyResults"));
 const SquadBet = lazy(() => import("@/components/dashboard/SquadBet"));
 
-type TvView = "overview" | "results" | "squad";
+type TvView = "overview" | "results" | "squad" | "tournaments";
 
-const TV_VIEWS: { key: TvView; label: string }[] = [
+const BASE_TV_VIEWS: { key: TvView; label: string }[] = [
   { key: "overview", label: "Visão Geral" },
   { key: "results", label: "Ranking Geral" },
   { key: "squad", label: "Squad Bet" },
 ];
+
+const TOURNAMENT_VIEW = { key: "tournaments" as TvView, label: "Torneios" };
 
 const TV_INTERVALS = [10, 15, 20, 30, 45, 60];
 
@@ -45,6 +49,16 @@ const TvPage = () => {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { assessors } = useAssessors();
+  const { data: activeTournaments = [] } = useActiveTournaments();
+
+  // Views rotativas — inclui "Torneios" só se houver ao menos um ativo
+  const TV_VIEWS = useMemo(
+    () =>
+      activeTournaments.length > 0
+        ? [...BASE_TV_VIEWS, TOURNAMENT_VIEW]
+        : BASE_TV_VIEWS,
+    [activeTournaments.length],
+  );
 
   // SSE: updates em tempo real
   useRankingStream(true);
@@ -55,6 +69,15 @@ const TvPage = () => {
       document.documentElement.requestFullscreen?.().catch(() => {});
     }
   }, []);
+
+  // Se usuário está na view de torneios mas a lista ficou vazia (último
+  // finalizou), cai pra overview automaticamente.
+  useEffect(() => {
+    if (view === "tournaments" && activeTournaments.length === 0) {
+      setView("overview");
+      setProgress(0);
+    }
+  }, [view, activeTournaments.length]);
 
   const now = new Date();
   const overviewRange = {
@@ -67,7 +90,7 @@ const TvPage = () => {
     const idx = keys.indexOf(view);
     setView(keys[(idx + 1) % keys.length]);
     setProgress(0);
-  }, [view]);
+  }, [view, TV_VIEWS]);
 
   // Auto-rotation
   useEffect(() => {
@@ -169,6 +192,21 @@ const TvPage = () => {
         )}
         {view === "results" && <DailyResults assessors={assessors} />}
         {view === "squad" && <SquadBet assessors={assessors} />}
+        {view === "tournaments" && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-2">
+              <Swords className="w-8 h-8 text-secondary" />
+              <h2 className="text-3xl font-display font-black text-foreground">
+                {activeTournaments.length === 1 ? "Torneio Ativo" : "Torneios Ativos"}
+              </h2>
+            </div>
+            <div className={`grid gap-6 ${activeTournaments.length === 1 ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2"}`}>
+              {activeTournaments.map((t) => (
+                <TournamentCard key={t.id} tournament={t} tvMode />
+              ))}
+            </div>
+          </div>
+        )}
       </Suspense>
     </div>
   );

@@ -9,6 +9,8 @@ import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import PerformanceChart from "@/components/dashboard/PerformanceChart";
 import BadgesPanel from "@/components/dashboard/BadgesPanel";
 import AnnouncementTicker from "@/components/dashboard/AnnouncementTicker";
+import TournamentCard from "@/components/dashboard/TournamentCard";
+import { useActiveTournaments } from "@/hooks/useTournaments";
 
 // Lazy: views condicionais (não-overview) e modais carregam só quando o user navega.
 // Reduz o bundle inicial e mantém a "Visão Geral" instantânea.
@@ -110,6 +112,7 @@ const Index = () => {
   }, [setSearchParams]);
 
   const { assessors, addAssessor, removeAssessor } = useAssessors();
+  const { data: activeTournaments = [] } = useActiveTournaments();
   const [showManager, setShowManager] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const overviewRange = rangeForPeriod(overviewPeriod);
@@ -181,6 +184,15 @@ const Index = () => {
                   Apresentação
                 </button>
               </div>
+
+              {/* Torneios ativos — aparecem no topo da visão geral */}
+              {activeTournaments.length > 0 && (
+                <div className={`grid gap-4 ${activeTournaments.length === 1 ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2"}`}>
+                  {activeTournaments.map((t) => (
+                    <TournamentCard key={t.id} tournament={t} />
+                  ))}
+                </div>
+              )}
 
               <KpiCards from={overviewRange.from} to={overviewRange.to} />
 
