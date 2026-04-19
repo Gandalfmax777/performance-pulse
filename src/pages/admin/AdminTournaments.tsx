@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Swords, Plus, Loader2, Flag, XCircle } from "lucide-react";
-import { format, parseISO, addDays } from "date-fns";
+import { Swords, Plus, Loader2, Flag, XCircle, Zap } from "lucide-react";
+import { format, parseISO, addDays, startOfWeek, endOfWeek, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   useTournaments,
@@ -18,12 +18,85 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import TournamentCard from "@/components/dashboard/TournamentCard";
 
-// Templates comuns pra admin criar rápido
+// Payout presets reusáveis
 const PAYOUT_PRESETS: Array<{ label: string; payout: Record<string, number> }> = [
   { label: "Top 1 · R$ 500",           payout: { "1": 500 } },
   { label: "Top 3 · R$ 300/150/100",   payout: { "1": 300, "2": 150, "3": 100 } },
   { label: "Top 3 · R$ 500/300/200",   payout: { "1": 500, "2": 300, "3": 200 } },
   { label: "Top 5 · R$ 400/200/100/50/50", payout: { "1": 400, "2": 200, "3": 100, "4": 50, "5": 50 } },
+];
+
+// Templates quick-create — 1 clique popula o form com datas/KPI/payout típicos.
+// Felipe pode ajustar nome e clicar "Criar" ou editar qualquer campo antes.
+interface TournamentTemplate {
+  id: string;
+  label: string;
+  emoji: string;
+  defaultLabel: (now: Date) => string;
+  scope: TournamentScope;
+  goalKpiKey: string;
+  getDates: (now: Date) => { startDate: string; endDate: string };
+  payoutPresetIdx: number;
+  description: string;
+}
+
+const TEMPLATES: TournamentTemplate[] = [
+  {
+    id: "ativacoes_semanal",
+    label: "Corrida Semanal · Ativações",
+    emoji: "🎯",
+    defaultLabel: (now) => `Corrida de Ativações · Semana ${format(now, "'S'ww/yyyy")}`,
+    scope: "INDIVIDUAL",
+    goalKpiKey: "ativacao_conta",
+    getDates: (now) => ({
+      startDate: format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
+      endDate: format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
+    }),
+    payoutPresetIdx: 1, // Top 3 300/150/100
+    description: "Seg → dom, KPI ativação, top 3 ganham",
+  },
+  {
+    id: "ligacoes_sprint",
+    label: "Sprint de Ligações · 3 dias",
+    emoji: "📞",
+    defaultLabel: (now) => `Sprint de Ligações · ${format(now, "dd/MM")}`,
+    scope: "INDIVIDUAL",
+    goalKpiKey: "ligacoes",
+    getDates: (now) => ({
+      startDate: format(now, "yyyy-MM-dd"),
+      endDate: format(addDays(now, 2), "yyyy-MM-dd"),
+    }),
+    payoutPresetIdx: 3, // Top 5
+    description: "3 dias, KPI ligações, top 5 ganham",
+  },
+  {
+    id: "reunioes_semanal",
+    label: "Corrida de Reuniões",
+    emoji: "🤝",
+    defaultLabel: (now) => `Corrida de Reuniões · Semana ${format(now, "'S'ww/yyyy")}`,
+    scope: "INDIVIDUAL",
+    goalKpiKey: "reunioes",
+    getDates: (now) => ({
+      startDate: format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
+      endDate: format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
+    }),
+    payoutPresetIdx: 2, // Top 3 500/300/200
+    description: "Seg → dom, KPI reuniões, top 3 pagam alto",
+  },
+  {
+    id: "fechamento_mensal",
+    label: "Race de Fechamento Mensal",
+    emoji: "🏆",
+    defaultLabel: (now) => `Race Mensal · ${format(now, "MMMM", { locale: ptBR })}`,
+    scope: "INDIVIDUAL",
+    goalKpiKey: "ativacao_conta",
+    getDates: (now) => ({
+      startDate: format(now, "yyyy-MM-dd"),
+      endDate: format(endOfMonth(now), "yyyy-MM-dd"),
+    }),
+    payoutPresetIdx: 0, // Top 1 · R$ 500
+    description: "Até fim do mês, KPI ativação, winner-takes-all",
+  },
 ];
 
 function defaultStart(): string {
@@ -96,6 +169,20 @@ const AdminTournaments = () => {
     }
   };
 
+  const applyTemplate = (tpl: TournamentTemplate) => {
+    const now = new Date();
+    const dates = tpl.getDates(now);
+    setForm({
+      roundLabel: tpl.defaultLabel(now),
+      scope: tpl.scope,
+      goalKpiKey: tpl.goalKpiKey,
+      startDate: dates.startDate,
+      endDate: dates.endDate,
+      payoutPresetIdx: tpl.payoutPresetIdx,
+    });
+    toast(`Template aplicado: ${tpl.label}`, { description: "Ajuste o que quiser e clique em Criar" });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -103,6 +190,30 @@ const AdminTournaments = () => {
         <div>
           <h1 className="text-xl font-display font-bold text-foreground">Torneios</h1>
           <p className="text-xs text-muted-foreground">Corridas time-boxed com prêmio progressivo · top N ganham do cofre</p>
+        </div>
+      </div>
+
+      {/* Templates quick-create — 1 clique preenche o form abaixo */}
+      <div className="card-glass rounded-xl p-5 space-y-3">
+        <div className="flex items-center gap-2">
+          <Zap className="w-4 h-4 text-secondary" />
+          <h2 className="text-sm font-bold text-foreground">Templates rápidos</h2>
+          <span className="text-[10px] text-muted-foreground">Clique pra preencher o formulário</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          {TEMPLATES.map((tpl) => (
+            <button
+              key={tpl.id}
+              onClick={() => applyTemplate(tpl)}
+              className="text-left p-3 rounded-xl border border-border/30 bg-muted/20 hover:border-secondary/50 hover:bg-secondary/5 transition-all"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xl">{tpl.emoji}</span>
+                <span className="text-sm font-semibold text-foreground truncate">{tpl.label}</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-tight">{tpl.description}</p>
+            </button>
+          ))}
         </div>
       </div>
 
