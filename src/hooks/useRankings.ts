@@ -34,6 +34,13 @@ export interface ApiWeeklyRanking {
   rankings: ApiRankingEntry[];
 }
 
+/** Retornado por /monthly e /semester (mesmo shape genérico). */
+export interface ApiPeriodRanking {
+  periodStart: string;
+  periodEnd: string;
+  rankings: ApiRankingEntry[];
+}
+
 const QUERY_KEY = ["rankings"] as const;
 
 /**
@@ -66,5 +73,36 @@ export function useWeeklyRanking(weekStart?: string) {
     },
     refetchInterval: 15_000,
     staleTime: 10_000,
+  });
+}
+
+/**
+ * Ranking mensal — endpoint dedicado (antes era fallback no overview).
+ * Refresh 30s já que a granularidade é maior.
+ */
+export function useMonthlyRanking(monthStart?: string) {
+  return useQuery({
+    queryKey: [...QUERY_KEY, "monthly", monthStart ?? "current"],
+    queryFn: () => {
+      const qs = monthStart ? `?monthStart=${monthStart}` : "";
+      return apiFetch<ApiPeriodRanking>(`/rankings/monthly${qs}`);
+    },
+    refetchInterval: 30_000,
+    staleTime: 20_000,
+  });
+}
+
+/**
+ * Ranking semestral (jan-jun ou jul-dez). Refresh 60s.
+ */
+export function useSemesterRanking(semesterStart?: string) {
+  return useQuery({
+    queryKey: [...QUERY_KEY, "semester", semesterStart ?? "current"],
+    queryFn: () => {
+      const qs = semesterStart ? `?semesterStart=${semesterStart}` : "";
+      return apiFetch<ApiPeriodRanking>(`/rankings/semester${qs}`);
+    },
+    refetchInterval: 60_000,
+    staleTime: 30_000,
   });
 }

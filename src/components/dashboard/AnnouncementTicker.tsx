@@ -1,85 +1,34 @@
 import { useMemo } from "react";
 import { Megaphone } from "lucide-react";
 import type { Assessor } from "@/types/assessor";
-import { useKpis } from "@/hooks/useKpis";
-import { useWeeklyRanking } from "@/hooks/useRankings";
 import { useAnnouncements } from "@/hooks/useAnnouncements";
-import { differenceInCalendarDays, endOfWeek } from "date-fns";
 
 interface AnnouncementTickerProps {
-  assessors: Assessor[];
+  // Mantido pra compat de signature mesmo agora não sendo usado — caller
+  // não precisa mudar e fica fácil reativar avisos auto-gerados depois.
+  assessors?: Assessor[];
 }
 
 /**
- * Banner com mensagens curtas rolando no topo. Mensagens são geradas
- * automaticamente a partir do estado atual:
- * - Líder do dia/semana
- * - Quem cumpriu reuniões realizadas
- * - Quem está prestes a bater meta
- * - Lembretes (último dia da semana, etc.)
+ * Banner com mensagens curtas rolando no topo.
  *
- * Futuro: configurável via admin com mensagens customizadas.
+ * Renderiza APENAS announcements criados pelo admin via `/admin/announcements`.
+ * Os fallbacks auto-gerados (líder da semana, total de reuniões, último dia,
+ * etc) foram removidos a pedido do Felipe — ele quer controle 100% do que
+ * aparece. Se o banco não tiver nenhum aviso ativo, o ticker some.
  */
-const AnnouncementTicker = ({ assessors }: AnnouncementTickerProps) => {
-  const { kpis } = useKpis();
-  const { data: weekly } = useWeeklyRanking();
+const AnnouncementTicker = (_props: AnnouncementTickerProps) => {
   const { data: manualAnnouncements } = useAnnouncements();
 
   const messages = useMemo(() => {
-    const out: string[] = [];
-
-    // 1. Avisos manuais (criados pelo admin) — vão primeiro, na ordem do sortOrder
-    for (const a of manualAnnouncements ?? []) {
+    return (manualAnnouncements ?? []).map((a) => {
       const prefix = a.emoji ? `${a.emoji} ` : "";
-      out.push(`${prefix}${a.message}`);
-    }
+      return `${prefix}${a.message}`;
+    });
+  }, [manualAnnouncements]);
 
-    // 2. Auto-geradas baseadas no estado atual
-    // Líder da semana
-    const sorted = [...assessors].sort((a, b) => b.points - a.points);
-    if (sorted[0] && sorted[0].points > 0) {
-      out.push(`👑 ${sorted[0].name} lidera com ${sorted[0].points} pts`);
-    }
-
-    // Reuniões realizadas
-    const reunioesRealizadas = weekly?.rankings.reduce(
-      (sum, r) => sum + (r.rollup.kpiTotals.reunioes_realizadas ?? 0),
-      0,
-    );
-    if (reunioesRealizadas && reunioesRealizadas > 0) {
-      out.push(`🤝 ${reunioesRealizadas} reuniões realizadas essa semana`);
-    }
-
-    // Ativações de conta
-    const ativacoes = weekly?.rankings.reduce(
-      (sum, r) => sum + (r.rollup.kpiTotals.ativacao_conta ?? 0),
-      0,
-    );
-    if (ativacoes && ativacoes > 0) {
-      out.push(`🎉 ${ativacoes} conta${ativacoes > 1 ? "s" : ""} ativada${ativacoes > 1 ? "s" : ""} essa semana`);
-    }
-
-    // Streak alto
-    const topStreak = sorted.find((a) => a.streak >= 5);
-    if (topStreak) {
-      out.push(`🔥 ${topStreak.name} está em streak de ${topStreak.streak} dias`);
-    }
-
-    // Último dia da semana
-    const today = new Date();
-    const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
-    const daysToEnd = differenceInCalendarDays(weekEnd, today);
-    if (daysToEnd === 0) {
-      out.push(`⏰ Hoje é o último dia da semana — finalizem as metas`);
-    } else if (daysToEnd === 1) {
-      out.push(`⏰ Amanhã é o último dia da semana`);
-    }
-
-    if (out.length === 0) {
-      out.push(`📊 Comece o dia registrando suas atividades`);
-    }
-    return out;
-  }, [assessors, weekly, kpis, manualAnnouncements]);
+  // Sem avisos = ticker invisível
+  if (messages.length === 0) return null;
 
   // Duplica mensagens pra criar efeito infinite scroll
   const doubled = [...messages, ...messages];

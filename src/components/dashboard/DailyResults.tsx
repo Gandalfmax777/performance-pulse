@@ -1,10 +1,15 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Medal, TrendingDown, TrendingUp, Flame, Loader2 } from "lucide-react";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
+import { Trophy, Medal, TrendingDown, TrendingUp, Flame, Loader2, Moon } from "lucide-react";
 import { type Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
-import { useOverviewReport } from "@/hooks/useReports";
+import {
+  useDailyRanking,
+  useWeeklyRanking,
+  useMonthlyRanking,
+  useSemesterRanking,
+  type ApiRankingEntry,
+} from "@/hooks/useRankings";
 
 type Period = "daily" | "weekly" | "monthly" | "semester";
 
@@ -15,61 +20,64 @@ const PERIOD_OPTIONS: Array<{ value: Period; label: string }> = [
   { value: "semester", label: "Semestral" },
 ];
 
-function computeRange(period: Period): { from: string; to: string } {
-  const now = new Date();
-  const fmt = (d: Date) => format(d, "yyyy-MM-dd");
-  switch (period) {
-    case "daily":
-      return { from: fmt(now), to: fmt(now) };
-    case "weekly":
-      return {
-        from: fmt(startOfWeek(now, { weekStartsOn: 1 })),
-        to: fmt(endOfWeek(now, { weekStartsOn: 1 })),
-      };
-    case "monthly":
-      return { from: fmt(startOfMonth(now)), to: fmt(endOfMonth(now)) };
-    case "semester": {
-      const month = now.getMonth();
-      const semStart = month < 6 ? new Date(now.getFullYear(), 0, 1) : new Date(now.getFullYear(), 6, 1);
-      const semEnd = month < 6 ? new Date(now.getFullYear(), 5, 30) : new Date(now.getFullYear(), 11, 31);
-      return { from: fmt(semStart), to: fmt(semEnd) };
-    }
-  }
-}
-
 interface DailyResultsProps {
   assessors: Assessor[];
 }
 
+/** Item enriquecido com dados visuais do assessor (avatar/level). */
+interface RankedRow {
+  id: string;
+  name: string;
+  avatar: string;
+  photoUrl: string | null;
+  level: Assessor["level"];
+  points: number;
+  weeklyGoalPercent: number;
+  streak: number;
+  isInactive: boolean;
+}
+
 const DailyResults = ({ assessors }: DailyResultsProps) => {
   const [period, setPeriod] = useState<Period>("weekly");
-  const range = useMemo(() => computeRange(period), [period]);
-  const { data: overview, isLoading } = useOverviewReport(range);
 
-  // Ranking derivado do overview (topPerformers já ordenados por points desc)
-  const performers = overview
-    ? [...overview.topPerformers, ...overview.bottomPerformers]
-        .filter((v, i, arr) => arr.findIndex((x) => x.assessorId === v.assessorId) === i) // dedupe
-    : [];
+  // Endpoints dedicados por período (antes era fallback degradado em
+  // useOverviewReport). Ranking já vem ordenado pelo backend com zero-guard
+  // — assessores inativos (0 pts E 0 dias ativos) caem pro fim.
+  const dailyQ = useDailyRanking();
+  const weeklyQ = useWeeklyRanking();
+  const monthlyQ = useMonthlyRanking();
+  const semesterQ = useSemesterRanking();
 
-  // Matching com assessors pra pegar avatar/level.
-  // Usa allPerformers (ranking completo do período selecionado) — antes usava
-  // só topPerformers (top 3) e fazia fallback pro dado SEMANAL, misturando períodos.
-  const ranked = useMemo(() => {
-    if (!overview) return [];
-    return [...assessors]
-      .map((a) => {
-        const perf = overview.allPerformers?.find((p) => p.assessorId === a.id);
-        return {
-          ...a,
-          overviewPoints: perf?.points ?? 0,
-          overviewPct: perf?.weeklyGoalPercent ?? 0,
-        };
-      })
-      .sort((a, b) => b.overviewPoints - a.overviewPoints);
-  }, [assessors, overview]);
+  const activeQuery =
+    period === "daily" ? dailyQ
+    : period === "weekly" ? weeklyQ
+    : period === "monthly" ? monthlyQ
+    : semesterQ;
 
-  const top3 = ranked.slice(0, 3);
+  const apiRankings: ApiRankingEntry[] = activeQuery.data?.rankings ?? [];
+
+  // Mapeia rankings do backend pra rows enriquecidas com avatar/level/streak
+  // (que vêm do estado local de assessors). Mantém a ORDEM do backend pra
+  // preservar o tie-break com zero-guard.
+  const ranked = useMemo<RankedRow[]>(() => {
+    const assessorById = new Map(assessors.map((a) => [a.id, a]));
+    return apiRankings.map((r) => {
+      const a = assessorById.get(r.assessor.id);
+      return {
+        id: r.assessor.id,
+        name: r.assessor.name,
+        avatar: a?.avatar ?? r.assessor.initials,
+        photoUrl: r.assessor.photoUrl,
+        level: a?.level ?? (r.assessor.level.toLowerCase() as Assessor["level"]),
+        points: r.rollup.points,
+        weeklyGoalPercent: r.rollup.weeklyGoalPercent,
+        streak: r.rollup.streak,
+        isInactive: r.rollup.points === 0 && r.rollup.activeDays.length === 0,
+      };
+    });
+  }, [apiRankings, assessors]);
+
+  const top3 = ranked.filter((r) => !r.isInactive).slice(0, 3);
   const bottom3 = ranked.slice(-3).reverse();
   const podiumOrder = [top3[1], top3[0], top3[2]];
   const podiumHeights = [140, 180, 110];
@@ -102,7 +110,7 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
             </button>
           ))}
         </div>
-        {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+        {activeQuery.isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
       </div>
 
       {/* Podium */}
@@ -122,7 +130,7 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
                 <p className="text-sm font-semibold text-foreground mb-1 break-words text-center max-w-[120px]">{a.name}</p>
                 <div className="flex items-center gap-1 mb-2">
                   <TrendingUp className="w-3 h-3 text-primary" />
-                  <span className="text-sm font-mono font-bold text-primary">{a.overviewPct}%</span>
+                  <span className="text-sm font-mono font-bold text-primary">{a.weeklyGoalPercent}%</span>
                 </div>
                 {a.streak > 0 && (
                   <span className="flex items-center gap-0.5 text-xs text-chart-orange mb-2">
@@ -136,7 +144,7 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
                   className={`w-28 rounded-t-xl bg-gradient-to-t border border-b-0 flex flex-col items-center justify-start pt-4 ${podiumColors[i]}`}
                 >
                   <span className={`text-3xl font-black ${podiumTextColors[i]}`}>{podiumLabels[i]}</span>
-                  <span className="text-xs text-muted-foreground mt-1 font-mono">{a.overviewPoints} pts</span>
+                  <span className="text-xs text-muted-foreground mt-1 font-mono">{a.points} pts</span>
                 </motion.div>
               </motion.div>
             );
@@ -165,9 +173,9 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
                   <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={36} />
                   <div className="flex-1">
                     <p className="font-semibold text-sm text-foreground break-words">{a.name}</p>
-                    <p className="text-xs text-muted-foreground">{a.overviewPoints} pts • {a.level}</p>
+                    <p className="text-xs text-muted-foreground">{a.points} pts • {a.level}</p>
                   </div>
-                  <span className="text-lg font-mono font-bold text-primary">{a.overviewPct}%</span>
+                  <span className="text-lg font-mono font-bold text-primary">{a.weeklyGoalPercent}%</span>
                 </div>
               </motion.div>
             ))}
@@ -188,18 +196,37 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className="p-3 rounded-lg bg-destructive/5 border border-destructive/20"
+                  className={`p-3 rounded-lg border ${
+                    a.isInactive
+                      ? "bg-muted/10 border-border/20"
+                      : "bg-destructive/5 border-destructive/20"
+                  }`}
                 >
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="w-7 h-7 rounded-full bg-destructive/10 flex items-center justify-center text-xs font-mono font-bold text-destructive">
+                    <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-mono font-bold ${
+                      a.isInactive
+                        ? "bg-muted/30 text-muted-foreground"
+                        : "bg-destructive/10 text-destructive"
+                    }`}>
                       #{rank}
                     </span>
                     <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={36} />
                     <div className="flex-1">
-                      <p className="font-semibold text-sm text-foreground break-words">{a.name}</p>
-                      <p className="text-xs text-muted-foreground">{a.overviewPoints} pts</p>
+                      <p className="font-semibold text-sm text-foreground break-words flex items-center gap-2">
+                        {a.name}
+                        {a.isInactive && (
+                          <span className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
+                            <Moon className="w-2.5 h-2.5" /> inativo
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{a.points} pts</p>
                     </div>
-                    <span className="text-lg font-mono font-bold text-destructive">{a.overviewPct}%</span>
+                    <span className={`text-lg font-mono font-bold ${
+                      a.isInactive ? "text-muted-foreground" : "text-destructive"
+                    }`}>
+                      {a.weeklyGoalPercent}%
+                    </span>
                   </div>
                 </motion.div>
               );
