@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { X, CheckCircle2, XCircle, TrendingUp } from "lucide-react";
 import { format, startOfWeek, endOfWeek } from "date-fns";
@@ -17,6 +17,19 @@ interface Props {
 
 const WeeklyHeatmap = ({ assessors }: Props) => {
   const [showDetail, setShowDetail] = useState(false);
+
+  // ESC fecha o modal de detalhe — padrão UX
+  useEffect(() => {
+    if (!showDetail) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowDetail(false);
+        setSelectedAssessor(null);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [showDetail]);
   const [selectedAssessor, setSelectedAssessor] = useState<Assessor | null>(null);
 
   // Preview: 3 primeiras atividades ativas hoje (backend resolve biweekly)

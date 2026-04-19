@@ -5,6 +5,7 @@ import type { Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { apiFetch, apiBaseUrl } from "@/api/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useModalDismiss } from "@/hooks/useModalDismiss";
 
 interface AssessorManagerProps {
   assessors: Assessor[];
@@ -29,6 +30,7 @@ const LEVELS: Array<{ value: "bronze" | "silver" | "gold"; label: string; color:
 ];
 
 const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManagerProps) => {
+  const { onBackdropClick } = useModalDismiss(onClose);
   const [name, setName] = useState("");
   const [editing, setEditing] = useState<EditingState | null>(null);
   const [saving, setSaving] = useState(false);
@@ -159,7 +161,10 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+    <div
+      onClick={onBackdropClick}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm overflow-y-auto py-8"
+    >
       <div className="card-glass rounded-2xl p-6 w-full max-w-lg mx-4 border border-primary/20">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">

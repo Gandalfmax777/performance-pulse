@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useModalDismiss } from "@/hooks/useModalDismiss";
 import { motion } from "framer-motion";
 import { X, Printer, Trophy, TrendingUp, Flame, Award, Loader2, Sparkles, RefreshCw } from "lucide-react";
 import Markdown from "react-markdown";
@@ -80,24 +81,13 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
     window.open(`/relatorio/assessor/${assessor.id}?period=weekly&autoprint=1`, "_blank");
   };
 
-  // ESC fecha — padrão UX de modal
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
+  const { onBackdropClick } = useModalDismiss(onClose);
 
   const a = assessor;
 
   return (
     <div
-      // Click no backdrop (fora do modal) fecha. target === currentTarget evita
-      // fechar quando clique vier de dentro do modal bubble-up.
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+      onClick={onBackdropClick}
       className="fixed inset-0 z-50 flex items-start justify-center bg-background/80 backdrop-blur-sm overflow-y-auto py-8"
     >
       {/* Botão X flutuante fixo no topo da viewport — sempre acessível,
