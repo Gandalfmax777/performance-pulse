@@ -240,7 +240,10 @@ const Index = () => {
 
   // ─── DASHBOARD MODE: sidebar fixa + main ─────────────────────────────────
   return (
-    <div className="min-h-screen bg-background flex relative overflow-x-hidden">
+    <div className="min-h-screen bg-background flex relative">
+      {/* overflow-x-hidden NÃO pode ficar no wrapper: vira scroll container e
+          quebra o `position: sticky` da sidebar (faz a sidebar scrollar junto
+          com a página em vez de grudar no topo). Aplicado só no <main>. */}
       <div className="fixed inset-0 pointer-events-none bg-mesh" />
 
       <DashboardSidebar
@@ -252,7 +255,7 @@ const Index = () => {
         onMobileClose={() => setMobileNavOpen(false)}
       />
 
-      <main className="flex-1 min-w-0 flex flex-col">
+      <main className="flex-1 min-w-0 flex flex-col overflow-x-hidden">
         <DashboardTopbar
           title={VIEW_LABELS[view]}
           onMenuClick={() => setMobileNavOpen(true)}
