@@ -119,12 +119,15 @@ export interface ApiFunnelReport {
 
 export interface ApiActivityFeedItem {
   id: string;
-  type: "metric" | "badge_unlock";
+  type: "metric" | "badge_unlock" | "observation" | "meeting" | "meeting_area";
   timestamp: string;
   assessorId: string;
   assessorName: string;
   description: string;
   icon: string;
+  /// Sprint C - entry foi registrada em data ≠ hoje (retroativa)
+  backfilled?: boolean;
+  metricDate?: string;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────

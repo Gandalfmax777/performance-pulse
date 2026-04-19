@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { CheckCircle2, Award } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { CheckCircle2, Award, Clock } from "lucide-react";
+import { format, formatDistanceToNow, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useActivityFeed, type ApiActivityFeedItem } from "@/hooks/useReports";
 
@@ -54,6 +54,15 @@ const ActivityFeed = () => {
                 <p className="text-xs text-foreground">
                   <span className="font-semibold">{firstName(f.assessorName)}</span>{" "}
                   <span className="text-muted-foreground">{f.description}</span>
+                  {f.backfilled && f.metricDate && (
+                    <span
+                      className="ml-1.5 inline-flex items-center gap-0.5 text-[9px] px-1 py-0.5 rounded bg-chart-orange/15 text-chart-orange font-semibold"
+                      title={`Lançamento retroativo — métrica datada ${f.metricDate}`}
+                    >
+                      <Clock className="w-2.5 h-2.5" />
+                      retroativo {format(parseISO(f.metricDate), "dd/MM")}
+                    </span>
+                  )}
                 </p>
               </div>
               <span className="text-[10px] text-muted-foreground font-mono shrink-0">
