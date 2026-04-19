@@ -21,7 +21,6 @@ import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import AssessorProfile from "./AssessorProfile";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { useOverviewReport } from "@/hooks/useReports";
-import { VerticalRadiusTick } from "@/components/ui/VerticalRadiusTick";
 import { useGenerateTeamInsight, type ApiInsight } from "@/hooks/useInsight";
 import InsightHistoryPanel from "./InsightHistoryPanel";
 import Markdown from "react-markdown";
@@ -286,10 +285,12 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
             <RadarChart data={radarData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
               <PolarGrid stroke="hsl(var(--border))" opacity={0.3} />
               <PolarAngleAxis dataKey="kpi" tick={{ fontSize: 13, fill: "hsl(var(--foreground))", fontWeight: 600 }} />
+              {/* angle=90 = eixo vertical pra cima; números empilhados, cada
+                  um com texto horizontal. */}
               <PolarRadiusAxis
-                angle={30}
+                angle={90}
                 domain={[0, 100]}
-                tick={<VerticalRadiusTick />}
+                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
               />
               <Radar
                 name="Score %"

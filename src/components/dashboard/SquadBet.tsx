@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { type Assessor } from "@/types/assessor";
-import { VerticalRadiusTick } from "@/components/ui/VerticalRadiusTick";
 import { useSquads, useCreateSquad, useDeleteSquad, type ApiSquad } from "@/hooks/useSquads";
 import { useBets, useCreateBet, useFinishBet, type BetWinnerCriteria } from "@/hooks/useBets";
 import { useCofreBalance } from "@/hooks/useCofre";
@@ -476,9 +475,13 @@ const SquadBet = ({ assessors }: Props) => {
                     dataKey="metric"
                     tick={{ fill: "hsl(var(--foreground))", fontSize: 14, fontWeight: 600 }}
                   />
-                  {/* Valores radiais (0, 3, 6, 9, 12) rotacionados 90° pra
-                      não se sobrepor ao label "Leads" do topo. */}
-                  <PolarRadiusAxis tick={<VerticalRadiusTick />} angle={90} />
+                  {/* Valores radiais: eixo vertical apontando pra cima (angle=90)
+                      pros números ficarem empilhados na vertical mas cada um com
+                      texto horizontal (mais legível que rotacionado). */}
+                  <PolarRadiusAxis
+                    angle={90}
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                  />
                   {rankedSquads.map((row, i) => (
                     <Radar
                       key={row.sq.id}

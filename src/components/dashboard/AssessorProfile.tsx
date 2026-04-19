@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { useModalDismiss } from "@/hooks/useModalDismiss";
-import { VerticalRadiusTick } from "@/components/ui/VerticalRadiusTick";
 import { motion } from "framer-motion";
 import { X, Printer, Trophy, TrendingUp, Flame, Award, Loader2, Sparkles, RefreshCw } from "lucide-react";
 import Markdown from "react-markdown";
@@ -276,10 +275,11 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                   <RadarChart data={radarData} margin={{ top: 15, right: 25, bottom: 15, left: 25 }}>
                     <PolarGrid stroke="hsl(var(--border))" opacity={0.3} />
                     <PolarAngleAxis dataKey="kpi" tick={{ fontSize: 11, fill: "hsl(var(--foreground))", fontWeight: 600 }} />
+                    {/* angle=90 = eixo vertical pra cima */}
                     <PolarRadiusAxis
-                      angle={30}
+                      angle={90}
                       domain={[0, 100]}
-                      tick={<VerticalRadiusTick />}
+                      tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
                     />
                     <Radar
                       dataKey="score"
