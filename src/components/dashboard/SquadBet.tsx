@@ -174,6 +174,24 @@ const SquadBet = ({ assessors }: Props) => {
     { metric: "Boletos", ...Object.fromEntries(rankedSquads.map((s) => [s.sq.id, s.stats.boletos])) },
   ];
 
+  // Domain + ticks explícitos pro radar. Max real dos dados + ~40% de padding,
+  // e ticks array PARA EM 3 valores abaixo do max — o eixo continua até o topo
+  // mas não mostra número ali, deixando espaço visível entre o último label
+  // ("8") e o label do KPI ("Leads").
+  const radarMaxValue = useMemo(() => {
+    const all = radarData.flatMap((d) =>
+      Object.entries(d)
+        .filter(([k]) => k !== "metric")
+        .map(([, v]) => (typeof v === "number" ? v : 0)),
+    );
+    return Math.max(1, ...all);
+  }, [radarData]);
+  const radarDomainMax = Math.max(4, Math.ceil(radarMaxValue * 1.4));
+  const radarStep = Math.max(1, Math.ceil(radarDomainMax / 4));
+  const radarTicks = [radarStep, radarStep * 2, radarStep * 3].filter(
+    (t) => t < radarDomainMax,
+  );
+
   const barData = rankedSquads.map((s) => ({
     name: `${s.sq.emoji} ${s.sq.name}`,
     "Meta %": s.stats.avgGoal,
@@ -479,16 +497,15 @@ const SquadBet = ({ assessors }: Props) => {
                     dataKey="metric"
                     tick={{ fill: "hsl(var(--foreground))", fontSize: 14, fontWeight: 600 }}
                   />
-                  {/* Valores radiais: eixo vertical apontando pra cima (angle=90)
-                      pros números ficarem empilhados na vertical com texto
-                      horizontal. outerRadius do RadarChart=72% encolhe o
-                      polígono deixando espaço entre as extremidades e as
-                      labels externas (Leads, Cadência, etc). Domain +30%
-                      garante que o último tick numérico fique abaixo do
-                      outer edge, não grudando no label. */}
+                  {/* Valores radiais: eixo vertical (angle=90), números
+                      horizontais. `ticks` é array EXPLÍCITO que PARA antes
+                      do edge do domain (ex: domain=15, ticks=[0,4,8,12]) —
+                      recharts não gera automaticamente uma tick no max,
+                      garantindo que não grude no label "Leads" do topo. */}
                   <PolarRadiusAxis
                     angle={90}
-                    domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.3) || 5]}
+                    domain={[0, radarDomainMax]}
+                    ticks={radarTicks}
                     tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
                   />
                   {rankedSquads.map((row, i) => (
