@@ -476,10 +476,12 @@ const SquadBet = ({ assessors }: Props) => {
                     tick={{ fill: "hsl(var(--foreground))", fontSize: 14, fontWeight: 600 }}
                   />
                   {/* Valores radiais: eixo vertical apontando pra cima (angle=90)
-                      pros números ficarem empilhados na vertical mas cada um com
-                      texto horizontal (mais legível que rotacionado). */}
+                      pros números ficarem empilhados na vertical com texto
+                      horizontal. Domain com +15% sobre o max pra criar espaço
+                      entre o último número e o label do topo. */}
                   <PolarRadiusAxis
                     angle={90}
+                    domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.15)]}
                     tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
                   />
                   {rankedSquads.map((row, i) => (

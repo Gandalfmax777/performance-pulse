@@ -286,10 +286,13 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
               <PolarGrid stroke="hsl(var(--border))" opacity={0.3} />
               <PolarAngleAxis dataKey="kpi" tick={{ fontSize: 13, fill: "hsl(var(--foreground))", fontWeight: 600 }} />
               {/* angle=90 = eixo vertical pra cima; números empilhados, cada
-                  um com texto horizontal. */}
+                  um com texto horizontal.
+                  domain [0, 110] + ticks explícitos cria 10% de padding acima
+                  do 100 pra ele não grudar no label "Leads" do topo. */}
               <PolarRadiusAxis
                 angle={90}
-                domain={[0, 100]}
+                domain={[0, 110]}
+                ticks={[0, 25, 50, 75, 100]}
                 tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
               />
               <Radar

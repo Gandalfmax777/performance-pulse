@@ -275,10 +275,13 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                   <RadarChart data={radarData} margin={{ top: 15, right: 25, bottom: 15, left: 25 }}>
                     <PolarGrid stroke="hsl(var(--border))" opacity={0.3} />
                     <PolarAngleAxis dataKey="kpi" tick={{ fontSize: 11, fill: "hsl(var(--foreground))", fontWeight: 600 }} />
-                    {/* angle=90 = eixo vertical pra cima */}
+                    {/* angle=90 = eixo vertical pra cima;
+                        domain 110 cria padding acima do 100 pra não grudar
+                        no label "Leads" do topo. */}
                     <PolarRadiusAxis
                       angle={90}
-                      domain={[0, 100]}
+                      domain={[0, 110]}
+                      ticks={[0, 25, 50, 75, 100]}
                       tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
                     />
                     <Radar
