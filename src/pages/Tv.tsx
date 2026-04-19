@@ -9,6 +9,7 @@ import { useAssessors } from "@/hooks/useAssessors";
 import { useRankingStream } from "@/hooks/useRankingStream";
 import { useActiveTournaments } from "@/hooks/useTournaments";
 import { useTournamentFinishedStream } from "@/hooks/useTournamentFinishedStream";
+import { useSystemNotifications } from "@/hooks/useSystemNotifications";
 
 // Lazy: componentes pesados só baixam quando a rotação chega neles.
 const TvRanking = lazy(() => import("@/components/dashboard/TvRanking"));
@@ -64,6 +65,7 @@ const TvPage = () => {
 
   // SSE: updates em tempo real
   useRankingStream(true);
+  useSystemNotifications(true);
   const { event: finishedEvent, dismiss: dismissFinished } = useTournamentFinishedStream(true);
 
   // Fullscreen automático no mount — experiência de kiosk

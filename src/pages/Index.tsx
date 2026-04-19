@@ -25,6 +25,7 @@ const AssessorManager = lazy(() => import("@/components/dashboard/AssessorManage
 import { Presentation } from "lucide-react";
 import { useAssessors } from "@/hooks/useAssessors";
 import { useRankingStream } from "@/hooks/useRankingStream";
+import { useSystemNotifications } from "@/hooks/useSystemNotifications";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 
 type OverviewPeriod = "daily" | "weekly" | "monthly" | "semester";
@@ -126,6 +127,8 @@ const Index = () => {
   // SSE: dashboard admin também recebe updates em tempo real pra Leaderboard
   // refletir upserts de qualquer origem (mesa de vendas, admin numa outra aba).
   useRankingStream(true);
+  // Toasts contextuais quando eventos disparam (ex: assessor bate meta)
+  useSystemNotifications(true);
 
   // Clica "Modo TV" na sidebar → abre `/tv` em nova aba (experiência ideal
   // pra TV da sala de vendas continuar rodando enquanto admin trabalha).
