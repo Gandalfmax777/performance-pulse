@@ -164,7 +164,10 @@ export function useKpiSeries(params: {
   });
 }
 
-export function useOverviewReport(params: { from?: string; to?: string }) {
+export function useOverviewReport(
+  params: { from?: string; to?: string },
+  options: { enabled?: boolean } = {},
+) {
   return useQuery({
     queryKey: ["reports", "overview", params],
     queryFn: () =>
@@ -172,6 +175,7 @@ export function useOverviewReport(params: { from?: string; to?: string }) {
         `/reports/overview${toQs({ from: params.from, to: params.to })}`,
       ),
     staleTime: 30_000,
+    enabled: options.enabled ?? true,
   });
 }
 

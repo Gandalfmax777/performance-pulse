@@ -15,7 +15,7 @@ import {
   Radar,
   Legend,
 } from "recharts";
-import { format, startOfWeek, endOfWeek } from "date-fns";
+import { format, startOfWeek, endOfWeek, differenceInDays, parseISO, subDays } from "date-fns";
 import { type Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import AssessorProfile from "./AssessorProfile";
@@ -24,7 +24,7 @@ import { useOverviewReport } from "@/hooks/useReports";
 import { useGenerateTeamInsight, type ApiInsight } from "@/hooks/useInsight";
 import InsightHistoryPanel from "./InsightHistoryPanel";
 import Markdown from "react-markdown";
-import { Filter, TrendingUp, Lightbulb, Sparkles, RefreshCw, User, Users, BarChart3, Loader2, Printer } from "lucide-react";
+import { Filter, TrendingUp, Lightbulb, Sparkles, RefreshCw, User, Users, BarChart3, Loader2, Printer, GitCompare, ArrowUp, ArrowDown, Minus } from "lucide-react";
 
 type Scope = "geral" | "individual";
 
@@ -45,10 +45,25 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
   const [scope, setScope] = useState<Scope>("geral");
   const [selectedAssessor, setSelectedAssessor] = useState<string | null>(null);
   const [profileAssessor, setProfileAssessor] = useState<Assessor | null>(null);
+  // Compara com o mesmo intervalo imediatamente anterior (ex: semana → 7 dias antes)
+  const [compareEnabled, setCompareEnabled] = useState(false);
 
   const { data: overview, isLoading } = useOverviewReport({
     from: range.from,
     to: range.to,
+  });
+
+  // Range anterior: shift back pelo comprimento do range atual (+1 pra incluir ambos os extremos)
+  const previousRange = useMemo(() => {
+    const days = differenceInDays(parseISO(range.to), parseISO(range.from)) + 1;
+    return {
+      from: format(subDays(parseISO(range.from), days), "yyyy-MM-dd"),
+      to: format(subDays(parseISO(range.to), days), "yyyy-MM-dd"),
+    };
+  }, [range]);
+
+  const { data: previousOverview } = useOverviewReport(previousRange, {
+    enabled: compareEnabled,
   });
 
   const filteredAssessors = useMemo(() => {
@@ -61,14 +76,36 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
   // Bar chart: mostra % de cumprimento pra TODOS os KPIs (escala uniforme 0-150).
   // Antes mostrávamos valores absolutos misturados (ligações 0-300 vs cadência 0-100%)
   // que distorcia visualmente o gráfico. % é universal e comparável.
+  // Quando compareEnabled=true, adiciona coluna "Anterior" (mesmo intervalo, shift back).
   const barData = useMemo(() => {
     if (!overview) return [];
+    const prevByKey = new Map<string, number>();
+    if (compareEnabled && previousOverview) {
+      for (const pk of previousOverview.byKpi) {
+        prevByKey.set(pk.key, Math.round(pk.percent));
+      }
+    }
     return overview.byKpi.map((k) => ({
       name: k.label,
       Realizado: Math.round(k.percent),
       Meta: 100,
+      ...(compareEnabled ? { Anterior: prevByKey.get(k.key) ?? 0 } : {}),
     }));
-  }, [overview]);
+  }, [overview, previousOverview, compareEnabled]);
+
+  // Delta por KPI: (atual - anterior) / anterior * 100, com proteção pra divisão por zero.
+  const deltaByKpiKey = useMemo(() => {
+    const map = new Map<string, { delta: number; pct: number | null; prevActual: number }>();
+    if (!compareEnabled || !overview || !previousOverview) return map;
+    const prevByKey = new Map(previousOverview.byKpi.map((p) => [p.key, p.actual]));
+    for (const k of overview.byKpi) {
+      const prev = prevByKey.get(k.key) ?? 0;
+      const delta = k.actual - prev;
+      const pct = prev > 0 ? (delta / prev) * 100 : null; // null = "novo" (antes era zero)
+      map.set(k.key, { delta, pct, prevActual: prev });
+    }
+    return map;
+  }, [overview, previousOverview, compareEnabled]);
 
   const radarData = useMemo(() => {
     if (!overview) return [];
@@ -143,8 +180,58 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
             </select>
           )}
 
+          {/* Toggle compare — shift back pelo mesmo intervalo */}
+          <button
+            onClick={() => setCompareEnabled((v) => !v)}
+            title={`Compara com ${previousRange.from} → ${previousRange.to}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold border transition-all ${
+              compareEnabled
+                ? "bg-primary text-secondary border-primary"
+                : "text-muted-foreground bg-muted/20 border-border/30 hover:text-foreground"
+            }`}
+          >
+            <GitCompare className="w-3 h-3" />
+            Comparar período anterior
+          </button>
+
           {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground ml-auto" />}
         </div>
+
+        {/* Delta cards por KPI — só aparecem quando compareEnabled */}
+        {compareEnabled && overview && previousOverview && (
+          <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            {overview.byKpi.map((k) => {
+              const d = deltaByKpiKey.get(k.key);
+              if (!d) return null;
+              const pct = d.pct;
+              const label = pct === null
+                ? "novo"
+                : `${pct >= 0 ? "+" : ""}${pct.toFixed(0)}%`;
+              const color =
+                pct === null
+                  ? "text-muted-foreground"
+                  : pct > 1
+                  ? "text-success"
+                  : pct < -1
+                  ? "text-destructive"
+                  : "text-muted-foreground";
+              const Icon = pct === null ? Minus : pct > 1 ? ArrowUp : pct < -1 ? ArrowDown : Minus;
+              return (
+                <div
+                  key={k.key}
+                  className="p-2 rounded-lg bg-muted/20 border border-border/30"
+                  title={`Atual: ${k.actual.toFixed(0)} · Anterior: ${d.prevActual.toFixed(0)}`}
+                >
+                  <div className="text-[10px] text-muted-foreground truncate">{k.label}</div>
+                  <div className={`flex items-center gap-1 text-sm font-mono font-bold ${color}`}>
+                    <Icon className="w-3 h-3" />
+                    {label}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Charts */}
@@ -178,6 +265,12 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               <Bar dataKey="Realizado" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              {/* Ghost bar: período anterior pra comparação visual lado-a-lado.
+                  Cor secondary (laranja âmbar) com opacity baixa pra não competir
+                  com a barra principal. */}
+              {compareEnabled && (
+                <Bar dataKey="Anterior" fill="hsl(var(--secondary))" opacity={0.45} radius={[4, 4, 0, 0]} />
+              )}
               <Bar dataKey="Meta" fill="hsl(var(--muted-foreground))" opacity={0.3} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
