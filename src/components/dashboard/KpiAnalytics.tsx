@@ -23,6 +23,7 @@ import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { useOverviewReport } from "@/hooks/useReports";
 import { useGenerateTeamInsight, type ApiInsight } from "@/hooks/useInsight";
 import InsightHistoryPanel from "./InsightHistoryPanel";
+import DirectionComplianceTable from "./DirectionComplianceTable";
 import Markdown from "react-markdown";
 import { Filter, TrendingUp, Lightbulb, Sparkles, RefreshCw, User, Users, BarChart3, Loader2, Printer, GitCompare, ArrowUp, ArrowDown, Minus } from "lucide-react";
 
@@ -454,6 +455,9 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
           </p>
         )}
       </div>
+
+      {/* Cumprimento de Foco — directions com KPIs alvo + delta vs baseline */}
+      <DirectionComplianceTable limit={10} />
 
       {/* Histórico de análises IA do time — collapsible, default fechado */}
       <InsightHistoryPanel kind="team" periodKind="WEEK" limit={20} />

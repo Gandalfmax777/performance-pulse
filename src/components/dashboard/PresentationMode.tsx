@@ -28,8 +28,9 @@ import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { useKpis } from "@/hooks/useKpis";
 import { useOverviewReport } from "@/hooks/useReports";
 import { useGenerateTeamInsight, type ApiInsight } from "@/hooks/useInsight";
-import { useUpsertDailyDirection, useDailyDirection } from "@/hooks/useDailyDirection";
+import { useDailyDirection } from "@/hooks/useDailyDirection";
 import { useTournaments } from "@/hooks/useTournaments";
+import DirectionEditModal from "./DirectionEditModal";
 
 type Period = "weekly" | "monthly";
 
@@ -114,11 +115,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
     return format(d, "yyyy-MM-dd");
   }, []);
   const { data: nextDirection } = useDailyDirection(nextMonday);
-  const upsertDirection = useUpsertDailyDirection(nextMonday);
-  const [nextFocus, setNextFocus] = useState("");
-  useEffect(() => {
-    setNextFocus(nextDirection?.text ?? "");
-  }, [nextDirection]);
+  const [directionEditOpen, setDirectionEditOpen] = useState(false);
 
   // Ranking ordenado por points (do period selecionado)
   const ranked = useMemo(() => {
@@ -540,28 +537,54 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
             🎯 Foco da Próxima Semana
           </h2>
           <p className="text-center text-muted-foreground">
-            Direcionamento que aparece no diário de{" "}
+            Anchor: segunda{" "}
             <span className="font-mono text-foreground">
               {format(new Date(`${nextMonday}T00:00:00.000Z`), "dd/MM (EEEE)", { locale: ptBR })}
             </span>
           </p>
-          <textarea
-            value={nextFocus}
-            onChange={(e) => setNextFocus(e.target.value)}
-            onBlur={() => {
-              if (nextFocus !== (nextDirection?.text ?? "")) {
-                upsertDirection.mutate(nextFocus);
-              }
-            }}
-            placeholder="Ex: Foco em ativação de conta + reuniões realizadas. Ativos prioritários: X, Y, Z."
-            rows={6}
-            className="w-full p-6 rounded-2xl bg-muted/20 border border-border/30 text-foreground text-lg placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 resize-none"
-          />
-          <div className="text-center">
-            <p className="text-xs text-muted-foreground">
-              Auto-salva ao sair do campo. Aparece no banner do diário pra todo time ver.
-            </p>
-          </div>
+
+          {nextDirection ? (
+            <div className="card-glass rounded-2xl p-6 space-y-4">
+              <div className="flex items-center gap-2 flex-wrap text-sm">
+                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-xs">
+                  {nextDirection.period === "DAILY" ? "Foco Diário"
+                    : nextDirection.period === "WEEKLY" ? "Foco Semanal"
+                    : "Foco Mensal"}
+                </span>
+                {nextDirection.targetKpiKeys.length > 0 && (
+                  <span className="text-xs text-muted-foreground">
+                    KPIs alvo: {nextDirection.targetKpiKeys.length}
+                  </span>
+                )}
+              </div>
+              <p className="text-lg text-foreground whitespace-pre-wrap">
+                {nextDirection.text}
+              </p>
+              <button
+                onClick={() => setDirectionEditOpen(true)}
+                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
+              >
+                Editar foco
+              </button>
+            </div>
+          ) : (
+            <div className="card-glass rounded-2xl p-8 text-center">
+              <p className="text-base text-muted-foreground mb-4">
+                Nenhum foco definido pra próxima semana ainda.
+              </p>
+              <button
+                onClick={() => setDirectionEditOpen(true)}
+                className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors"
+              >
+                Definir foco da próxima semana
+              </button>
+            </div>
+          )}
+
+          <p className="text-center text-xs text-muted-foreground">
+            Você pode escolher o período (dia/semana/mês) e KPIs alvo no modal.
+            Cumprimento aparece em KPIs &amp; Insights.
+          </p>
         </div>
       ),
     },
@@ -730,6 +753,13 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
           </div>
         ))}
       </div>
+
+      {/* Modal de edição do foco com período + KPIs alvo */}
+      <DirectionEditModal
+        date={nextMonday}
+        open={directionEditOpen}
+        onClose={() => setDirectionEditOpen(false)}
+      />
     </div>
   );
 };
