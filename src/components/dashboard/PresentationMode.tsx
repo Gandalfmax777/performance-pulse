@@ -12,9 +12,16 @@ import {
   Crown,
   Loader2,
   Printer,
+  ArrowUp,
+  ArrowDown,
+  Minus,
+  Swords,
+  Play,
+  Pause,
+  TrendingUp,
 } from "lucide-react";
 import Markdown from "react-markdown";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
@@ -22,6 +29,7 @@ import { useKpis } from "@/hooks/useKpis";
 import { useOverviewReport } from "@/hooks/useReports";
 import { useGenerateTeamInsight, type ApiInsight } from "@/hooks/useInsight";
 import { useUpsertDailyDirection, useDailyDirection } from "@/hooks/useDailyDirection";
+import { useTournaments } from "@/hooks/useTournaments";
 
 type Period = "weekly" | "monthly";
 
@@ -57,12 +65,45 @@ function rangeFor(period: Period) {
 const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
   const [period, setPeriod] = useState<Period>("weekly");
   const [slideIdx, setSlideIdx] = useState(0);
+  const [autoPlay, setAutoPlay] = useState(false);
   const range = rangeFor(period);
+
+  // Range anterior pra comparativo temporal (slide Highlights)
+  const previousRange = useMemo(() => {
+    const now = new Date();
+    if (period === "weekly") {
+      const prevRef = subDays(now, 7);
+      return {
+        from: format(startOfWeek(prevRef, { weekStartsOn: 1 }), "yyyy-MM-dd"),
+        to: format(endOfWeek(prevRef, { weekStartsOn: 1 }), "yyyy-MM-dd"),
+      };
+    }
+    const prevRef = subMonths(now, 1);
+    return {
+      from: format(startOfMonth(prevRef), "yyyy-MM-dd"),
+      to: format(endOfMonth(prevRef), "yyyy-MM-dd"),
+    };
+  }, [period]);
 
   const { kpis } = useKpis();
   const { data: overview } = useOverviewReport({ from: range.from, to: range.to });
+  const { data: previousOverview } = useOverviewReport(previousRange);
+  const { data: tournaments = [] } = useTournaments();
   const generateTeam = useGenerateTeamInsight();
   const [teamInsight, setTeamInsight] = useState<ApiInsight | null>(null);
+
+  // Delta por KPI key — highlights
+  const deltaByKey = useMemo(() => {
+    const map = new Map<string, { current: number; previous: number; pct: number | null }>();
+    if (!overview || !previousOverview) return map;
+    const prevMap = new Map(previousOverview.byKpi.map((p) => [p.key, p.actual]));
+    for (const k of overview.byKpi) {
+      const prev = prevMap.get(k.key) ?? 0;
+      const pct = prev > 0 ? ((k.actual - prev) / prev) * 100 : null;
+      map.set(k.key, { current: k.actual, previous: prev, pct });
+    }
+    return map;
+  }, [overview, previousOverview]);
 
   // Direcionamento da segunda-feira da próxima semana (próximos passos)
   const nextMonday = useMemo(() => {
@@ -124,6 +165,74 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
           </div>
         </div>
       ),
+    },
+    {
+      id: "highlights",
+      title: "Destaques",
+      icon: TrendingUp,
+      render: () => {
+        // Mostra os 6 primeiros KPIs com delta vs período anterior
+        const items = (overview?.byKpi ?? []).slice(0, 6).map((k) => ({
+          label: k.label,
+          key: k.key,
+          actual: Math.round(k.actual),
+          delta: deltaByKey.get(k.key) ?? null,
+        }));
+        const prevLabel = period === "weekly" ? "semana passada" : "mês passado";
+        return (
+          <div className="space-y-8">
+            <h2 className="text-4xl font-display font-bold text-foreground text-center">
+              📈 Destaques do Período
+            </h2>
+            <p className="text-center text-muted-foreground text-lg">
+              Comparativo com {prevLabel}
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+              {items.map((it, i) => {
+                const pct = it.delta?.pct;
+                const isUp = pct !== null && pct !== undefined && pct > 1;
+                const isDown = pct !== null && pct !== undefined && pct < -1;
+                const Icon = pct === null || pct === undefined ? Minus : isUp ? ArrowUp : isDown ? ArrowDown : Minus;
+                const color = pct === null || pct === undefined
+                  ? "text-muted-foreground"
+                  : isUp
+                  ? "text-success"
+                  : isDown
+                  ? "text-destructive"
+                  : "text-muted-foreground";
+                const deltaLabel = pct === null || pct === undefined
+                  ? it.delta && it.delta.previous === 0 && it.actual > 0 ? "novo!" : "—"
+                  : `${pct >= 0 ? "+" : ""}${pct.toFixed(0)}%`;
+                return (
+                  <motion.div
+                    key={it.key}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="card-glass rounded-2xl p-6"
+                  >
+                    <p className="text-sm text-muted-foreground uppercase tracking-wider mb-3">
+                      {it.label}
+                    </p>
+                    <p className="font-display text-5xl font-black text-foreground mb-2">
+                      {it.actual.toLocaleString("pt-BR")}
+                    </p>
+                    <div className={`flex items-center gap-1.5 text-lg font-mono font-bold ${color}`}>
+                      <Icon className="w-5 h-5" />
+                      {deltaLabel}
+                      {it.delta && it.delta.previous > 0 && (
+                        <span className="text-xs text-muted-foreground ml-1">
+                          vs {Math.round(it.delta.previous).toLocaleString("pt-BR")}
+                        </span>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      },
     },
     {
       id: "podium",
@@ -277,6 +386,105 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
       ),
     },
     {
+      id: "tournaments",
+      title: "Torneios",
+      icon: Swords,
+      render: () => {
+        const activeT = tournaments.filter((t) => t.status === "ACTIVE");
+        const recentFinished = tournaments
+          .filter((t) => t.status === "FINISHED")
+          .slice(0, 3);
+        const hasNothing = activeT.length === 0 && recentFinished.length === 0;
+        return (
+          <div className="space-y-8 max-w-5xl mx-auto">
+            <h2 className="text-4xl font-display font-bold text-foreground text-center">
+              ⚔️ Torneios do Período
+            </h2>
+
+            {hasNothing && (
+              <p className="text-center text-muted-foreground text-lg py-12">
+                Nenhum torneio ativo ou recente. Considere criar um em /admin/tournaments
+                pra aumentar o engajamento da próxima semana.
+              </p>
+            )}
+
+            {activeT.length > 0 && (
+              <div>
+                <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                  Ativos ({activeT.length})
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {activeT.map((t) => {
+                    const leader = [...t.participants]
+                      .sort((a, b) => (b.finalScore ?? 0) - (a.finalScore ?? 0))[0];
+                    return (
+                      <div key={t.id} className="card-glass rounded-2xl p-5 border-secondary/30">
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <h4 className="font-display font-bold text-lg text-foreground">
+                            {t.roundLabel}
+                          </h4>
+                          <span className="font-mono font-black text-2xl text-secondary">
+                            R$ {t.totalPrizePool.toLocaleString("pt-BR")}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {format(parseISO(t.startDate), "dd/MM")} → {format(parseISO(t.endDate), "dd/MM")}
+                          {" · "}
+                          {t.scope === "INDIVIDUAL" ? "Individual" : "Squads"}
+                        </p>
+                        {leader && (
+                          <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                            <Crown className="w-5 h-5 text-secondary" />
+                            <span className="font-semibold text-foreground flex-1">
+                              Liderando: {leader.displayName}
+                            </span>
+                            <span className="font-mono font-black text-primary">
+                              {(leader.finalScore ?? 0).toLocaleString("pt-BR")}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {recentFinished.length > 0 && (
+              <div>
+                <h3 className="text-xl font-bold text-foreground mb-4">Finalizados recentes</h3>
+                <div className="space-y-3">
+                  {recentFinished.map((t) => {
+                    const champion = t.participants.find((p) => p.rank === 1);
+                    const topPayout = t.progressivePayoutJson?.["1"] ?? 0;
+                    return (
+                      <div
+                        key={t.id}
+                        className="flex items-center gap-4 p-4 rounded-xl bg-muted/10 border border-border/20"
+                      >
+                        <Trophy className="w-8 h-8 text-secondary" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-foreground">{t.roundLabel}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Campeão: <span className="text-foreground font-semibold">{champion?.displayName ?? "—"}</span>
+                            {" · "}R$ {topPayout.toLocaleString("pt-BR")}
+                          </p>
+                        </div>
+                        <span className="text-xs font-mono text-muted-foreground">
+                          {format(parseISO(t.endDate), "dd/MM")}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      },
+    },
+    {
       id: "ai",
       title: "Análise IA",
       icon: Sparkles,
@@ -366,6 +574,17 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
     setTeamInsight(null);
   }, [period]);
 
+  // Auto-advance: quando ligado, avança slide a cada 12s. Útil quando Felipe
+  // coloca a apresentação no TV durante reunião de fechamento e quer deixar
+  // passando sem precisar clicar.
+  useEffect(() => {
+    if (!autoPlay) return;
+    const timer = setInterval(() => {
+      setSlideIdx((i) => (i + 1) % slides.length);
+    }, 12_000);
+    return () => clearInterval(timer);
+  }, [autoPlay, slides.length]);
+
   // Navegação por teclado
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -424,6 +643,17 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setAutoPlay((v) => !v)}
+            className={`p-2 rounded-lg transition-all ${
+              autoPlay
+                ? "bg-primary/20 text-primary"
+                : "bg-muted/30 hover:bg-muted/50 text-foreground"
+            }`}
+            title={autoPlay ? "Pausar auto-advance" : "Auto-advance a cada 12s"}
+          >
+            {autoPlay ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          </button>
           <button
             onClick={() => window.print()}
             className="p-2 rounded-lg bg-muted/30 hover:bg-muted/50 text-foreground"
