@@ -326,64 +326,73 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
       id: "ranking",
       title: "Ranking Completo",
       icon: Trophy,
-      render: () => (
-        <div className="space-y-6">
-          <h2 className="text-4xl font-display font-bold text-foreground text-center">
-            🏅 Ranking Completo
-          </h2>
-          <div className="max-w-3xl mx-auto space-y-2">
-            {ranked.map((a, i) => (
-              <motion.div
-                key={a.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.04 }}
-                className={`flex items-center gap-4 p-4 rounded-xl border ${
-                  i === 0
-                    ? "bg-primary/10 border-primary/40"
-                    : i === 1
-                      ? "bg-silver/5 border-silver/30"
-                      : i === 2
-                        ? "bg-bronze/5 border-bronze/30"
-                        : "border-border/20 bg-muted/10"
-                }`}
-              >
-                <span
-                  className={`w-12 h-12 rounded-xl flex items-center justify-center font-display font-black text-xl ${
+      render: () => {
+        // 2 colunas quando > 6 assessores — cabe time grande (até 20) sem scroll.
+        // Cards compactos (py-2, avatar 44px) pra densidade de apresentação.
+        const useTwoCols = ranked.length > 6;
+        return (
+          <div className="space-y-4 w-full">
+            <h2 className="text-3xl font-display font-bold text-foreground text-center">
+              🏅 Ranking Completo
+            </h2>
+            <div
+              className={`mx-auto ${useTwoCols ? "max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2" : "max-w-3xl space-y-2"}`}
+            >
+              {ranked.map((a, i) => (
+                <motion.div
+                  key={a.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: Math.min(i * 0.03, 0.4) }}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-xl border ${
                     i === 0
-                      ? "bg-primary/20 text-primary"
+                      ? "bg-primary/10 border-primary/40"
                       : i === 1
-                        ? "bg-silver/15 text-silver"
+                        ? "bg-silver/5 border-silver/30"
                         : i === 2
-                          ? "bg-bronze/15 text-bronze"
-                          : "bg-muted/30 text-muted-foreground"
+                          ? "bg-bronze/5 border-bronze/30"
+                          : "border-border/20 bg-muted/10"
                   }`}
                 >
-                  {i === 0 ? <Crown className="w-6 h-6" /> : `#${i + 1}`}
-                </span>
-                <AssessorAvatar
-                  initials={a.avatar}
-                  photoUrl={a.photoUrl}
-                  level={a.level}
-                  size={56}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xl font-bold text-foreground">{a.name}</p>
-                  {a.streak > 0 && (
-                    <p className="text-xs text-chart-orange flex items-center gap-1">
-                      <Flame className="w-3 h-3" /> {a.streak} dias seguidos
+                  <span
+                    className={`w-9 h-9 shrink-0 rounded-lg flex items-center justify-center font-display font-black text-sm ${
+                      i === 0
+                        ? "bg-primary/20 text-primary"
+                        : i === 1
+                          ? "bg-silver/15 text-silver"
+                          : i === 2
+                            ? "bg-bronze/15 text-bronze"
+                            : "bg-muted/30 text-muted-foreground"
+                    }`}
+                  >
+                    {i === 0 ? <Crown className="w-4 h-4" /> : `#${i + 1}`}
+                  </span>
+                  <AssessorAvatar
+                    initials={a.avatar}
+                    photoUrl={a.photoUrl}
+                    level={a.level}
+                    size={40}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-foreground truncate">{a.name}</p>
+                    {a.streak > 0 && (
+                      <p className="text-[10px] text-chart-orange flex items-center gap-1">
+                        <Flame className="w-3 h-3" /> {a.streak}d
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="font-display text-lg font-bold text-primary leading-none">
+                      {a.points} <span className="text-xs font-normal text-muted-foreground">pts</span>
                     </p>
-                  )}
-                </div>
-                <div className="text-right">
-                  <p className="font-display text-2xl font-bold text-primary">{a.points} pts</p>
-                  <p className="text-xs text-muted-foreground">{a.weeklyGoalPercent}% meta</p>
-                </div>
-              </motion.div>
-            ))}
+                    <p className="text-[10px] text-muted-foreground">{a.weeklyGoalPercent}% meta</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       id: "tournaments",
@@ -671,8 +680,11 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
         </div>
       </div>
 
-      {/* Slide content */}
-      <div className="h-full pt-16 pb-16 px-12 flex items-center justify-center overflow-y-auto">
+      {/* Slide content —
+          `items-start` (não center) evita que conteúdo alto seja cortado por cima.
+          `py-8` maior pra ficar longe do header e setas.
+          Com content curto, não prejudica: ainda fica próximo do topo mas centralizado horizontalmente. */}
+      <div className="h-full pt-20 pb-20 px-12 flex items-start justify-center overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={current.id}
