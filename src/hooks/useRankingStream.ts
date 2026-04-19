@@ -21,11 +21,12 @@ export function useRankingStream(enabled: boolean = true) {
   useEffect(() => {
     if (!enabled) return;
 
+    // SSE agora é público (sem auth). Se tiver token, ainda passa via query
+    // param por compat com qualquer middleware legado; senão conecta anônimo.
     const token = getAuthToken();
-    if (!token) return;
-
-    // EventSource não suporta Authorization header, então passamos via query param.
-    const url = `${API_URL}/stream/rankings?token=${encodeURIComponent(token)}`;
+    const url = token
+      ? `${API_URL}/stream/rankings?token=${encodeURIComponent(token)}`
+      : `${API_URL}/stream/rankings`;
 
     const source = new EventSource(url);
     sourceRef.current = source;

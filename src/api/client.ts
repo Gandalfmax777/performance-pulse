@@ -42,11 +42,28 @@ export interface ApiFetchOptions extends Omit<RequestInit, "body"> {
   skipAuth?: boolean;
 }
 
+/**
+ * TRUE quando a aplicação está rodando na rota pública /tv.
+ *
+ * A rota /tv é exibida na TV da mesa de vendas sem login. Nesse contexto,
+ * não queremos anexar token (podia ter um legado no localStorage) nem
+ * redirecionar pra /login em 401 — o usuário da TV é anônimo.
+ *
+ * Avaliado por chamada (não em module-load) pra funcionar com navegação
+ * client-side. Window check guarda SSR.
+ */
+function isPublicTvRoute(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.location.pathname === "/tv" || window.location.pathname.startsWith("/tv/");
+}
+
 export async function apiFetch<T>(
   path: string,
   options: ApiFetchOptions = {},
 ): Promise<T> {
-  const { body, searchParams, headers, skipAuth, ...rest } = options;
+  const { body, searchParams, headers, skipAuth: explicitSkipAuth, ...rest } = options;
+  // Em /tv, sempre bypass auth mesmo se o caller não passou skipAuth.
+  const skipAuth = explicitSkipAuth || isPublicTvRoute();
 
   const url = new URL(path.replace(/^\//, ""), API_URL.endsWith("/") ? API_URL : API_URL + "/");
   if (searchParams) {

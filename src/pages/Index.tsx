@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import DashboardSidebar, { type DashboardView } from "@/components/dashboard/DashboardSidebar";
 import DashboardTopbar from "@/components/dashboard/DashboardTopbar";
 import Leaderboard from "@/components/dashboard/Leaderboard";
@@ -16,13 +16,11 @@ const DayView = lazy(() => import("@/components/dashboard/DayView"));
 const DailyResults = lazy(() => import("@/components/dashboard/DailyResults"));
 const KpiAnalytics = lazy(() => import("@/components/dashboard/KpiAnalytics"));
 const SquadBet = lazy(() => import("@/components/dashboard/SquadBet"));
-const TvRanking = lazy(() => import("@/components/dashboard/TvRanking"));
 const PresentationMode = lazy(() => import("@/components/dashboard/PresentationMode"));
 const AssessorManager = lazy(() => import("@/components/dashboard/AssessorManager"));
 import { Presentation } from "lucide-react";
 import { useAssessors } from "@/hooks/useAssessors";
 import { useRankingStream } from "@/hooks/useRankingStream";
-import { Tv, X, Play, Pause, SkipForward, Timer } from "lucide-react";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 
 type OverviewPeriod = "daily" | "weekly" | "monthly" | "semester";
@@ -66,9 +64,6 @@ const VIEW_LABELS: Record<View, string> = {
   squad: "Squad Bet",
 };
 
-const TV_TABS: View[] = ["overview", "results", "squad"];
-const TV_INTERVALS = [10, 15, 20, 30, 45, 60];
-
 const VALID_VIEWS: ReadonlySet<View> = new Set(["overview", "daily", "results", "kpis", "squad"]);
 const VALID_PERIODS: ReadonlySet<OverviewPeriod> = new Set(["daily", "weekly", "monthly", "semester"]);
 
@@ -80,10 +75,20 @@ function parsePeriod(raw: string | null): OverviewPeriod {
 }
 
 const Index = () => {
+  const navigate = useNavigate();
+
+  // Legacy: `/?tv=1` virou `/tv` público. Redireciona pra não quebrar bookmarks.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("tv") === "1") {
+      navigate("/tv", { replace: true });
+    }
+  }, [navigate]);
+
   // ─── URL state: view + period viram deep-linkáveis ────────────────────────
   // Permite compartilhar /?view=kpis&period=monthly e abrir direto na KPIs
   // com filtro mensal. Refresh mantém estado. Botão voltar do navegador
-  // navega entre views. TV mode (`?tv=1`) convive — `?tv=1&view=squad` ok.
+  // navega entre views.
   const [searchParams, setSearchParams] = useSearchParams();
   const view = parseView(searchParams.get("view"));
   const overviewPeriod = parsePeriod(searchParams.get("period"));
@@ -112,168 +117,16 @@ const Index = () => {
   // Modo Apresentação: full-screen com slides pra reunião de fechamento
   const [presentationOpen, setPresentationOpen] = useState(false);
 
-  // TV Mode state — suporta kiosk mode via ?tv=1 na URL
-  const [tvMode, setTvMode] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get("tv") === "1";
-  });
+  // SSE: dashboard admin também recebe updates em tempo real pra Leaderboard
+  // refletir upserts de qualquer origem (mesa de vendas, admin numa outra aba).
+  useRankingStream(true);
 
-  // SSE: ativa stream quando em TV mode pra updates em tempo real (<500ms)
-  useRankingStream(tvMode);
-
-  // Kiosk: se ?tv=1 na URL, entra em fullscreen automaticamente no mount
-  useEffect(() => {
-    if (tvMode && !document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.().catch(() => {});
-    }
-  }, []);
-  const [tvPlaying, setTvPlaying] = useState(true);
-  const [tvInterval, setTvInterval] = useState(15); // seconds
-  const [tvProgress, setTvProgress] = useState(0);
-  const [showTvSettings, setShowTvSettings] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const nextTab = useCallback(() => {
-    const idx = TV_TABS.indexOf(view);
-    const nextIdx = idx === -1 ? 0 : (idx + 1) % TV_TABS.length;
-    setView(TV_TABS[nextIdx]);
-    setTvProgress(0);
-  }, [view, setView]);
-
-  // Auto-rotation
-  useEffect(() => {
-    if (!tvMode || !tvPlaying) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      return;
-    }
-    const tick = 100; // ms
-    timerRef.current = setInterval(() => {
-      setTvProgress(prev => {
-        const next = prev + (tick / (tvInterval * 1000)) * 100;
-        if (next >= 100) {
-          nextTab();
-          return 0;
-        }
-        return next;
-      });
-    }, tick);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [tvMode, tvPlaying, tvInterval, nextTab]);
-
-  // Fullscreen API
-  const enterTvMode = useCallback(() => {
-    setTvMode(true);
-    setTvPlaying(true);
-    setTvProgress(0);
-    if (!TV_TABS.includes(view)) setView(TV_TABS[0]);
-    document.documentElement.requestFullscreen?.().catch(() => {});
-  }, [view, setView]);
-
-  const exitTvMode = useCallback(() => {
-    setTvMode(false);
-    setTvPlaying(false);
-    setTvProgress(0);
-    if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+  // Clica "Modo TV" na sidebar → abre `/tv` em nova aba (experiência ideal
+  // pra TV da sala de vendas continuar rodando enquanto admin trabalha).
+  const openTv = useCallback(() => {
+    window.open("/tv", "_blank", "noopener,noreferrer");
   }, []);
 
-  // Listen for ESC exiting fullscreen
-  useEffect(() => {
-    const handler = () => {
-      if (!document.fullscreenElement && tvMode) {
-        setTvMode(false);
-        setTvPlaying(false);
-      }
-    };
-    document.addEventListener("fullscreenchange", handler);
-    return () => document.removeEventListener("fullscreenchange", handler);
-  }, [tvMode]);
-
-  const tvTabsInfo = TV_TABS.map(k => ({ key: k, label: VIEW_LABELS[k] }));
-
-  // ─── TV MODE: fullscreen, sem sidebar/topbar ──────────────────────────────
-  if (tvMode) {
-    return (
-      <div className="min-h-screen bg-background relative overflow-x-hidden p-6 tv-mode">
-        <div className="fixed inset-0 pointer-events-none bg-mesh" />
-
-        {/* Overlay de controles TV */}
-        <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-2 bg-background/90 backdrop-blur-md border-b border-primary/20">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-lg gradient-neon">
-              <Tv className="w-4 h-4 text-primary-foreground" />
-              <span className="text-xs font-bold text-primary-foreground tracking-wider">TV</span>
-            </div>
-            {tvTabsInfo.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => { setView(tab.key); setTvProgress(0); }}
-                className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${
-                  view === tab.key
-                    ? "bg-primary text-secondary border border-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <button onClick={() => setTvPlaying(p => !p)} className="p-1.5 rounded-lg bg-muted/30 hover:bg-muted/50 text-foreground transition-all">
-              {tvPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-            </button>
-            <button onClick={nextTab} className="p-1.5 rounded-lg bg-muted/30 hover:bg-muted/50 text-foreground transition-all">
-              <SkipForward className="w-3.5 h-3.5" />
-            </button>
-            <button onClick={() => setShowTvSettings(s => !s)} className="p-1.5 rounded-lg bg-muted/30 hover:bg-muted/50 text-foreground transition-all">
-              <Timer className="w-3.5 h-3.5" />
-            </button>
-            <span className="text-xs text-muted-foreground font-mono mx-1">{tvInterval}s</span>
-            <button onClick={exitTvMode} className="p-1.5 rounded-lg bg-destructive/20 hover:bg-destructive/30 text-destructive transition-all">
-              <X className="w-3.5 h-3.5" />
-            </button>
-
-            {showTvSettings && (
-              <div className="absolute right-8 top-12 card-glass rounded-xl p-3 space-y-1 min-w-[160px] animate-fade-in">
-                <p className="text-xs font-semibold text-muted-foreground mb-1">Intervalo</p>
-                {TV_INTERVALS.map(sec => (
-                  <button
-                    key={sec}
-                    onClick={() => { setTvInterval(sec); setTvProgress(0); setShowTvSettings(false); }}
-                    className={`block w-full text-left px-3 py-1 rounded-lg text-sm transition-all ${
-                      tvInterval === sec ? "bg-primary text-secondary font-bold" : "text-foreground hover:bg-muted/30"
-                    }`}
-                  >
-                    {sec}s
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-muted/20">
-            <div className="h-full gradient-neon transition-all duration-100 ease-linear" style={{ width: `${tvProgress}%` }} />
-          </div>
-        </div>
-
-        <div className="pt-14" />
-
-        <Suspense fallback={<InlineLoader />}>
-          {view === "overview" && (
-            <div className="space-y-4">
-              <AnnouncementTicker assessors={assessors} />
-              <KpiCards from={overviewRange.from} to={overviewRange.to} />
-              <TvRanking assessors={assessors} />
-            </div>
-          )}
-          {view === "results" && <DailyResults assessors={assessors} />}
-          {view === "squad" && <SquadBet assessors={assessors} />}
-        </Suspense>
-      </div>
-    );
-  }
-
-  // ─── DASHBOARD MODE: sidebar fixa + main ─────────────────────────────────
   return (
     <div className="min-h-screen bg-background flex relative">
       {/* overflow-x-hidden NÃO pode ficar no wrapper: vira scroll container e
@@ -284,7 +137,7 @@ const Index = () => {
       <DashboardSidebar
         view={view}
         onViewChange={setView}
-        onEnterTv={enterTvMode}
+        onEnterTv={openTv}
         onOpenAssessors={() => setShowManager(true)}
         mobileOpen={mobileNavOpen}
         onMobileClose={() => setMobileNavOpen(false)}

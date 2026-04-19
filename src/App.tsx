@@ -17,6 +17,7 @@ const Login = lazy(() => import("./pages/Login"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Relatorio = lazy(() => import("./pages/Relatorio"));
 const RelatorioAssessor = lazy(() => import("./pages/RelatorioAssessor"));
+const TvPage = lazy(() => import("./pages/Tv"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const AdminGoals = lazy(() => import("./pages/admin/AdminGoals"));
 const AdminSchedule = lazy(() => import("./pages/admin/AdminSchedule"));
@@ -46,6 +47,12 @@ const App = () => (
         <Suspense fallback={<FullScreenLoader />}>
           <Routes>
             <Route path="/login" element={<Login />} />
+
+            {/* TV pública (sem auth) — kiosk mode pra mesa de vendas.
+                apiFetch detecta /tv e não anexa token / não redireciona em 401.
+                Endpoints consumidos são públicos no backend (ver routes/*.ts). */}
+            <Route path="/tv" element={<TvPage />} />
+
             <Route
               path="/"
               element={
