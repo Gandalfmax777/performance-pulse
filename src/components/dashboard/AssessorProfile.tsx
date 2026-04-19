@@ -23,6 +23,7 @@ import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { useAssessorReport } from "@/hooks/useReports";
 import { useBadges } from "@/hooks/useBadges";
 import { useInsight, useGenerateInsight } from "@/hooks/useInsight";
+import InsightHistoryPanel from "./InsightHistoryPanel";
 import { usePrizes } from "@/hooks/usePrizes";
 import { isMeetingNote, isMeetingAreaNote, stripMeetingPrefix, MEETING_BONUS_POINTS, MEETING_AREA_POINTS } from "@/lib/meetingBonus";
 
@@ -333,6 +334,9 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                   </p>
                 </div>
               )}
+
+              {/* Histórico de análises IA deste assessor — collapsible */}
+              <InsightHistoryPanel kind="assessor" assessorId={assessor.id} periodKind="WEEK" limit={20} />
             </div>
 
             {/* Badges */}

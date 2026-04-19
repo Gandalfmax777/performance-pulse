@@ -53,6 +53,10 @@ export function useGenerateInsight() {
       queryClient.invalidateQueries({
         queryKey: [...QUERY_KEY, variables.assessorId],
       });
+      // Histórico também invalida — entrada nova pode ter aparecido.
+      queryClient.invalidateQueries({
+        queryKey: [...QUERY_KEY, variables.assessorId, "history"],
+      });
     },
   });
 }
@@ -78,6 +82,62 @@ export function useGenerateTeamInsight() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...QUERY_KEY, "team"] });
+      queryClient.invalidateQueries({ queryKey: [...QUERY_KEY, "team", "history"] });
     },
+  });
+}
+
+// ─── History endpoints ──────────────────────────────────────────────────────
+
+export interface ApiInsightHistoryItem {
+  id: string;
+  textMarkdown: string;
+  summary: string;
+  tags: string[];
+  model: string;
+  periodKind: InsightPeriod;
+  periodKey: string;
+  createdAt: string;
+}
+
+interface HistoryResponse {
+  items: ApiInsightHistoryItem[];
+}
+
+/**
+ * Histórico de insights de um assessor (cronológico desc). Filtra por
+ * periodKind se passado. Limit max 50, default 10.
+ */
+export function useAssessorInsightHistory(
+  assessorId: string | undefined,
+  periodKind?: InsightPeriod,
+  limit = 10,
+) {
+  return useQuery({
+    queryKey: [...QUERY_KEY, assessorId, "history", periodKind ?? "all", limit],
+    queryFn: () => {
+      const qs = new URLSearchParams();
+      if (periodKind) qs.set("periodKind", periodKind);
+      qs.set("limit", String(limit));
+      return apiFetch<HistoryResponse>(`/insights/assessor/${assessorId}/history?${qs}`);
+    },
+    enabled: Boolean(assessorId),
+    staleTime: 5 * 60_000,
+  });
+}
+
+/**
+ * Histórico de insights do TIME inteiro.
+ */
+export function useTeamInsightHistory(periodKind?: InsightPeriod, limit = 10) {
+  return useQuery({
+    queryKey: [...QUERY_KEY, "team", "history", periodKind ?? "all", limit],
+    queryFn: () => {
+      const qs = new URLSearchParams();
+      if (periodKind) qs.set("periodKind", periodKind);
+      qs.set("limit", String(limit));
+      return apiFetch<HistoryResponse>(`/insights/team/history?${qs}`);
+    },
+    staleTime: 5 * 60_000,
   });
 }

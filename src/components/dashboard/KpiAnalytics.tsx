@@ -22,6 +22,7 @@ import AssessorProfile from "./AssessorProfile";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { useOverviewReport } from "@/hooks/useReports";
 import { useGenerateTeamInsight, type ApiInsight } from "@/hooks/useInsight";
+import InsightHistoryPanel from "./InsightHistoryPanel";
 import Markdown from "react-markdown";
 import { Filter, TrendingUp, Lightbulb, Sparkles, RefreshCw, User, Users, BarChart3, Loader2, Printer } from "lucide-react";
 
@@ -355,6 +356,9 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
           </p>
         )}
       </div>
+
+      {/* Histórico de análises IA do time — collapsible, default fechado */}
+      <InsightHistoryPanel kind="team" periodKind="WEEK" limit={20} />
 
       {profileAssessor && (
         <AssessorProfile assessor={profileAssessor} onClose={() => setProfileAssessor(null)} />
