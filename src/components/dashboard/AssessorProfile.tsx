@@ -41,9 +41,33 @@ function defaultWeekRange() {
   };
 }
 
+/** Ranges fixos pra card "Resultados por Período" — daily/weekly/monthly */
+function buildBreakdownRanges() {
+  const now = new Date();
+  const fmt = (d: Date) => format(d, "yyyy-MM-dd");
+  return {
+    day: { from: fmt(now), to: fmt(now) },
+    week: {
+      from: fmt(startOfWeek(now, { weekStartsOn: 1 })),
+      to: fmt(endOfWeek(now, { weekStartsOn: 1 })),
+    },
+    month: {
+      from: fmt(new Date(now.getFullYear(), now.getMonth(), 1)),
+      to: fmt(new Date(now.getFullYear(), now.getMonth() + 1, 0)),
+    },
+  };
+}
+
 const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
   const [range, setRange] = useState(defaultWeekRange);
   const { data: report, isLoading } = useAssessorReport(assessor.id, range);
+
+  // Breakdown por período (Hoje/Semana/Mês) pro Felipe pegar rápido números
+  // sem precisar trocar o DateRangePicker 3 vezes
+  const bRanges = useMemo(buildBreakdownRanges, []);
+  const { data: dayReport } = useAssessorReport(assessor.id, bRanges.day);
+  const { data: weekReport } = useAssessorReport(assessor.id, bRanges.week);
+  const { data: monthReport } = useAssessorReport(assessor.id, bRanges.month);
   const { data: allBadgesData } = useBadges();
   const { data: insightData } = useInsight(assessor.id, "WEEK");
   const generateInsight = useGenerateInsight();
@@ -159,7 +183,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
         {!isLoading && report && (
           <>
             {/* Overall */}
-            <div className="flex items-center gap-4 mb-6 p-4 rounded-xl bg-primary/5 border border-primary/20">
+            <div className="flex items-center gap-4 mb-4 p-4 rounded-xl bg-primary/5 border border-primary/20">
               <TrendingUp className="w-6 h-6 text-primary" />
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Desempenho Geral</p>
@@ -171,6 +195,42 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                   style={{ width: `${overallPct}%` }}
                 />
               </div>
+            </div>
+
+            {/* Breakdown por período — resultados rápidos pra registrar no Sales */}
+            <div className="grid grid-cols-3 gap-2 mb-6 no-print">
+              {([
+                { key: "day",   label: "Hoje",    report: dayReport },
+                { key: "week",  label: "Semana",  report: weekReport },
+                { key: "month", label: "Mês",     report: monthReport },
+              ]).map(({ key, label, report: r }) => (
+                <div
+                  key={key}
+                  className="p-3 rounded-xl bg-muted/10 border border-border/20 space-y-1"
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">{label}</p>
+                    <span className={`text-[10px] font-mono ${(r?.rollup.weeklyGoalPercent ?? 0) >= 80 ? "text-success" : (r?.rollup.weeklyGoalPercent ?? 0) >= 50 ? "text-chart-orange" : "text-muted-foreground"}`}>
+                      {r?.rollup.weeklyGoalPercent ?? 0}%
+                    </span>
+                  </div>
+                  <p className="text-2xl font-mono font-bold text-foreground leading-none">
+                    {r?.rollup.points ?? 0}
+                    <span className="text-xs font-normal text-muted-foreground ml-1">pts</span>
+                  </p>
+                  {/* Mini-tabela dos KPIs do período (compacto) */}
+                  <div className="space-y-0.5 pt-1 border-t border-border/20">
+                    {(r?.kpis ?? []).slice(0, 4).map((k) => (
+                      <div key={k.key} className="flex items-center justify-between text-[10px]">
+                        <span className="text-muted-foreground truncate">{k.label}</span>
+                        <span className="font-mono font-semibold text-foreground">
+                          {k.total.toLocaleString("pt-BR")}{k.unit}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* KPI Details */}

@@ -15,7 +15,7 @@ import {
   Radar,
   Legend,
 } from "recharts";
-import { format, startOfWeek, endOfWeek, differenceInDays, parseISO, subDays } from "date-fns";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, differenceInDays, parseISO, subDays } from "date-fns";
 import { type Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import AssessorProfile from "./AssessorProfile";
@@ -35,6 +35,44 @@ function defaultWeekRange() {
     from: format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
     to: format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
   };
+}
+
+/**
+ * Atalhos de período pro Felipe pegar rápido: Hoje / Semana / Mês / Semestre.
+ * Cada um snap a `range` (from/to) pro intervalo correspondente. Usado ao
+ * lado do DateRangePicker — evita o ritual de clicar-selecionar-confirmar
+ * 3 vezes quando quer extrair número pra jogar no Sales.
+ */
+type QuickPeriod = "day" | "week" | "month" | "semester";
+
+function rangeForPeriod(p: QuickPeriod): { from: string; to: string } {
+  const now = new Date();
+  const fmt = (d: Date) => format(d, "yyyy-MM-dd");
+  switch (p) {
+    case "day":
+      return { from: fmt(now), to: fmt(now) };
+    case "week":
+      return {
+        from: fmt(startOfWeek(now, { weekStartsOn: 1 })),
+        to: fmt(endOfWeek(now, { weekStartsOn: 1 })),
+      };
+    case "month":
+      return { from: fmt(startOfMonth(now)), to: fmt(endOfMonth(now)) };
+    case "semester": {
+      const m = now.getMonth();
+      const s = m < 6 ? new Date(now.getFullYear(), 0, 1) : new Date(now.getFullYear(), 6, 1);
+      const e = m < 6 ? new Date(now.getFullYear(), 5, 30) : new Date(now.getFullYear(), 11, 31);
+      return { from: fmt(s), to: fmt(e) };
+    }
+  }
+}
+
+function matchActivePeriod(range: { from: string; to: string }): QuickPeriod | null {
+  for (const p of ["day", "week", "month", "semester"] as const) {
+    const r = rangeForPeriod(p);
+    if (r.from === range.from && r.to === range.to) return p;
+  }
+  return null;
 }
 
 interface KpiAnalyticsProps {
@@ -139,6 +177,32 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
           <span className="text-sm font-bold text-foreground mr-2">Filtros:</span>
 
           <DateRangePicker value={range} onChange={setRange} />
+
+          {/* Atalhos rápidos — Felipe pede esses períodos o tempo todo
+              pra bater números com Sales. Cada botão snap o range atual. */}
+          <div className="flex gap-1 bg-muted/20 rounded-lg p-1">
+            {([
+              { key: "day" as QuickPeriod, label: "Hoje" },
+              { key: "week" as QuickPeriod, label: "Semana" },
+              { key: "month" as QuickPeriod, label: "Mês" },
+              { key: "semester" as QuickPeriod, label: "Semestre" },
+            ]).map((p) => {
+              const active = matchActivePeriod(range) === p.key;
+              return (
+                <button
+                  key={p.key}
+                  onClick={() => setRange(rangeForPeriod(p.key))}
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                    active
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
 
           <div className="flex gap-1 bg-muted/20 rounded-lg p-1">
             <button
