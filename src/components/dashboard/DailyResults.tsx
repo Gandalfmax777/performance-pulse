@@ -82,7 +82,15 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
   // atividade (convertedPercent > 0) mas nenhum scoring rule pagou pts
   // (ex: cadência abaixo do threshold). Mostrar pódio nesses casos engana.
   const top3 = ranked.filter((r) => r.points > 0).slice(0, 3);
-  const bottom3 = ranked.slice(-3).reverse();
+  // "Piores" só faz sentido quando há DIFERENCIAÇÃO — ex: 1 pessoa com 5 pts
+  // e outras com 0 não é "pior", é "inativo". Regra: mostra bottom3 só se
+  // houver variância real (alguém pontuou mas nem todos) E excluindo os
+  // totalmente inativos (isInactive=0pts+0dias).
+  const scoredCount = ranked.filter((r) => r.points > 0).length;
+  const showBottom = scoredCount > 0 && scoredCount < ranked.length;
+  const bottom3 = showBottom
+    ? ranked.filter((r) => !r.isInactive).slice(-3).reverse()
+    : [];
   const hasAnyPoints = top3.length > 0;
   const podiumOrder = [top3[1], top3[0], top3[2]];
   const podiumHeights = [140, 180, 110];
@@ -211,6 +219,13 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
             <h3 className="text-sm font-bold text-foreground">Piores Resultados</h3>
           </div>
           <div className="space-y-3">
+            {bottom3.length === 0 && (
+              <p className="text-xs text-muted-foreground text-center py-6 italic">
+                {scoredCount === 0
+                  ? "Sem pontuação ainda — nada a destacar aqui"
+                  : "Todo mundo no mesmo patamar — sem 'piores' a destacar"}
+              </p>
+            )}
             {bottom3.map((a, i) => {
               const rank = ranked.length - i;
               return (
