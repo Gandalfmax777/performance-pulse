@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Megaphone } from "lucide-react";
 import type { Assessor } from "@/types/assessor";
 import { useAnnouncements } from "@/hooks/useAnnouncements";
+import { useWeekDirections } from "@/hooks/useDailyDirection";
 
 interface AnnouncementTickerProps {
   // Mantido pra compat de signature mesmo agora não sendo usado — caller
@@ -10,24 +11,43 @@ interface AnnouncementTickerProps {
 }
 
 /**
- * Banner com mensagens curtas rolando no topo.
+ * Banner com mensagens curtas rolando no topo da Visão Geral.
  *
- * Renderiza APENAS announcements criados pelo admin via `/admin/announcements`.
- * Os fallbacks auto-gerados (líder da semana, total de reuniões, último dia,
- * etc) foram removidos a pedido do Felipe — ele quer controle 100% do que
- * aparece. Se o banco não tiver nenhum aviso ativo, o ticker some.
+ * Duas fontes de mensagens:
+ * 1. Announcements criados pelo admin via `/admin/announcements` (prioridade)
+ * 2. DailyDirections da semana corrente — um por dia útil que tem texto
+ *    (Felipe pediu pra voltar a "circular" os focos dos dias)
+ *
+ * Se ambas vazias, ticker some (retorna null).
  */
 const AnnouncementTicker = (_props: AnnouncementTickerProps) => {
   const { data: manualAnnouncements } = useAnnouncements();
+  const weekDirections = useWeekDirections();
 
   const messages = useMemo(() => {
-    return (manualAnnouncements ?? []).map((a) => {
-      const prefix = a.emoji ? `${a.emoji} ` : "";
-      return `${prefix}${a.message}`;
-    });
-  }, [manualAnnouncements]);
+    const out: string[] = [];
 
-  // Sem avisos = ticker invisível
+    // 1. Avisos manuais (banco)
+    for (const a of manualAnnouncements ?? []) {
+      const prefix = a.emoji ? `${a.emoji} ` : "";
+      out.push(`${prefix}${a.message}`);
+    }
+
+    // 2. Direcionamentos dos dias úteis da semana atual (só os com texto)
+    for (const wd of weekDirections) {
+      if (!wd.direction) continue;
+      const text = wd.direction.text.trim();
+      if (!text) continue;
+      // Trunca em ~120 chars pra ticker não ficar lento — texto completo
+      // continua no card DailyDirection do DayView.
+      const short = text.length > 120 ? `${text.slice(0, 117)}…` : text;
+      out.push(`📌 ${wd.dayLabel} · ${short}`);
+    }
+
+    return out;
+  }, [manualAnnouncements, weekDirections]);
+
+  // Sem avisos nem direcionamentos = ticker invisível
   if (messages.length === 0) return null;
 
   // Duplica mensagens pra criar efeito infinite scroll

@@ -1,4 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format, startOfWeek, addDays } from "date-fns";
 import { apiFetch } from "@/api/client";
 
 export type DirectionPeriod = "DAILY" | "WEEKLY" | "MONTHLY";
@@ -53,6 +54,51 @@ export function useDailyDirection(date: string) {
     queryFn: () => apiFetch<ApiDailyDirection | null>(`/directions/${date}`),
     staleTime: 30_000,
     retry: false,
+  });
+}
+
+export interface WeekDirectionEntry {
+  /** YYYY-MM-DD */
+  date: string;
+  /** Label curto tipo "Seg 20/04" pra mostrar no ticker */
+  dayLabel: string;
+  /** Direction do banco pra aquela data, ou null se não cadastrada */
+  direction: ApiDailyDirection | null;
+}
+
+const DAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+/**
+ * Busca em paralelo as directions dos 5 dias úteis da semana corrente.
+ * Usado pelo AnnouncementTicker pra exibir focos do dia circulando.
+ *
+ * Reusa queryKey de useDailyDirection → react-query deduplica se a mesma
+ * data já foi puxada por outro componente (DayView, PresentationMode).
+ */
+export function useWeekDirections(): WeekDirectionEntry[] {
+  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const days = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
+
+  const results = useQueries({
+    queries: days.map((d) => {
+      const date = format(d, "yyyy-MM-dd");
+      return {
+        queryKey: queryKey(date),
+        queryFn: () => apiFetch<ApiDailyDirection | null>(`/directions/${date}`),
+        staleTime: 60_000,
+        retry: false,
+      };
+    }),
+  });
+
+  return days.map((d, i) => {
+    const date = format(d, "yyyy-MM-dd");
+    const dayLabel = `${DAY_LABELS[d.getDay()]} ${format(d, "dd/MM")}`;
+    return {
+      date,
+      dayLabel,
+      direction: results[i].data ?? null,
+    };
   });
 }
 
