@@ -66,12 +66,18 @@ const KpiCards = ({ from, to }: KpiCardsProps) => {
         const byKpi = overview?.byKpi.find((k) => k.key === kpi.key);
         const value = Math.round(byKpi?.actual ?? 0);
         const teamTarget = byKpi?.target ?? (kpi.target || 1) * teamSize;
-        const pct = teamTarget > 0 ? Math.min(150, Math.round((value / teamTarget) * 100)) : 0;
-        const barWidth = Math.min(100, pct);
-        // QOB (cadência, touchpoint): valor big = %, target é o threshold % da lista
+        // QOB: cada assessor tem base própria (lista do dia) — backend calcula
+        // percent como média dos convertedPercent das entries, usar direto.
         const isQob = kpi.inputMode === "QUANTITY_OVER_BASE";
+        const pct = isQob
+          ? Math.min(150, Math.round(byKpi?.percent ?? 0))
+          : teamTarget > 0
+            ? Math.min(150, Math.round((value / teamTarget) * 100))
+            : 0;
+        const barWidth = Math.min(100, pct);
+        // QOB: valor big = % médio do time; target é threshold (ex: 70%)
         const displayValue = isQob ? `${pct}%` : `${value}${kpi.unit}`;
-        const displaySub = isQob ? `${value}/${teamTarget} da lista` : `${value}/${teamTarget}`;
+        const displaySub = isQob ? `meta ${teamTarget}%` : `${value}/${teamTarget}`;
 
         // Projeção linear: se manter o ritmo atual, vai bater X% até o fim
         const projected =
@@ -111,8 +117,8 @@ const KpiCards = ({ from, to }: KpiCardsProps) => {
                 {displaySub}
               </span>
             </div>
-            {/* Projeção (só se ainda há dias restantes no período) */}
-            {projection.remaining > 0 && projection.elapsedDays > 0 && (
+            {/* Projeção (só ABSOLUTE — QOB não projeta: cada assessor tem base própria) */}
+            {!isQob && projection.remaining > 0 && projection.elapsedDays > 0 && (
               <div className="mt-1.5 flex items-center justify-between text-[10px] font-mono">
                 <span className="text-muted-foreground">
                   📈 ~{projected} ({projectedPct}%)
