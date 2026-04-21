@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Flame, TrendingUp, Clock, Crown, CalendarOff, CheckCircle2 } from "lucide-react";
+import { Trophy, Flame, TrendingUp, Clock, Crown, CalendarOff, CheckCircle2, CalendarDays } from "lucide-react";
 import { startOfWeek, addDays, format } from "date-fns";
 import { type Assessor } from "@/types/assessor";
 import PomodoroTimer from "./PomodoroTimer";
@@ -164,30 +164,36 @@ const DayView = ({ assessors }: DayViewProps) => {
           );
         })}
 
-        {/* Date picker pra editar dias fora da semana atual */}
-        <div className="ml-auto flex items-center gap-2">
+        {/* Date picker pra editar dias fora da semana atual — com label
+            explícito pra ficar claro o propósito (antes só aparecia o
+            placeholder nativo "dd/mm/aaaa" do browser, confundia Felipe). */}
+        <label
+          className={`ml-auto flex items-center gap-2 px-3 py-1.5 rounded-lg border cursor-pointer transition-all ${
+            customDate
+              ? "bg-primary/10 border-primary/40 text-primary"
+              : "bg-muted/30 border-border/30 text-muted-foreground hover:text-foreground hover:border-border/60"
+          }`}
+          title="Navegar pra uma data específica (qualquer dia passado ou futuro)"
+        >
+          <CalendarDays className="w-4 h-4" />
+          <span className="text-xs font-semibold whitespace-nowrap">Ir pra outra data</span>
           <input
             type="date"
             value={customDate ?? ""}
             onChange={(e) => setCustomDate(e.target.value || null)}
             max={format(today, "yyyy-MM-dd")}
-            className={`px-3 py-2 rounded-lg text-sm font-mono border transition-all ${
-              customDate
-                ? "bg-primary/10 border-primary/40 text-primary"
-                : "bg-muted/30 border-border/30 text-muted-foreground hover:text-foreground"
-            }`}
-            title="Editar registro de uma data específica"
+            className="bg-transparent text-sm font-mono focus:outline-none cursor-pointer"
           />
           {customDate && (
             <button
-              onClick={() => setCustomDate(null)}
-              className="text-xs text-muted-foreground hover:text-destructive"
+              onClick={(e) => { e.preventDefault(); setCustomDate(null); }}
+              className="ml-1 text-xs text-muted-foreground hover:text-destructive"
               title="Voltar pra semana atual"
             >
-              ✕ semana atual
+              ✕
             </button>
           )}
-        </div>
+        </label>
       </div>
 
       {/* Foco do dia — direcionamento rápido */}
