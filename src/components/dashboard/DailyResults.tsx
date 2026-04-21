@@ -77,8 +77,13 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
     });
   }, [apiRankings, assessors]);
 
-  const top3 = ranked.filter((r) => !r.isInactive).slice(0, 3);
+  // Top 3 inclui só quem realmente pontuou (points > 0). Felipe reportou
+  // confusão vendo "Diego 1º com 0 pts + 43%" — isso acontecia porque havia
+  // atividade (convertedPercent > 0) mas nenhum scoring rule pagou pts
+  // (ex: cadência abaixo do threshold). Mostrar pódio nesses casos engana.
+  const top3 = ranked.filter((r) => r.points > 0).slice(0, 3);
   const bottom3 = ranked.slice(-3).reverse();
+  const hasAnyPoints = top3.length > 0;
   const podiumOrder = [top3[1], top3[0], top3[2]];
   const podiumHeights = [140, 180, 110];
   const podiumLabels = ["2º", "1º", "3º"];
@@ -115,41 +120,54 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
 
       {/* Podium */}
       <div className="card-glass rounded-xl p-6">
-        <div className="flex items-end justify-center gap-4 pt-8 pb-4">
-          {podiumOrder.map((a, i) => {
-            if (!a) return null;
-            return (
-              <motion.div
-                key={a.id}
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.15, duration: 0.5 }}
-                className="flex flex-col items-center"
-              >
-                <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={56} className="mb-2" />
-                <p className="text-sm font-semibold text-foreground mb-1 break-words text-center max-w-[120px]">{a.name}</p>
-                <div className="flex items-center gap-1 mb-2">
-                  <TrendingUp className="w-3 h-3 text-primary" />
-                  <span className="text-sm font-mono font-bold text-primary">{a.weeklyGoalPercent}%</span>
-                </div>
-                {a.streak > 0 && (
-                  <span className="flex items-center gap-0.5 text-xs text-chart-orange mb-2">
-                    <Flame className="w-3 h-3" /> {a.streak} dias
-                  </span>
-                )}
+        {!hasAnyPoints ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <Trophy className="w-12 h-12 text-muted-foreground/40 mb-3" />
+            <p className="text-sm font-semibold text-foreground mb-1">
+              Ninguém pontuou ainda neste período
+            </p>
+            <p className="text-xs text-muted-foreground max-w-md">
+              Pode haver atividade registrada (cadência, ligações) mas as regras de
+              pontuação ainda não premiaram nenhum assessor. Veja as % nos cards abaixo.
+            </p>
+          </div>
+        ) : (
+          <div className="flex items-end justify-center gap-4 pt-8 pb-4">
+            {podiumOrder.map((a, i) => {
+              if (!a) return null;
+              return (
                 <motion.div
-                  initial={{ height: 0 }}
-                  animate={{ height: podiumHeights[i] }}
-                  transition={{ delay: 0.3 + i * 0.15, duration: 0.6 }}
-                  className={`w-28 rounded-t-xl bg-gradient-to-t border border-b-0 flex flex-col items-center justify-start pt-4 ${podiumColors[i]}`}
+                  key={a.id}
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.15, duration: 0.5 }}
+                  className="flex flex-col items-center"
                 >
-                  <span className={`text-3xl font-black ${podiumTextColors[i]}`}>{podiumLabels[i]}</span>
-                  <span className="text-xs text-muted-foreground mt-1 font-mono">{a.points} pts</span>
+                  <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={56} className="mb-2" />
+                  <p className="text-sm font-semibold text-foreground mb-1 break-words text-center max-w-[120px]">{a.name}</p>
+                  <div className="flex items-center gap-1 mb-2">
+                    <TrendingUp className="w-3 h-3 text-primary" />
+                    <span className="text-sm font-mono font-bold text-primary">{a.weeklyGoalPercent}%</span>
+                  </div>
+                  {a.streak > 0 && (
+                    <span className="flex items-center gap-0.5 text-xs text-chart-orange mb-2">
+                      <Flame className="w-3 h-3" /> {a.streak} dias
+                    </span>
+                  )}
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: podiumHeights[i] }}
+                    transition={{ delay: 0.3 + i * 0.15, duration: 0.6 }}
+                    className={`w-28 rounded-t-xl bg-gradient-to-t border border-b-0 flex flex-col items-center justify-start pt-4 ${podiumColors[i]}`}
+                  >
+                    <span className={`text-3xl font-black ${podiumTextColors[i]}`}>{podiumLabels[i]}</span>
+                    <span className="text-xs text-muted-foreground mt-1 font-mono">{a.points} pts</span>
+                  </motion.div>
                 </motion.div>
-              </motion.div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Top 3 + Bottom 3 */}
@@ -160,6 +178,11 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
             <h3 className="text-sm font-bold text-foreground">Top 3</h3>
           </div>
           <div className="space-y-3">
+            {top3.length === 0 && (
+              <p className="text-xs text-muted-foreground text-center py-6 italic">
+                Ninguém pontuou neste período ainda
+              </p>
+            )}
             {top3.map((a, i) => (
               <motion.div
                 key={a.id}
