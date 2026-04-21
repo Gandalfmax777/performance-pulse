@@ -15,8 +15,14 @@ export interface ActivityBlock {
 
 interface RegistrationPanelProps {
   assessors: Assessor[];
-  /** Lista de KPI keys que aparecem nas atividades do dia. Único por dia. */
+  /** Lista de KPI keys das atividades do cronograma oficial do dia. */
   kpiKeys: string[];
+  /**
+   * KPIs ativos que NÃO estão no cronograma do dia. Renderizados numa seção
+   * "⊕ Outros KPIs" pra permitir registrar algo que o assessor fez fora do
+   * planejamento (ex: ligação numa segunda de cronograma Leads+Cadência).
+   */
+  extraKpiKeys?: string[];
   /** Data alvo pra registro (YYYY-MM-DD). Default: hoje. */
   date?: string;
   /** Blocos manhã/tarde pra discriminar atividades. */
@@ -27,7 +33,7 @@ function todayString(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-const RegistrationPanel = ({ assessors, kpiKeys, date, blocks }: RegistrationPanelProps) => {
+const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks }: RegistrationPanelProps) => {
   const { kpis: allKpis } = useKpis();
   const upsert = useUpsertMetric();
   const today = date ?? todayString();
@@ -37,6 +43,12 @@ const RegistrationPanel = ({ assessors, kpiKeys, date, blocks }: RegistrationPan
   const kpisForDay = useMemo(
     () => kpiKeys.map((k) => allKpis.find((x) => x.key === k)).filter((x): x is NonNullable<typeof x> => Boolean(x)),
     [kpiKeys, allKpis],
+  );
+
+  // KPIs ativos "extras" — permitem lançamento fora do cronograma oficial
+  const extraKpisForDay = useMemo(
+    () => extraKpiKeys.map((k) => allKpis.find((x) => x.key === k)).filter((x): x is NonNullable<typeof x> => Boolean(x)),
+    [extraKpiKeys, allKpis],
   );
 
   // Lookup { assessorId → { kpiKey → rawValue } } + baseValue a partir das entries do dia
@@ -92,7 +104,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, date, blocks }: RegistrationPan
     // Calcula % anterior pra detectar meta batida (cruzar 100%) e disparar som de vitória.
     // Aproximação usando o target do frontend — suficiente pro trigger sonoro.
     const prevVal = persistedValues.raw[assessorId]?.[kpiKey] ?? 0;
-    const kpiDef = kpisForDay.find((k) => k.key === kpiKey);
+    const kpiDef = kpisForDay.find((k) => k.key === kpiKey) ?? extraKpisForDay.find((k) => k.key === kpiKey);
     const target = kpiDef?.target ?? 0;
     const prevPercent = target > 0 ? Math.min(100, (prevVal / target) * 100) : 0;
     upsert.mutate({
@@ -238,8 +250,11 @@ const RegistrationPanel = ({ assessors, kpiKeys, date, blocks }: RegistrationPan
               </div>
             )}
 
-            <div className="space-y-2">
-              {kpisForDay.map((kpi) => {
+            {/* Helper pra renderizar linha de KPI — reutilizado pelas 2 seções
+                (cronograma e outros). Definido inline pra capturar `a` do escopo. */}
+            {(() => {
+              type KpiType = typeof allKpis[number];
+              const renderKpiRow = (kpi: KpiType) => {
                 const val = getValue(a.id, kpi.key);
                 const isQOB = kpi.inputMode === "QUANTITY_OVER_BASE";
                 const baseVal = isQOB ? getBaseValue(a.id, kpi.key) : 0;
@@ -257,7 +272,6 @@ const RegistrationPanel = ({ assessors, kpiKeys, date, blocks }: RegistrationPan
                     </span>
 
                     {isQOB ? (
-                      /* QUANTITY_OVER_BASE: 2 inputs (quantidade / base) + % auto */
                       <div className="flex items-center gap-1">
                         <input
                           type="number"
@@ -286,7 +300,6 @@ const RegistrationPanel = ({ assessors, kpiKeys, date, blocks }: RegistrationPan
                         </span>
                       </div>
                     ) : (
-                      /* ABSOLUTE / PERCENT: 1 input com +/- */
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => {
@@ -339,8 +352,38 @@ const RegistrationPanel = ({ assessors, kpiKeys, date, blocks }: RegistrationPan
                     </div>
                   </div>
                 );
-              })}
-            </div>
+              };
+
+              return (
+                <>
+                  {/* Seção: Cronograma do dia */}
+                  {kpisForDay.length > 0 && (
+                    <>
+                      {extraKpisForDay.length > 0 && (
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">
+                          📅 Cronograma do dia
+                        </div>
+                      )}
+                      <div className="space-y-2">
+                        {kpisForDay.map(renderKpiRow)}
+                      </div>
+                    </>
+                  )}
+
+                  {/* Seção: Outros KPIs (fora do cronograma oficial) */}
+                  {extraKpisForDay.length > 0 && (
+                    <>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mt-3 pt-3 mb-1.5 border-t border-border/20">
+                        ⊕ Outros KPIs
+                      </div>
+                      <div className="space-y-2">
+                        {extraKpisForDay.map(renderKpiRow)}
+                      </div>
+                    </>
+                  )}
+                </>
+              );
+            })()}
           </div>
         ))}
       </div>

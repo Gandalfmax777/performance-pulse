@@ -8,6 +8,7 @@ import RegistrationPanel from "./RegistrationPanel";
 import { useDailyRanking } from "@/hooks/useRankings";
 import { useActivities, type ApiActivity, type ApiActivityKpi } from "@/hooks/useActivities";
 import { useMetrics } from "@/hooks/useMetrics";
+import { useKpis } from "@/hooks/useKpis";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { apiFetch } from "@/api/client";
 import { SALESFORCE_PREFIX, isSalesforceCheck } from "@/lib/meetingBonus";
@@ -53,6 +54,18 @@ const DayView = ({ assessors }: DayViewProps) => {
   const kpiKeysForDay = useMemo(
     () => Array.from(new Set(activities.flatMap((a) => a.kpis.map((k) => k.key)))),
     [activities],
+  );
+
+  // KPIs ativos "extras" — os que NÃO estão no cronograma do dia mas podem
+  // ter sido realizados pelo assessor (ex: ligação numa segunda onde cronograma
+  // só tem Leads+Cadência). Felipe pediu pra permitir lançamento fora do
+  // cronograma oficial.
+  const { kpis: allActiveKpis } = useKpis();
+  const extraKpiKeys = useMemo(
+    () => allActiveKpis
+      .map((k) => k.key)
+      .filter((k) => !kpiKeysForDay.includes(k)),
+    [allActiveKpis, kpiKeysForDay],
   );
 
   // Blocos manhã/tarde pra discriminar no RegistrationPanel
@@ -386,7 +399,7 @@ const DayView = ({ assessors }: DayViewProps) => {
 
           {/* ─── Registration (direita) ────────────────────────────────────── */}
           <div className="lg:col-span-5">
-            <RegistrationPanel assessors={assessors} kpiKeys={kpiKeysForDay} date={activeDateString} blocks={activityBlocks} />
+            <RegistrationPanel assessors={assessors} kpiKeys={kpiKeysForDay} extraKpiKeys={extraKpiKeys} date={activeDateString} blocks={activityBlocks} />
           </div>
         </motion.div>
       </AnimatePresence>
