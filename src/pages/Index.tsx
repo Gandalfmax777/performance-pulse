@@ -7,6 +7,7 @@ import KpiCards from "@/components/dashboard/KpiCards";
 import WeeklyHeatmap from "@/components/dashboard/WeeklyHeatmap";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import PerformanceChart from "@/components/dashboard/PerformanceChart";
+import ActivationHighlight from "@/components/dashboard/ActivationHighlight";
 import BadgesPanel from "@/components/dashboard/BadgesPanel";
 import AnnouncementTicker from "@/components/dashboard/AnnouncementTicker";
 import TournamentCard from "@/components/dashboard/TournamentCard";
@@ -207,6 +208,7 @@ const Index = () => {
                   <Leaderboard assessors={assessors} />
                 </div>
                 <div className="lg:col-span-5 space-y-4">
+                  <ActivationHighlight from={overviewRange.from} to={overviewRange.to} />
                   <PerformanceChart />
                   <BadgesPanel assessors={assessors} />
                 </div>

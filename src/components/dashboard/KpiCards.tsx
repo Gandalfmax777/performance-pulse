@@ -1,18 +1,21 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Users, PhoneCall, CalendarCheck, Gift, FileText, Zap, type LucideIcon } from "lucide-react";
+import { Users, PhoneCall, CalendarCheck, Gift, FileText, Zap, Sparkles, Target, Hand, type LucideIcon } from "lucide-react";
 import { format, startOfWeek, endOfWeek, differenceInCalendarDays, addDays } from "date-fns";
 import { useKpis } from "@/hooks/useKpis";
 import { useWeeklyRanking } from "@/hooks/useRankings";
 import { useOverviewReport } from "@/hooks/useReports";
 
 const KPI_VISUALS: Record<string, { icon: LucideIcon; color: string; bg: string }> = {
-  leads:      { icon: Users,         color: "text-primary",       bg: "bg-primary/10" },
-  cadencia:   { icon: Zap,           color: "text-eqi-mint",     bg: "bg-eqi-mint/10" },
-  ligacoes:   { icon: PhoneCall,     color: "text-chart-blue",   bg: "bg-chart-blue/10" },
-  reunioes:   { icon: CalendarCheck, color: "text-chart-purple", bg: "bg-chart-purple/10" },
-  indicacoes: { icon: Gift,          color: "text-chart-orange", bg: "bg-chart-orange/10" },
-  boletos:    { icon: FileText,      color: "text-gold",         bg: "bg-gold/10" },
+  leads:              { icon: Users,         color: "text-primary",      bg: "bg-primary/10" },
+  cadencia:           { icon: Zap,           color: "text-eqi-mint",     bg: "bg-eqi-mint/10" },
+  ligacoes:           { icon: PhoneCall,     color: "text-chart-blue",   bg: "bg-chart-blue/10" },
+  reunioes:           { icon: CalendarCheck, color: "text-chart-purple", bg: "bg-chart-purple/10" },
+  reunioes_realizadas:{ icon: CalendarCheck, color: "text-chart-purple", bg: "bg-chart-purple/10" },
+  indicacoes:         { icon: Gift,          color: "text-chart-orange", bg: "bg-chart-orange/10" },
+  boletos:            { icon: FileText,      color: "text-gold",         bg: "bg-gold/10" },
+  touchpoint:         { icon: Hand,          color: "text-chart-blue",   bg: "bg-chart-blue/10" },
+  ativacao_conta:     { icon: Sparkles,      color: "text-gold",         bg: "bg-gold/10" },
 };
 
 const FALLBACK_VISUAL = { icon: FileText, color: "text-foreground", bg: "bg-muted/30" };
@@ -57,7 +60,7 @@ const KpiCards = ({ from, to }: KpiCardsProps) => {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-      {kpis.slice(0, 6).map((kpi, i) => {
+      {kpis.map((kpi, i) => {
         const visual = KPI_VISUALS[kpi.key] ?? FALLBACK_VISUAL;
         const Icon = visual.icon;
         const byKpi = overview?.byKpi.find((k) => k.key === kpi.key);
@@ -65,6 +68,10 @@ const KpiCards = ({ from, to }: KpiCardsProps) => {
         const teamTarget = byKpi?.target ?? (kpi.target || 1) * teamSize;
         const pct = teamTarget > 0 ? Math.min(150, Math.round((value / teamTarget) * 100)) : 0;
         const barWidth = Math.min(100, pct);
+        // QOB (cadência, touchpoint): valor big = %, target é o threshold % da lista
+        const isQob = kpi.inputMode === "QUANTITY_OVER_BASE";
+        const displayValue = isQob ? `${pct}%` : `${value}${kpi.unit}`;
+        const displaySub = isQob ? `${value}/${teamTarget} da lista` : `${value}/${teamTarget}`;
 
         // Projeção linear: se manter o ritmo atual, vai bater X% até o fim
         const projected =
@@ -87,8 +94,7 @@ const KpiCards = ({ from, to }: KpiCardsProps) => {
                 <Icon className={`w-4.5 h-4.5 ${visual.color}`} />
               </div>
               <span className="font-display text-2xl font-bold text-foreground">
-                {value}
-                {kpi.unit}
+                {displayValue}
               </span>
             </div>
             <p className="text-xs text-muted-foreground mb-2">{kpi.label}</p>
@@ -102,7 +108,7 @@ const KpiCards = ({ from, to }: KpiCardsProps) => {
                 />
               </div>
               <span className="text-[10px] font-mono text-muted-foreground">
-                {value}/{teamTarget}
+                {displaySub}
               </span>
             </div>
             {/* Projeção (só se ainda há dias restantes no período) */}
