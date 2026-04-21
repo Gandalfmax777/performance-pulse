@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { Target, Minus, Plus, Loader2, MessageSquare } from "lucide-react";
+import { Target, Minus, Plus, Loader2, MessageSquare, ChevronDown, ChevronRight } from "lucide-react";
 import type { Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { useMetrics, useUpsertMetric } from "@/hooks/useMetrics";
@@ -72,6 +72,13 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
   const [noteOpen, setNoteOpen] = useState<string | null>(null); // assessorId or null
   const [noteText, setNoteText] = useState("");
   const [noteType, setNoteType] = useState<NoteType>("observation");
+  // Expansão da seção "Outros KPIs" por assessor. Fechada por padrão pra
+  // reduzir ruído visual quando o cronograma do dia já tem KPIs — Felipe
+  // abre só se precisar lançar algo fora do cronograma.
+  const [extraOpen, setExtraOpen] = useState<Record<string, boolean>>({});
+  function toggleExtra(assessorId: string) {
+    setExtraOpen((prev) => ({ ...prev, [assessorId]: !prev[assessorId] }));
+  }
 
   // Sincroniza quando o backend retorna novos dados
   useEffect(() => {
@@ -370,16 +377,31 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                     </>
                   )}
 
-                  {/* Seção: Outros KPIs (fora do cronograma oficial) */}
+                  {/* Seção: Outros KPIs (fora do cronograma oficial) — collapsible */}
                   {extraKpisForDay.length > 0 && (
-                    <>
-                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mt-3 pt-3 mb-1.5 border-t border-border/20">
-                        ⊕ Outros KPIs
-                      </div>
-                      <div className="space-y-2">
-                        {extraKpisForDay.map(renderKpiRow)}
-                      </div>
-                    </>
+                    <div className="mt-3 pt-3 border-t border-border/20">
+                      <button
+                        type="button"
+                        onClick={() => toggleExtra(a.id)}
+                        className="w-full flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold hover:text-foreground transition-colors"
+                        aria-expanded={Boolean(extraOpen[a.id])}
+                      >
+                        {extraOpen[a.id] ? (
+                          <ChevronDown className="w-3 h-3" />
+                        ) : (
+                          <ChevronRight className="w-3 h-3" />
+                        )}
+                        <span>⊕ Outros KPIs</span>
+                        <span className="ml-auto text-muted-foreground/60 font-normal normal-case tracking-normal">
+                          {extraKpisForDay.length} disponíveis
+                        </span>
+                      </button>
+                      {extraOpen[a.id] && (
+                        <div className="space-y-2 mt-2">
+                          {extraKpisForDay.map(renderKpiRow)}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </>
               );
