@@ -245,10 +245,16 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
             </select>
           )}
 
-          {/* Toggle compare — shift back pelo mesmo intervalo */}
+          {/* Toggle compare — shift back pelo mesmo intervalo
+              Felipe reportou que não entendia o que o botão fazia. Tooltip
+              + subtitle abaixo deixam claro: "vs o mesmo intervalo anterior". */}
           <button
             onClick={() => setCompareEnabled((v) => !v)}
-            title={`Compara com ${previousRange.from} → ${previousRange.to}`}
+            title={
+              compareEnabled
+                ? `Comparando com ${previousRange.from} → ${previousRange.to}. Clique pra desativar.`
+                : `Liga a comparação de evolução: mostra números da semana atual vs mesmo intervalo anterior (${previousRange.from} → ${previousRange.to}) com delta percentual.`
+            }
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold border transition-all ${
               compareEnabled
                 ? "bg-primary text-secondary border-primary"
@@ -256,11 +262,22 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
             }`}
           >
             <GitCompare className="w-3 h-3" />
-            Comparar período anterior
+            {compareEnabled ? "Comparação ativa" : "Comparar com período anterior"}
           </button>
 
           {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground ml-auto" />}
         </div>
+
+        {/* Subtitle explicativo — aparece embaixo quando compare está ativo
+            pra deixar ÓBVIO o que está sendo comparado (Felipe pediu clareza). */}
+        {compareEnabled && (
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            📊 Comparando <span className="font-mono text-foreground">{range.from} → {range.to}</span>
+            {" vs "}
+            <span className="font-mono text-foreground">{previousRange.from} → {previousRange.to}</span>
+            {" (evolução entre períodos)"}
+          </p>
+        )}
 
         {/* Delta cards por KPI — só aparecem quando compareEnabled */}
         {compareEnabled && overview && previousOverview && (
