@@ -5,6 +5,13 @@ import { useBets, useCreateBet, useFinishBet, type BetWinnerCriteria } from "@/h
 import { useCofreBalance } from "@/hooks/useCofre";
 import { useBadges, useBadgeUnlocks } from "@/hooks/useBadges";
 import {
+  useDailyRanking,
+  useWeeklyRanking,
+  useMonthlyRanking,
+  useSemesterRanking,
+  type ApiRankingEntry,
+} from "@/hooks/useRankings";
+import {
   Trophy,
   Users,
   Plus,
@@ -81,6 +88,42 @@ const SquadBet = ({ assessors }: Props) => {
   const squads = squadsData ?? [];
   const bets = betsData ?? [];
 
+  // Período dos rankings das squads — Felipe pediu pra ter di\u00e1rio/semanal/
+  // mensal/semestral igual ao DailyResults
+  type SquadPeriod = "daily" | "weekly" | "monthly" | "semester";
+  const [period, setPeriod] = useState<SquadPeriod>("weekly");
+
+  // Carrega todos os 4 rankings — react-query deduplica com caches existentes
+  const dailyQ = useDailyRanking();
+  const weeklyQ = useWeeklyRanking();
+  const monthlyQ = useMonthlyRanking();
+  const semesterQ = useSemesterRanking();
+
+  const activeRankings: ApiRankingEntry[] =
+    period === "daily" ? dailyQ.data?.rankings ?? []
+    : period === "weekly" ? weeklyQ.data?.rankings ?? []
+    : period === "monthly" ? monthlyQ.data?.rankings ?? []
+    : semesterQ.data?.rankings ?? [];
+
+  /**
+   * Map assessorId → perf do per\u00edodo selecionado.
+   * Antes, SquadBet usava `m.points`, `m.weeklyGoalPercent` e `m.kpis` direto
+   * dos assessors (que s\u00e3o populados pelo weekly ranking). Agora pegamos
+   * perf do ranking do per\u00edodo escolhido pra estat\u00edsticas reflitirem o
+   * filtro (di\u00e1rio, mensal, semestral).
+   */
+  const perfByAssessorId = useMemo(() => {
+    const map = new Map<string, { points: number; weeklyGoalPercent: number; kpiTotals: Record<string, number> }>();
+    for (const r of activeRankings) {
+      map.set(r.assessor.id, {
+        points: r.rollup.points,
+        weeklyGoalPercent: r.rollup.weeklyGoalPercent,
+        kpiTotals: r.rollup.kpiTotals ?? {},
+      });
+    }
+    return map;
+  }, [activeRankings]);
+
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [newEmoji, setNewEmoji] = useState("🔥");
@@ -93,26 +136,36 @@ const SquadBet = ({ assessors }: Props) => {
   const [newBetCriteriaIdx, setNewBetCriteriaIdx] = useState(0);
 
   // ─── Ranking de squads com estatísticas ──────────────────────────────────
-  // Usa os kpis legados que vêm do useAssessors (populados pelo weekly rollup em API mode).
+  // Usa perfByAssessorId do período selecionado (daily/weekly/monthly/semester)
+  // pra refletir filtro do usuário. Antes era sempre weekly via assessors.kpis.
   const rankedSquads = useMemo(() => {
+    const get = (assessorId: string, key: string): number =>
+      perfByAssessorId.get(assessorId)?.kpiTotals[key] ?? 0;
+
     return squads
       .map((sq) => {
         const members = assessors.filter((a) => sq.members.some((m) => m.assessorId === a.id));
         const n = Math.max(members.length, 1);
         const stats = {
-          leads: +(members.reduce((s, m) => s + m.kpis.leads, 0) / n).toFixed(1),
-          cadencia: +(members.reduce((s, m) => s + m.kpis.cadencia, 0) / n).toFixed(1),
-          ligacoes: +(members.reduce((s, m) => s + m.kpis.ligacoes, 0) / n).toFixed(1),
-          reunioes: +(members.reduce((s, m) => s + m.kpis.reunioes, 0) / n).toFixed(1),
-          indicacoes: +(members.reduce((s, m) => s + m.kpis.indicacoes, 0) / n).toFixed(1),
-          boletos: +(members.reduce((s, m) => s + m.kpis.boletos, 0) / n).toFixed(1),
-          totalPoints: members.reduce((s, m) => s + m.points, 0),
-          avgGoal: +(members.reduce((s, m) => s + m.weeklyGoalPercent, 0) / n).toFixed(1),
+          leads: +(members.reduce((s, m) => s + get(m.id, "leads"), 0) / n).toFixed(1),
+          cadencia: +(members.reduce((s, m) => s + get(m.id, "cadencia"), 0) / n).toFixed(1),
+          ligacoes: +(members.reduce((s, m) => s + get(m.id, "ligacoes"), 0) / n).toFixed(1),
+          reunioes: +(members.reduce((s, m) => s + get(m.id, "reunioes"), 0) / n).toFixed(1),
+          indicacoes: +(members.reduce((s, m) => s + get(m.id, "indicacoes"), 0) / n).toFixed(1),
+          boletos: +(members.reduce((s, m) => s + get(m.id, "boletos"), 0) / n).toFixed(1),
+          totalPoints: members.reduce(
+            (s, m) => s + (perfByAssessorId.get(m.id)?.points ?? 0),
+            0,
+          ),
+          avgGoal: +(members.reduce(
+            (s, m) => s + (perfByAssessorId.get(m.id)?.weeklyGoalPercent ?? 0),
+            0,
+          ) / n).toFixed(1),
         };
         return { sq, members, stats };
       })
       .sort((a, b) => b.stats.avgGoal - a.stats.avgGoal);
-  }, [squads, assessors]);
+  }, [squads, assessors, perfByAssessorId]);
 
   const assignedIds = useMemo(
     () => squads.flatMap((s) => s.members.map((m) => m.assessorId)),
@@ -351,6 +404,34 @@ const SquadBet = ({ assessors }: Props) => {
           </div>
         </div>
       )}
+
+      {/* Filtro de período — afeta Ranking + Radar + Performance vs Meta */}
+      <div className="card-glass rounded-xl p-3 flex items-center gap-3 flex-wrap">
+        <span className="text-xs font-bold text-foreground">Período:</span>
+        <div className="flex gap-1 bg-muted/20 rounded-lg p-1">
+          {([
+            { key: "daily", label: "Diário" },
+            { key: "weekly", label: "Semanal" },
+            { key: "monthly", label: "Mensal" },
+            { key: "semester", label: "Semestral" },
+          ] as const).map((p) => (
+            <button
+              key={p.key}
+              onClick={() => setPeriod(p.key)}
+              className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+                period === p.key
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <span className="text-[10px] text-muted-foreground ml-auto">
+          Estatísticas das squads refletem o período selecionado
+        </span>
+      </div>
 
       {/* Row 1: Ranking + Radar */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
