@@ -1,4 +1,4 @@
-# Performance Pulse — Frontend
+# Performance Pulse — Frontendd
 
 Dashboard de gamificação para mesa de vendas. Tempo real,
 rankings, conquistas, Squad Bet e Modo TV provocativo.
