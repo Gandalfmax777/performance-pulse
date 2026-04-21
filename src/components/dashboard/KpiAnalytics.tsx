@@ -164,6 +164,17 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
     return map;
   }, [overview]);
 
+  // Lookup kpiTotals por assessor do range selecionado — antes os cards usavam
+  // `a.kpis` (sempre weekly corrente via useAssessors) o que causava mismatch
+  // com % e points (que já vinham do range). Bug #6.
+  const kpisByAssessorId = useMemo(() => {
+    const map = new Map<string, Record<string, number>>();
+    for (const x of overview?.byAssessor ?? []) {
+      map.set(x.assessorId, x.kpis);
+    }
+    return map;
+  }, [overview]);
+
   // IA insights pro time via OpenRouter
   const generateTeam = useGenerateTeamInsight();
   const [teamInsight, setTeamInsight] = useState<ApiInsight | null>(null);
@@ -435,7 +446,10 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
                 </div>
                 <div className="grid grid-cols-2 gap-1 text-[10px]">
                   {overview?.byKpi.map((kpi) => {
-                    const val = (a.kpis as Record<string, number>)[kpi.key] ?? 0;
+                    // Pega do byAssessor do overview (range atual) em vez de
+                    // a.kpis (weekly sempre). Resolve bug #6 — agora valores
+                    // batem com % e points do card.
+                    const val = kpisByAssessorId.get(a.id)?.[kpi.key] ?? 0;
                     // Pra unit "%" (cadência, touchpoint), o target é threshold direto
                     // (não dividir por team). Pra absolutos, dividir é razoável.
                     const isPercent = kpi.unit === "%";

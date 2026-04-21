@@ -47,6 +47,12 @@ export interface ApiOverviewPerformer {
   weeklyGoalPercent: number;
 }
 
+export interface ApiOverviewByAssessor {
+  assessorId: string;
+  /** Somas de rawValue por kpiKey no range (ex: { leads: 12, ligacoes: 45 }) */
+  kpis: Record<string, number>;
+}
+
 export interface ApiOverviewReport {
   from: string;
   to: string;
@@ -55,6 +61,8 @@ export interface ApiOverviewReport {
   topPerformers: ApiOverviewPerformer[];
   bottomPerformers: ApiOverviewPerformer[];
   allPerformers: ApiOverviewPerformer[];
+  /** Breakdown por assessor — pra consistência nos cards que misturam fontes */
+  byAssessor: ApiOverviewByAssessor[];
 }
 
 export interface ApiAssessorKpiHistory {
