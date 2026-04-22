@@ -1,14 +1,22 @@
 /**
- * Gamificação sonora — sons sintéticos via Web Audio API.
+ * Gamificação sonora — tocar MP3/WAV vindos do backend (KpiSound) + sons
+ * sintéticos reservados pra eventos especiais (goal hit, ranking rise).
  *
- * Cada KPI tem um som curto associado (200-1000ms). Quando alguém cruza
- * 100% da meta, toca som de vitória extra.
+ * Arquitetura (refatorada 22/04/2026 pra eliminar double-play):
+ * - KPIs têm som gerenciado pelo admin (upload via UI → R2 → URL pública)
+ * - Backend emite `sound:play` via SSE com `{ kpiKey, soundUrl }` quando
+ *   KpiSound.enabled && broadcast && rawValue cresceu
+ * - `useRankingStream` recebe o evento e chama `playSoundUrl(url)` aqui
+ * - Frontend NÃO toca KPI sounds localmente — tudo via broadcast. Isso
+ *   elimina a fonte de double-play (antes: synth local + MP3 hardcoded)
  *
- * Sem dependência de arquivos MP3 — tudo gerado em código com OscillatorNode
- * + GainNode + envelope ADSR.
+ * Sons síntéticos mantidos:
+ * - `playGoalHitSound` — quando cruza 100% da meta; depende de prevPercent
+ *   client-side, caro replicar no backend, mantém local
+ * - `playRiseSound` — subida no ranking; mesma razão
  *
- * Auto-play policy: AudioContext é lazy-init. Primeiro user gesture na página
- * (qualquer click) destrava. Antes disso, playSound() é no-op silencioso.
+ * Mute é preferência local (localStorage), respeitada tanto em URLs quanto
+ * nos synths.
  */
 
 const STORAGE_KEY = "pp_sound_muted";
@@ -18,7 +26,6 @@ const TV_VOLUME = 0.6;
 let ctx: AudioContext | null = null;
 let muted = false;
 
-// Lazy load do estado mute do localStorage
 if (typeof window !== "undefined") {
   try {
     muted = window.localStorage.getItem(STORAGE_KEY) === "1";
@@ -31,14 +38,16 @@ function getContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
   if (!ctx) {
     try {
-      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      const Ctx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext?: typeof AudioContext })
+          .webkitAudioContext;
       if (!Ctx) return null;
       ctx = new Ctx();
     } catch {
       return null;
     }
   }
-  // Resume se suspenso (autoplay policy)
   if (ctx.state === "suspended") {
     ctx.resume().catch(() => {});
   }
@@ -64,14 +73,12 @@ function isTvMode(): boolean {
   return new URLSearchParams(window.location.search).get("tv") === "1";
 }
 
-/**
- * Toca um tom sintético com envelope ADSR simples.
- * @param freq Frequência em Hz
- * @param durationMs Duração total do som
- * @param volume Volume final (0-1)
- * @param when Offset em segundos a partir do AudioContext.currentTime (pra orquestrar múltiplos tons)
- * @param type Tipo de oscilador (sine = limpo, triangle = mais cheio, sawtooth = brilhante)
- */
+function getVolume(): number {
+  return isTvMode() ? TV_VOLUME : NORMAL_VOLUME;
+}
+
+// ─── Synth helpers (usados só por goalHit/rise) ─────────────────────────────
+
 function tone(
   freq: number,
   durationMs: number,
@@ -90,7 +97,6 @@ function tone(
   osc.type = type;
   osc.frequency.setValueAtTime(freq, start);
 
-  // Envelope: attack curto (10ms) → decay/release pra duração total
   gain.gain.setValueAtTime(0, start);
   gain.gain.linearRampToValueAtTime(volume, start + 0.01);
   gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
@@ -101,38 +107,6 @@ function tone(
   osc.stop(start + dur + 0.05);
 }
 
-/** Tom com sweep de frequência (woosh, glissando). */
-function sweep(
-  freqStart: number,
-  freqEnd: number,
-  durationMs: number,
-  volume: number,
-  when: number = 0,
-  type: OscillatorType = "sine",
-): void {
-  const c = getContext();
-  if (!c) return;
-
-  const start = c.currentTime + when;
-  const dur = durationMs / 1000;
-
-  const osc = c.createOscillator();
-  const gain = c.createGain();
-  osc.type = type;
-  osc.frequency.setValueAtTime(freqStart, start);
-  osc.frequency.exponentialRampToValueAtTime(Math.max(20, freqEnd), start + dur);
-
-  gain.gain.setValueAtTime(0, start);
-  gain.gain.linearRampToValueAtTime(volume, start + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
-
-  osc.connect(gain);
-  gain.connect(c.destination);
-  osc.start(start);
-  osc.stop(start + dur + 0.05);
-}
-
-/** Burst de ruído branco (pra "cha" da caixa registradora, applause). */
 function noiseBurst(durationMs: number, volume: number, when: number = 0): void {
   const c = getContext();
   if (!c) return;
@@ -143,14 +117,14 @@ function noiseBurst(durationMs: number, volume: number, when: number = 0): void 
   const buffer = c.createBuffer(1, bufferSize, c.sampleRate);
   const data = buffer.getChannelData(0);
   for (let i = 0; i < bufferSize; i++) {
-    data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize); // decay linear
+    data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
   }
 
   const src = c.createBufferSource();
   const gain = c.createGain();
   const filter = c.createBiquadFilter();
   filter.type = "highpass";
-  filter.frequency.value = 2000; // só agudos pra soar como "cha"
+  filter.frequency.value = 2000;
 
   src.buffer = buffer;
   gain.gain.setValueAtTime(volume, start);
@@ -162,174 +136,27 @@ function noiseBurst(durationMs: number, volume: number, when: number = 0): void 
   src.start(start);
 }
 
-// ─── Sons por KPI ──────────────────────────────────────────────────────────
-
-function getVolume(): number {
-  return isTvMode() ? TV_VOLUME : NORMAL_VOLUME;
-}
-
-const SOUND_BUILDERS: Record<string, () => void> = {
-  // Lead = ka-ching (caixa registradora): 2 tons descendentes + brilho + cha
-  leads: () => {
-    const v = getVolume();
-    tone(1320, 80, v * 1.0, 0, "triangle"); // "ka"
-    tone(880, 200, v * 0.9, 0.08, "triangle"); // "ching"
-    tone(1760, 300, v * 0.4, 0.1, "sine"); // brilho
-    noiseBurst(150, v * 0.3, 0.05); // "cha"
-  },
-  // Ligação = blip curto
-  ligacoes: () => {
-    tone(660, 80, getVolume(), 0, "sine");
-  },
-  // Reunião agendada = sino
-  reunioes: () => {
-    const v = getVolume();
-    tone(1200, 600, v * 0.8, 0, "sine");
-    tone(2400, 600, v * 0.3, 0, "sine"); // harmonic
-  },
-  // Reunião realizada = sino duplo (peso alto)
-  reunioes_realizadas: () => {
-    const v = getVolume();
-    tone(1200, 500, v * 0.8, 0, "sine");
-    tone(2400, 500, v * 0.3, 0, "sine");
-    tone(1200, 500, v * 0.8, 0.15, "sine");
-    tone(2400, 500, v * 0.3, 0.15, "sine");
-  },
-  // Boleta = chime acorde C maior (C5-E5-G5)
-  boletos: () => {
-    const v = getVolume();
-    tone(523.25, 200, v * 0.7, 0, "sine"); // C5
-    tone(659.25, 200, v * 0.6, 0.04, "sine"); // E5
-    tone(783.99, 250, v * 0.6, 0.08, "sine"); // G5
-  },
-  // Cadência = woosh ascendente
-  cadencia: () => {
-    sweep(200, 2000, 350, getVolume() * 0.6, 0, "sawtooth");
-  },
-  // Touchpoint = pop curto
-  touchpoint: () => {
-    tone(400, 60, getVolume(), 0, "triangle");
-  },
-  // Indicação = glitter ascendente
-  indicacoes: () => {
-    const v = getVolume();
-    tone(880, 100, v * 0.6, 0, "sine"); // A5
-    tone(1108.73, 100, v * 0.6, 0.06, "sine"); // C#6
-    tone(1318.51, 100, v * 0.6, 0.12, "sine"); // E6
-    tone(1760, 200, v * 0.7, 0.18, "sine"); // A6
-  },
-  // Ativação de conta = fanfarra triunfal C5-E5-G5-C6
-  // Fallback pro synth se /sounds/ativacao.mp3 não existir. Se o arquivo
-  // existir (Felipe envia o som dele pra `public/sounds/ativacao.mp3`),
-  // playKpiSound tenta ele primeiro — ver CUSTOM_SOUND_FILES abaixo.
-  ativacao_conta: () => {
-    const v = getVolume();
-    tone(523.25, 150, v * 0.8, 0, "triangle"); // C5
-    tone(659.25, 150, v * 0.8, 0.13, "triangle"); // E5
-    tone(783.99, 150, v * 0.8, 0.26, "triangle"); // G5
-    tone(1046.5, 400, v * 1.0, 0.39, "triangle"); // C6 (mais longa)
-    tone(1567.98, 400, v * 0.5, 0.39, "sine"); // G6 harmonic
-  },
-};
-
-// ─── Custom sound files (override do synth) ────────────────────────────────
-//
-// Felipe pode colocar arquivos MP3/WAV em `public/sounds/` e o playKpiSound
-// vai tocar eles em vez do synth.
-//
-// CUIDADO com double-play: audio.play() é ASSÍNCRONO e retorna Promise.
-// Se retornarmos `true` otimista antes do load completar, o synth não toca
-// (OK) mas o MP3 pode disparar *depois* de um intervalo, e se tiver outro
-// play() disparado no meio, soa "antigo + novo" (bug reportado 22/04).
-//
-// Solução: preload no import + só retornar `true` se audio está READY
-// (readyState >= 3 = HAVE_FUTURE_DATA). Se não estiver pronto, marcamos
-// como "foi usado" pra disparar o preload mas retornamos false — synth
-// compensa nessa chamada. Próximas chamadas após load completar já tocam
-// o MP3 limpo.
-const CUSTOM_SOUND_FILES: Record<string, string> = {
-  // Nome com espaços precisa ser URL-encoded pro fetch não dar 404
-  ativacao_conta: "/sounds/Cash%20Money%20Sound%20Effect.mp3",
-};
-type CachedAudio = HTMLAudioElement | "unavailable" | "loading";
-const customAudioCache = new Map<string, CachedAudio>();
-
-/** Inicia preload sem tocar. Idempotente — seguro chamar várias vezes. */
-function preloadCustomSound(kpiKey: string): void {
-  if (customAudioCache.has(kpiKey)) return;
-  const path = CUSTOM_SOUND_FILES[kpiKey];
-  if (!path) return;
-
-  const audio = new Audio(path);
-  audio.preload = "auto";
-  audio.addEventListener("error", () => {
-    customAudioCache.set(kpiKey, "unavailable");
-  });
-  audio.addEventListener("canplaythrough", () => {
-    customAudioCache.set(kpiKey, audio);
-  });
-  customAudioCache.set(kpiKey, "loading");
-  // Força o browser a começar o download
-  audio.load();
-}
+// ─── URL-based player (API principal) ───────────────────────────────────────
 
 /**
- * Toca arquivo MP3 custom SE estiver pronto. Retorna true se tocou;
- * false se precisa synth fallback (sem arquivo, ainda carregando, ou 404).
+ * Cache de HTMLAudioElement por URL. Preload on-demand: primeira vez que
+ * uma URL é solicitada, cria e inicia download. Próximas chamadas usam
+ * o elemento cacheado (reset `currentTime` e play).
  */
-function tryPlayCustomFile(kpiKey: string): boolean {
-  const cached = customAudioCache.get(kpiKey);
-
-  // Sem cache ainda: dispara preload e volta synth nessa chamada
-  if (cached === undefined) {
-    preloadCustomSound(kpiKey);
-    return false;
-  }
-
-  // Arquivo indisponível (erro conhecido) ou ainda carregando
-  if (cached === "unavailable" || cached === "loading") return false;
-
-  // Pronto pra tocar
-  try {
-    cached.currentTime = 0;
-    cached.volume = getVolume();
-    // play() retorna Promise — ignoramos rejeição silenciosa (ex: autoplay
-    // block antes do primeiro gesture). Se rejeitar, o som não toca
-    // nessa vez e pronto — synth não roda porque já retornamos true.
-    // Como já tocamos outras vezes antes (readyState ok), autoplay não
-    // deve ser problema.
-    void cached.play().catch(() => {});
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-// Preload imediato no import — roda uma vez quando o módulo carrega.
-// Assim o arquivo fica pronto antes da primeira ativação, evitando o
-// window de race com synth.
-if (typeof window !== "undefined") {
-  for (const kpiKey of Object.keys(CUSTOM_SOUND_FILES)) {
-    preloadCustomSound(kpiKey);
-  }
-}
-
-/** Default fallback — KPI desconhecido toca um chime simples. */
-function defaultSound(): void {
-  const v = getVolume();
-  tone(880, 150, v * 0.6, 0, "sine");
-  tone(1320, 150, v * 0.5, 0.05, "sine");
-}
+type CachedAudio = HTMLAudioElement | "unavailable";
+const audioCache = new Map<string, CachedAudio>();
 
 /**
- * Coordenação cross-tab: se outra aba do mesmo browser tocou esse KPI
- * nos últimos 700ms, pula. Evita som duplicado quando Felipe tem
- * dashboard + /tv no mesmo computador.
+ * Coordenação cross-tab via localStorage. Se outra aba do mesmo browser
+ * tocou o MESMO URL nos últimos 700ms, pula. Evita double-play quando
+ * Felipe tem dashboard + /tv no mesmo laptop — ambos recebem SSE, só um
+ * toca. (Cenários com dispositivos diferentes não compartilham
+ * localStorage, então tocam normal — que é o comportamento desejado.)
  */
-function recentlyPlayedInAnotherTab(kpiKey: string): boolean {
+function recentlyPlayedInAnotherTab(url: string): boolean {
   if (typeof window === "undefined") return false;
   try {
-    const key = `pp_last_play_${kpiKey}`;
+    const key = `pp_last_play_${url}`;
     const last = parseInt(window.localStorage.getItem(key) ?? "0", 10);
     const now = Date.now();
     if (now - last < 700) return true;
@@ -341,30 +168,73 @@ function recentlyPlayedInAnotherTab(kpiKey: string): boolean {
 }
 
 /**
- * Toca o som associado ao KPI. Silencioso se mudo ou AudioContext bloqueado.
- * Prioriza arquivo MP3 custom (se registrado em CUSTOM_SOUND_FILES e carregado);
- * fallback pro synth Web Audio.
+ * Toca um arquivo de áudio pela URL. Cache por URL evita re-download,
+ * respeita mute, faz dedup cross-tab.
+ *
+ * API principal usada pelo SSE listener em `useRankingStream.ts`.
  */
-export function playKpiSound(kpiKey: string): void {
+export function playSoundUrl(url: string): void {
   if (muted) return;
-  if (recentlyPlayedInAnotherTab(kpiKey)) return;
-  try {
-    if (tryPlayCustomFile(kpiKey)) return;
-  } catch {
-    // fallback synth
+  if (!url) return;
+  if (recentlyPlayedInAnotherTab(url)) return;
+
+  const cached = audioCache.get(url);
+
+  // Cache negativo — URL já falhou carregando
+  if (cached === "unavailable") return;
+
+  // Cache hit com elemento — toca se pronto
+  if (cached && cached instanceof HTMLAudioElement) {
+    try {
+      cached.currentTime = 0;
+      cached.volume = getVolume();
+      void cached.play().catch(() => {});
+    } catch {
+      // ignore — autoplay block, etc
+    }
+    return;
   }
-  const builder = SOUND_BUILDERS[kpiKey] ?? defaultSound;
+
+  // Primeira vez com esse URL: cria e toca otimista. Se falhar load,
+  // marca como "unavailable" pra evitar retry em massa.
+  const audio = new Audio(url);
+  audio.preload = "auto";
+  audio.volume = getVolume();
+  audio.addEventListener("error", () => {
+    audioCache.set(url, "unavailable");
+  });
+  audioCache.set(url, audio);
   try {
-    builder();
+    void audio.play().catch(() => {});
+  } catch {
+    // ignore
+  }
+}
+
+// ─── Eventos especiais (sintéticos, sem broadcast) ──────────────────────────
+
+/**
+ * Som de vitória ao bater meta (cruzar 100%). Local no client que registrou,
+ * não broadcasta — depende de prevPercent específico da mutation.
+ */
+export function playGoalHitSound(): void {
+  if (muted) return;
+  try {
+    const v = getVolume() * 1.2;
+    tone(523.25, 800, v * 0.7, 0, "triangle"); // C5
+    tone(659.25, 800, v * 0.7, 0, "triangle"); // E5
+    tone(783.99, 800, v * 0.7, 0, "triangle"); // G5
+    tone(1046.5, 1000, v * 0.9, 0.1, "triangle"); // C6
+    tone(2093, 600, v * 0.4, 0.2, "sine"); // C7
+    noiseBurst(500, v * 0.4, 0.3);
   } catch {
     // ignore
   }
 }
 
 /**
- * Som de "subida no ranking" — quando assessor passa um colega na ordem.
- * Mais discreto que goal-hit (não é meta batida, é só uma posição). 3 notas
- * ascendentes rápidas C5-E5-G5 (acorde maior em arpejo).
+ * Som de "subida no ranking" — quando assessor passa um colega.
+ * Local, não broadcasta (raro e discreto).
  */
 export function playRiseSound(): void {
   if (muted) return;
@@ -373,27 +243,6 @@ export function playRiseSound(): void {
     tone(523.25, 120, v * 0.7, 0, "sine"); // C5
     tone(659.25, 120, v * 0.7, 0.07, "sine"); // E5
     tone(783.99, 200, v * 0.8, 0.14, "sine"); // G5
-  } catch {
-    // ignore
-  }
-}
-
-/**
- * Som de vitória ao bater meta (cruzar 100%). Mais cheio que os por-KPI.
- */
-export function playGoalHitSound(): void {
-  if (muted) return;
-  try {
-    const v = getVolume() * 1.2;
-    // Acorde maior cheio
-    tone(523.25, 800, v * 0.7, 0, "triangle"); // C5
-    tone(659.25, 800, v * 0.7, 0, "triangle"); // E5
-    tone(783.99, 800, v * 0.7, 0, "triangle"); // G5
-    tone(1046.5, 1000, v * 0.9, 0.1, "triangle"); // C6
-    // Brilho
-    tone(2093, 600, v * 0.4, 0.2, "sine"); // C7
-    // "Applause" via ruído filtrado
-    noiseBurst(500, v * 0.4, 0.3);
   } catch {
     // ignore
   }

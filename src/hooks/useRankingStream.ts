@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getAuthToken } from "@/api/client";
-import { playKpiSound } from "@/lib/sounds";
+import { playSoundUrl } from "@/lib/sounds";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001/api";
 
@@ -48,12 +48,16 @@ export function useRankingStream(enabled: boolean = true) {
     });
 
     // Broadcast sonoro — toca som de KPI em TODOS clientes conectados (laptop
-    // do Felipe, TV espelhando, qualquer outro dashboard aberto). Útil pra
-    // ativação: som sai independente de onde registrou/espelhamento de áudio.
+    // do Felipe, TV espelhando, qualquer outro dashboard aberto). Payload
+    // carrega soundUrl vindo do KpiSound no backend (ver routes/metrics.ts
+    // + eventBus.emitSoundPlay). Sem URL = nada toca.
     source.addEventListener("sound:play", (e) => {
       try {
-        const { kpiKey } = JSON.parse((e as MessageEvent).data) as { kpiKey: string };
-        playKpiSound(kpiKey);
+        const { soundUrl } = JSON.parse((e as MessageEvent).data) as {
+          kpiKey: string;
+          soundUrl: string;
+        };
+        if (soundUrl) playSoundUrl(soundUrl);
       } catch {
         // ignore
       }

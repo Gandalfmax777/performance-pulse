@@ -83,11 +83,10 @@ function normalizeArgs(args: UpsertMetricArgs): {
  * Upsert de uma metric entry. Invalida lista de metrics + rankings.
  *
  * Side effect sonoro (gamificação):
- * - Ativação de conta: backend emite evento SSE `sound:play` pra TODOS
- *   clientes conectados (laptop + TV + abas extras). Hook useRankingStream
- *   escuta o evento e chama playKpiSound — não tocamos aqui pra evitar
- *   double-play no próprio client que registrou. Benefício: som toca na TV
- *   mesmo quando Felipe registrou no celular/outro device.
+ * - Som por KPI (ex: ativação): backend emite evento SSE `sound:play` pra
+ *   TODOS clientes conectados (laptop + TV + abas extras) com soundUrl do
+ *   KpiSound. Hook useRankingStream escuta e chama playSoundUrl. Não
+ *   tocamos aqui pra evitar double-play e pra unificar o flow pelo backend.
  * - Meta batida (100%): toca localmente só no client que registrou, pois
  *   depende do prevPercent (detecção de cruzamento 100%) que é caro
  *   reproduzir no backend.

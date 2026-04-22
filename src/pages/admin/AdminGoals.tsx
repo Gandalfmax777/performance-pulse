@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { toast } from "sonner";
-import { Target, Pencil, ChevronDown, ChevronUp, History, Loader2, Plus } from "lucide-react";
+import { Target, Pencil, ChevronDown, ChevronUp, History, Loader2, Plus, Upload, Trash2, Volume2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useQueryClient } from "@tanstack/react-query";
@@ -30,6 +30,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import type { ApiKpi } from "@/hooks/useKpis";
+import {
+  useUploadKpiSound,
+  useUpdateKpiSound,
+  useDeleteKpiSound,
+} from "@/hooks/useKpis";
 
 interface KpiDialogState {
   open: boolean;
@@ -486,6 +491,9 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
               </div>
             </div>
           </div>
+
+          {/* Som do KPI */}
+          <KpiSoundSection kpi={kpi} onChanged={onSuccess} />
         </div>
 
         <DialogFooter>
@@ -499,6 +507,189 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// ─── Seção de som do KPI ─────────────────────────────────────────────────────
+//
+// Upload MP3/WAV por KPI, ativar/desativar, e flag "broadcast" (se som toca
+// em todos dispositivos via SSE). Substitui arquivos estáticos em
+// `public/sounds/` e synth hardcoded — ver Bug #10 no plano.
+
+function KpiSoundSection({ kpi, onChanged }: { kpi: ApiKpi; onChanged: () => void }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const upload = useUploadKpiSound();
+  const update = useUpdateKpiSound();
+  const remove = useDeleteKpiSound();
+
+  const sound = kpi.sound;
+  const busy = upload.isPending || update.isPending || remove.isPending;
+
+  async function handleFilePicked(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("audio/")) {
+      toast.error("Arquivo precisa ser áudio (MP3/WAV/OGG)");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Arquivo excede 2MB");
+      return;
+    }
+    try {
+      await upload.mutateAsync({ kpiId: kpi.id, file });
+      toast.success("Som carregado");
+      onChanged();
+    } catch (err) {
+      toast.error(`Erro no upload: ${(err as Error).message}`);
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleToggle(field: "enabled" | "broadcast", value: boolean) {
+    try {
+      await update.mutateAsync({ kpiId: kpi.id, [field]: value });
+      onChanged();
+    } catch (err) {
+      toast.error(`Erro: ${(err as Error).message}`);
+    }
+  }
+
+  async function handleDelete() {
+    if (!confirm("Remover som deste KPI? Arquivo será excluído do storage.")) return;
+    try {
+      await remove.mutateAsync(kpi.id);
+      toast.success("Som removido");
+      onChanged();
+    } catch (err) {
+      toast.error(`Erro: ${(err as Error).message}`);
+    }
+  }
+
+  return (
+    <div>
+      <h3 className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
+        <Volume2 className="w-3.5 h-3.5" />
+        Som do KPI
+      </h3>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="audio/*"
+        className="hidden"
+        onChange={handleFilePicked}
+      />
+
+      {sound ? (
+        <div className="space-y-3">
+          {/* Player preview */}
+          <div className="p-3 rounded-lg bg-muted/20 border border-border/30">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+              Arquivo atual
+            </p>
+            <audio controls src={sound.url} className="w-full h-8">
+              Seu navegador não suporta áudio.
+            </audio>
+          </div>
+
+          {/* Toggles */}
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id={`sound-enabled-${kpi.id}`}
+              checked={sound.enabled}
+              disabled={busy}
+              onCheckedChange={(v) => handleToggle("enabled", Boolean(v))}
+              className="mt-0.5"
+            />
+            <div>
+              <Label
+                htmlFor={`sound-enabled-${kpi.id}`}
+                className="text-xs font-medium cursor-pointer"
+              >
+                Ativar som
+              </Label>
+              <p className="text-[10px] text-muted-foreground">
+                Se desativado, nada toca mesmo com arquivo carregado.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id={`sound-broadcast-${kpi.id}`}
+              checked={sound.broadcast}
+              disabled={busy || !sound.enabled}
+              onCheckedChange={(v) => handleToggle("broadcast", Boolean(v))}
+              className="mt-0.5"
+            />
+            <div>
+              <Label
+                htmlFor={`sound-broadcast-${kpi.id}`}
+                className={`text-xs font-medium cursor-pointer ${
+                  !sound.enabled ? "text-muted-foreground" : ""
+                }`}
+              >
+                Tocar em todos os dispositivos (broadcast)
+              </Label>
+              <p className="text-[10px] text-muted-foreground">
+                Toca na TV, no laptop de quem registra, e em qualquer
+                dashboard aberto — simultaneamente via SSE.
+              </p>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2 pt-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={busy}
+            >
+              {upload.isPending ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+              ) : (
+                <Upload className="w-3.5 h-3.5 mr-1.5" />
+              )}
+              Trocar arquivo
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+              disabled={busy}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+              Remover
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="p-4 rounded-lg bg-muted/10 border border-dashed border-border/30 text-center">
+          <Volume2 className="w-6 h-6 mx-auto text-muted-foreground/50 mb-2" />
+          <p className="text-xs text-muted-foreground mb-3">
+            Sem som cadastrado. Carregue um MP3/WAV (≤ 2MB) pra tocar quando
+            alguém registrar este KPI.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={busy}
+          >
+            {upload.isPending ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+            ) : (
+              <Upload className="w-3.5 h-3.5 mr-1.5" />
+            )}
+            Carregar som
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }
 
