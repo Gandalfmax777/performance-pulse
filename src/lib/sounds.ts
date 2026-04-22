@@ -238,7 +238,8 @@ const SOUND_BUILDERS: Record<string, () => void> = {
 // vai tocar eles em vez do synth. Se o arquivo 404, faz fallback pro synth.
 // Cache de HTMLAudioElement por KPI pra evitar re-download a cada play.
 const CUSTOM_SOUND_FILES: Record<string, string> = {
-  ativacao_conta: "/sounds/ativacao.mp3",
+  // Nome com espaços precisa ser URL-encoded pro fetch não dar 404
+  ativacao_conta: "/sounds/Cash%20Money%20Sound%20Effect.mp3",
 };
 const customAudioCache = new Map<string, HTMLAudioElement | null>();
 
