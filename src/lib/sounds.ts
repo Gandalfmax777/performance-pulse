@@ -235,58 +235,83 @@ const SOUND_BUILDERS: Record<string, () => void> = {
 // ─── Custom sound files (override do synth) ────────────────────────────────
 //
 // Felipe pode colocar arquivos MP3/WAV em `public/sounds/` e o playKpiSound
-// vai tocar eles em vez do synth. Se o arquivo 404, faz fallback pro synth.
-// Cache de HTMLAudioElement por KPI pra evitar re-download a cada play.
+// vai tocar eles em vez do synth.
+//
+// CUIDADO com double-play: audio.play() é ASSÍNCRONO e retorna Promise.
+// Se retornarmos `true` otimista antes do load completar, o synth não toca
+// (OK) mas o MP3 pode disparar *depois* de um intervalo, e se tiver outro
+// play() disparado no meio, soa "antigo + novo" (bug reportado 22/04).
+//
+// Solução: preload no import + só retornar `true` se audio está READY
+// (readyState >= 3 = HAVE_FUTURE_DATA). Se não estiver pronto, marcamos
+// como "foi usado" pra disparar o preload mas retornamos false — synth
+// compensa nessa chamada. Próximas chamadas após load completar já tocam
+// o MP3 limpo.
 const CUSTOM_SOUND_FILES: Record<string, string> = {
   // Nome com espaços precisa ser URL-encoded pro fetch não dar 404
   ativacao_conta: "/sounds/Cash%20Money%20Sound%20Effect.mp3",
 };
-const customAudioCache = new Map<string, HTMLAudioElement | null>();
+type CachedAudio = HTMLAudioElement | "unavailable" | "loading";
+const customAudioCache = new Map<string, CachedAudio>();
+
+/** Inicia preload sem tocar. Idempotente — seguro chamar várias vezes. */
+function preloadCustomSound(kpiKey: string): void {
+  if (customAudioCache.has(kpiKey)) return;
+  const path = CUSTOM_SOUND_FILES[kpiKey];
+  if (!path) return;
+
+  const audio = new Audio(path);
+  audio.preload = "auto";
+  audio.addEventListener("error", () => {
+    customAudioCache.set(kpiKey, "unavailable");
+  });
+  audio.addEventListener("canplaythrough", () => {
+    customAudioCache.set(kpiKey, audio);
+  });
+  customAudioCache.set(kpiKey, "loading");
+  // Força o browser a começar o download
+  audio.load();
+}
 
 /**
- * Tenta tocar arquivo MP3 custom. Retorna true se conseguiu, false se
- * precisa fallback pro synth (arquivo não existe / erro de load).
+ * Toca arquivo MP3 custom SE estiver pronto. Retorna true se tocou;
+ * false se precisa synth fallback (sem arquivo, ainda carregando, ou 404).
  */
 function tryPlayCustomFile(kpiKey: string): boolean {
-  const path = CUSTOM_SOUND_FILES[kpiKey];
-  if (!path) return false;
-
-  // Cache hit com audio já carregado e válido
   const cached = customAudioCache.get(kpiKey);
-  if (cached === null) return false; // cache negativo (404 conhecido)
-  if (cached && cached.readyState >= 2) {
-    try {
-      cached.currentTime = 0;
-      cached.volume = getVolume();
-      void cached.play();
-      return true;
-    } catch {
-      return false;
-    }
+
+  // Sem cache ainda: dispara preload e volta synth nessa chamada
+  if (cached === undefined) {
+    preloadCustomSound(kpiKey);
+    return false;
   }
 
-  // Primeira vez: cria, tenta carregar
-  if (!cached) {
-    const audio = new Audio(path);
-    audio.preload = "auto";
-    audio.volume = getVolume();
-    audio.addEventListener("error", () => {
-      customAudioCache.set(kpiKey, null); // marca como indisponível
-    });
-    audio.addEventListener("canplaythrough", () => {
-      customAudioCache.set(kpiKey, audio);
-    });
-    customAudioCache.set(kpiKey, audio);
-    // Tenta tocar imediatamente (se já estiver cacheado no browser)
-    try {
-      void audio.play();
-      return true;
-    } catch {
-      return false;
-    }
-  }
+  // Arquivo indisponível (erro conhecido) ou ainda carregando
+  if (cached === "unavailable" || cached === "loading") return false;
 
-  return false;
+  // Pronto pra tocar
+  try {
+    cached.currentTime = 0;
+    cached.volume = getVolume();
+    // play() retorna Promise — ignoramos rejeição silenciosa (ex: autoplay
+    // block antes do primeiro gesture). Se rejeitar, o som não toca
+    // nessa vez e pronto — synth não roda porque já retornamos true.
+    // Como já tocamos outras vezes antes (readyState ok), autoplay não
+    // deve ser problema.
+    void cached.play().catch(() => {});
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Preload imediato no import — roda uma vez quando o módulo carrega.
+// Assim o arquivo fica pronto antes da primeira ativação, evitando o
+// window de race com synth.
+if (typeof window !== "undefined") {
+  for (const kpiKey of Object.keys(CUSTOM_SOUND_FILES)) {
+    preloadCustomSound(kpiKey);
+  }
 }
 
 /** Default fallback — KPI desconhecido toca um chime simples. */
@@ -297,12 +322,32 @@ function defaultSound(): void {
 }
 
 /**
+ * Coordenação cross-tab: se outra aba do mesmo browser tocou esse KPI
+ * nos últimos 700ms, pula. Evita som duplicado quando Felipe tem
+ * dashboard + /tv no mesmo computador.
+ */
+function recentlyPlayedInAnotherTab(kpiKey: string): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const key = `pp_last_play_${kpiKey}`;
+    const last = parseInt(window.localStorage.getItem(key) ?? "0", 10);
+    const now = Date.now();
+    if (now - last < 700) return true;
+    window.localStorage.setItem(key, String(now));
+  } catch {
+    // localStorage indisponível — sem coordenação, tudo bem
+  }
+  return false;
+}
+
+/**
  * Toca o som associado ao KPI. Silencioso se mudo ou AudioContext bloqueado.
  * Prioriza arquivo MP3 custom (se registrado em CUSTOM_SOUND_FILES e carregado);
  * fallback pro synth Web Audio.
  */
 export function playKpiSound(kpiKey: string): void {
   if (muted) return;
+  if (recentlyPlayedInAnotherTab(kpiKey)) return;
   try {
     if (tryPlayCustomFile(kpiKey)) return;
   } catch {
