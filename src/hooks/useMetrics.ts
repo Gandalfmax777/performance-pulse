@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/api/client";
 import { playGoalHitSound } from "@/lib/sounds";
+import type { ApiKpi } from "./useKpis";
 
 /**
  * Shape vindo do backend (espelha routes/metrics.ts).
@@ -106,10 +107,20 @@ export function useUpsertMetric() {
       queryClient.invalidateQueries({ queryKey: ["rankings"] });
       queryClient.invalidateQueries({ queryKey: ["assessors"] });
 
-      // Som de meta batida (100%) continua local — depende de prevPercent.
+      // Som de meta batida (100%) local — depende de prevPercent.
+      // MAS: se o KPI tem som configurado com broadcast, o SSE já vai tocar
+      // o MP3 do KpiSound. Tocar goalHit junto = 2 sons sobrepostos (bug
+      // reportado 22/04: Cash Money do ativacao_conta + fanfarra synth pq
+      // meta=1 e cada ativação cruza 100%). Regra: se KPI vai tocar MP3
+      // via broadcast, suprime goalHit — o MP3 já é celebração suficiente.
+      const apiKpis = queryClient.getQueryData<ApiKpi[]>(["kpis"]);
+      const kpiConfig = apiKpis?.find((k) => k.key === data.kpiKey);
+      const willBroadcastSound =
+        kpiConfig?.sound?.enabled === true && kpiConfig.sound.broadcast === true;
+
       const { prevPercent } = normalizeArgs(args);
       const newPct = data.convertedPercent ?? 0;
-      if (prevPercent < 100 && newPct >= 100) {
+      if (!willBroadcastSound && prevPercent < 100 && newPct >= 100) {
         playGoalHitSound();
       }
     },
