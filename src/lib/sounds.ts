@@ -219,6 +219,9 @@ const SOUND_BUILDERS: Record<string, () => void> = {
     tone(1760, 200, v * 0.7, 0.18, "sine"); // A6
   },
   // Ativação de conta = fanfarra triunfal C5-E5-G5-C6
+  // Fallback pro synth se /sounds/ativacao.mp3 não existir. Se o arquivo
+  // existir (Felipe envia o som dele pra `public/sounds/ativacao.mp3`),
+  // playKpiSound tenta ele primeiro — ver CUSTOM_SOUND_FILES abaixo.
   ativacao_conta: () => {
     const v = getVolume();
     tone(523.25, 150, v * 0.8, 0, "triangle"); // C5
@@ -229,6 +232,62 @@ const SOUND_BUILDERS: Record<string, () => void> = {
   },
 };
 
+// ─── Custom sound files (override do synth) ────────────────────────────────
+//
+// Felipe pode colocar arquivos MP3/WAV em `public/sounds/` e o playKpiSound
+// vai tocar eles em vez do synth. Se o arquivo 404, faz fallback pro synth.
+// Cache de HTMLAudioElement por KPI pra evitar re-download a cada play.
+const CUSTOM_SOUND_FILES: Record<string, string> = {
+  ativacao_conta: "/sounds/ativacao.mp3",
+};
+const customAudioCache = new Map<string, HTMLAudioElement | null>();
+
+/**
+ * Tenta tocar arquivo MP3 custom. Retorna true se conseguiu, false se
+ * precisa fallback pro synth (arquivo não existe / erro de load).
+ */
+function tryPlayCustomFile(kpiKey: string): boolean {
+  const path = CUSTOM_SOUND_FILES[kpiKey];
+  if (!path) return false;
+
+  // Cache hit com audio já carregado e válido
+  const cached = customAudioCache.get(kpiKey);
+  if (cached === null) return false; // cache negativo (404 conhecido)
+  if (cached && cached.readyState >= 2) {
+    try {
+      cached.currentTime = 0;
+      cached.volume = getVolume();
+      void cached.play();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // Primeira vez: cria, tenta carregar
+  if (!cached) {
+    const audio = new Audio(path);
+    audio.preload = "auto";
+    audio.volume = getVolume();
+    audio.addEventListener("error", () => {
+      customAudioCache.set(kpiKey, null); // marca como indisponível
+    });
+    audio.addEventListener("canplaythrough", () => {
+      customAudioCache.set(kpiKey, audio);
+    });
+    customAudioCache.set(kpiKey, audio);
+    // Tenta tocar imediatamente (se já estiver cacheado no browser)
+    try {
+      void audio.play();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
+}
+
 /** Default fallback — KPI desconhecido toca um chime simples. */
 function defaultSound(): void {
   const v = getVolume();
@@ -238,9 +297,16 @@ function defaultSound(): void {
 
 /**
  * Toca o som associado ao KPI. Silencioso se mudo ou AudioContext bloqueado.
+ * Prioriza arquivo MP3 custom (se registrado em CUSTOM_SOUND_FILES e carregado);
+ * fallback pro synth Web Audio.
  */
 export function playKpiSound(kpiKey: string): void {
   if (muted) return;
+  try {
+    if (tryPlayCustomFile(kpiKey)) return;
+  } catch {
+    // fallback synth
+  }
   const builder = SOUND_BUILDERS[kpiKey] ?? defaultSound;
   try {
     builder();

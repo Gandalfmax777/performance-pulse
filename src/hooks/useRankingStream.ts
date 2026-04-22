@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getAuthToken } from "@/api/client";
+import { playKpiSound } from "@/lib/sounds";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001/api";
 
@@ -44,6 +45,18 @@ export function useRankingStream(enabled: boolean = true) {
 
     source.addEventListener("connected", () => {
       console.log("[SSE] Connected to ranking stream");
+    });
+
+    // Broadcast sonoro — toca som de KPI em TODOS clientes conectados (laptop
+    // do Felipe, TV espelhando, qualquer outro dashboard aberto). Útil pra
+    // ativação: som sai independente de onde registrou/espelhamento de áudio.
+    source.addEventListener("sound:play", (e) => {
+      try {
+        const { kpiKey } = JSON.parse((e as MessageEvent).data) as { kpiKey: string };
+        playKpiSound(kpiKey);
+      } catch {
+        // ignore
+      }
     });
 
     source.onerror = () => {

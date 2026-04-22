@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/api/client";
-import { playKpiSound, playGoalHitSound } from "@/lib/sounds";
+import { playGoalHitSound } from "@/lib/sounds";
 
 /**
  * Shape vindo do backend (espelha routes/metrics.ts).
@@ -82,16 +82,19 @@ function normalizeArgs(args: UpsertMetricArgs): {
 /**
  * Upsert de uma metric entry. Invalida lista de metrics + rankings.
  *
- * Side effect sonoro (gamificação) — Felipe pediu som APENAS em "ativacao_conta"
- * (representa uma venda fechada). Antes tocava em todo KPI, mas isso ficou
- * poluído em uso real. Ativação de conta é o evento celebrável por excelência.
- * Meta batida (100%) também toca — é um marco independente.
+ * Side effect sonoro (gamificação):
+ * - Ativação de conta: backend emite evento SSE `sound:play` pra TODOS
+ *   clientes conectados (laptop + TV + abas extras). Hook useRankingStream
+ *   escuta o evento e chama playKpiSound — não tocamos aqui pra evitar
+ *   double-play no próprio client que registrou. Benefício: som toca na TV
+ *   mesmo quando Felipe registrou no celular/outro device.
+ * - Meta batida (100%): toca localmente só no client que registrou, pois
+ *   depende do prevPercent (detecção de cruzamento 100%) que é caro
+ *   reproduzir no backend.
  *
  * Caller pode passar só `UpsertMetricInput` (sem som de vitória) OU
  * `{ input, prevPercent }` (com detecção de meta batida).
  */
-const SOUND_KPI_KEYS = new Set(["ativacao_conta"]);
-
 export function useUpsertMetric() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -104,11 +107,8 @@ export function useUpsertMetric() {
       queryClient.invalidateQueries({ queryKey: ["rankings"] });
       queryClient.invalidateQueries({ queryKey: ["assessors"] });
 
-      // Gamificação sonora — silencioso se mudo
+      // Som de meta batida (100%) continua local — depende de prevPercent.
       const { prevPercent } = normalizeArgs(args);
-      if (SOUND_KPI_KEYS.has(data.kpiKey)) {
-        playKpiSound(data.kpiKey);
-      }
       const newPct = data.convertedPercent ?? 0;
       if (prevPercent < 100 && newPct >= 100) {
         playGoalHitSound();
