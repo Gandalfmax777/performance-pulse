@@ -171,7 +171,11 @@ export function useKpiSeries(params: {
         })}`,
       ),
     enabled: Boolean(params.kpiId),
-    staleTime: 30_000,
+    // staleTime baixo (5s) + refetchInterval 30s = fallback rápido caso
+    // SSE (useRankingStream) esteja offline. Quando online, SSE invalida
+    // imediatamente; quando offline, garante refresh a cada 30s.
+    staleTime: 5_000,
+    refetchInterval: 30_000,
   });
 }
 
@@ -185,7 +189,10 @@ export function useOverviewReport(
       apiFetch<ApiOverviewReport>(
         `/reports/overview${toQs({ from: params.from, to: params.to })}`,
       ),
-    staleTime: 30_000,
+    // KpiCards + ActivationHighlight dependem disso. SSE invalida em
+    // <500ms; fallback 15s caso SSE caia (TV, rede instável).
+    staleTime: 3_000,
+    refetchInterval: 15_000,
     enabled: options.enabled ?? true,
   });
 }
@@ -201,7 +208,8 @@ export function useAssessorReport(
         `/reports/assessor/${assessorId}${toQs({ from: params.from, to: params.to })}`,
       ),
     enabled: Boolean(assessorId),
-    staleTime: 30_000,
+    staleTime: 5_000,
+    refetchInterval: 30_000,
   });
 }
 
@@ -216,7 +224,8 @@ export function useFunnelReport(params: { from?: string; to?: string; assessorId
           assessorId: params.assessorId,
         })}`,
       ),
-    staleTime: 30_000,
+    staleTime: 5_000,
+    refetchInterval: 30_000,
   });
 }
 

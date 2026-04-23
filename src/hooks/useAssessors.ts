@@ -88,7 +88,11 @@ export function useAssessors(): UseAssessorsResult {
   const assessorsQuery = useQuery({
     queryKey: QUERY_KEY,
     queryFn: () => apiFetch<ApiAssessor[]>("/assessors?active=true"),
-    staleTime: 30_000,
+    // staleTime baixo + SSE invalidation = updates em tempo real (<500ms).
+    // Lista de assessores em si muda raramente (admin add/remove), mas
+    // points/level/streak dentro do payload mudam a cada métrica.
+    staleTime: 3_000,
+    refetchInterval: 20_000,
   });
 
   const weeklyRanking = useWeeklyRanking();

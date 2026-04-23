@@ -32,13 +32,32 @@ export function useRankingStream(enabled: boolean = true) {
     const source = new EventSource(url);
     sourceRef.current = source;
 
-    // Debounce 300ms: múltiplos POSTs em sequência (Felipe digitando métricas rápido)
-    // disparam várias invalidações que compõem com refetchIntervals dos hooks de
-    // ranking. Um único refetch por rajada é suficiente.
+    // Debounce 300ms: múltiplos POSTs em sequência (Felipe digitando métricas
+    // rápido) disparam várias invalidações. Um único refetch por rajada é
+    // suficiente.
+    //
+    // Invalidação em CASCATA: quando uma métrica é registrada, TODAS as
+    // queries abaixo ficam stale imediatamente. Antes só `rankings` era
+    // invalidado e o resto do dashboard ficava até 30s desatualizado (bug
+    // reportado por Felipe: "TV não tá 100% atualizada").
+    //
+    // As queries aqui listadas são TODAS as que mudam quando métrica muda:
+    // - rankings: placar direto
+    // - reports: overview (KpiCards, ActivationHighlight), activity-feed,
+    //   assessor individual, funnel, kpi series
+    // - assessors: points/level/streak/etc via toLegacyAssessor
+    // - metrics: entries do dia (RegistrationPanel)
+    // - badges: unlocks podem ter sido criados (evaluateBadgesForAssessor)
+    // - tournaments: leaderboards de torneio ativo
     source.addEventListener("ranking:update", () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ["rankings"] });
+        queryClient.invalidateQueries({ queryKey: ["reports"] });
+        queryClient.invalidateQueries({ queryKey: ["assessors"] });
+        queryClient.invalidateQueries({ queryKey: ["metrics"] });
+        queryClient.invalidateQueries({ queryKey: ["badges"] });
+        queryClient.invalidateQueries({ queryKey: ["tournaments"] });
         debounceRef.current = null;
       }, 300);
     });
