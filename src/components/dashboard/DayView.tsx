@@ -14,6 +14,7 @@ import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { apiFetch } from "@/api/client";
 import { SALESFORCE_PREFIX, isSalesforceCheck } from "@/lib/meetingBonus";
 import DailyDirection from "./DailyDirection";
+import DayHeroMetrics from "./DayHeroMetrics";
 
 /**
  * Labels Pt-BR pros 5 dias úteis. dayOfWeek 1=segunda ... 5=sexta
@@ -226,6 +227,9 @@ const DayView = ({ assessors }: DayViewProps) => {
           ))}
         </div>
       )}
+
+      {/* Hero metrics do dia (artboard DailyDrilldown) */}
+      <DayHeroMetrics date={activeDateString} />
 
       {/* Direcionamento livre editável (orientação do coordenador) */}
       <DailyDirection date={activeDateString} dayLabel={`${dayLabel} ${activeDateString.split("-").reverse().slice(0, 2).join("/")}`} />
