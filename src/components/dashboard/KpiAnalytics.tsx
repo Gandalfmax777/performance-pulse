@@ -26,6 +26,7 @@ import InsightHistoryPanel from "./InsightHistoryPanel";
 import DirectionComplianceTable from "./DirectionComplianceTable";
 import Markdown from "react-markdown";
 import { Filter, TrendingUp, Lightbulb, Sparkles, RefreshCw, User, Users, BarChart3, Loader2, Printer, GitCompare, ArrowUp, ArrowDown, Minus } from "lucide-react";
+import { ChartBar as ChartBarIcon } from "@phosphor-icons/react";
 
 type Scope = "geral" | "individual";
 
@@ -282,8 +283,8 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
         {/* Subtitle explicativo — aparece embaixo quando compare está ativo
             pra deixar ÓBVIO o que está sendo comparado (Felipe pediu clareza). */}
         {compareEnabled && (
-          <p className="mt-2 text-[11px] text-muted-foreground">
-            📊 Comparando <span className="font-mono text-foreground">{range.from} → {range.to}</span>
+          <p className="mt-2 text-[11px] text-muted-foreground inline-flex items-center gap-1.5 flex-wrap">
+            <ChartBarIcon size={12} /> Comparando <span className="font-mono text-foreground">{range.from} → {range.to}</span>
             {" vs "}
             <span className="font-mono text-foreground">{previousRange.from} → {previousRange.to}</span>
             {" (evolução entre períodos)"}

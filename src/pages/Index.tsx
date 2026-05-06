@@ -23,7 +23,7 @@ const KpiAnalytics = lazy(() => import("@/components/dashboard/KpiAnalytics"));
 const SquadBet = lazy(() => import("@/components/dashboard/SquadBet"));
 const PresentationMode = lazy(() => import("@/components/dashboard/PresentationMode"));
 const AssessorManager = lazy(() => import("@/components/dashboard/AssessorManager"));
-import { Presentation } from "lucide-react";
+import { PresentationChart } from "@phosphor-icons/react";
 import { useAssessors } from "@/hooks/useAssessors";
 import { useRankingStream } from "@/hooks/useRankingStream";
 import { useSystemNotifications } from "@/hooks/useSystemNotifications";
@@ -164,18 +164,20 @@ const Index = () => {
             <div className="space-y-4">
               <AnnouncementTicker assessors={assessors} />
 
-              {/* Filtro de período + botão Apresentação */}
+              {/* Filtro de período (segmented) + botão Apresentação */}
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs text-muted-foreground">Período:</span>
-                <div className="flex gap-1 bg-muted/20 rounded-lg p-1">
+                <span className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3">
+                  Período
+                </span>
+                <div className="flex gap-1 p-[3px] bg-surface-2 rounded-[8px] border border-line">
                   {OVERVIEW_PERIODS.map((opt) => (
                     <button
                       key={opt.value}
                       onClick={() => setOverviewPeriod(opt.value)}
-                      className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
+                      className={`px-3 py-[5px] rounded-[5px] text-xs font-semibold transition-all ${
                         overviewPeriod === opt.value
-                          ? "bg-primary text-secondary"
-                          : "text-muted-foreground hover:text-foreground"
+                          ? "bg-ink text-white"
+                          : "text-ink-2 hover:text-ink"
                       }`}
                     >
                       {opt.label}
@@ -184,10 +186,10 @@ const Index = () => {
                 </div>
                 <button
                   onClick={() => setPresentationOpen(true)}
-                  className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 text-xs font-semibold transition-all"
+                  className="ml-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-[8px] border border-line bg-surface text-ink-2 hover:bg-surface-2 hover:text-ink text-xs font-semibold transition-all"
                   title="Modo Apresentação — slides full-screen pra reunião de fechamento"
                 >
-                  <Presentation className="w-3.5 h-3.5" />
+                  <PresentationChart size={14} />
                   Apresentação
                 </button>
               </div>

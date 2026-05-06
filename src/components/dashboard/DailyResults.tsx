@@ -200,7 +200,7 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
                 className="p-3 rounded-lg bg-muted/20 border border-border/30"
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="text-lg">{i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}</span>
+                  <span className="text-base font-mono font-extrabold" style={{ color: i === 0 ? 'hsl(var(--gold-deep))' : i === 1 ? 'hsl(var(--silver))' : 'hsl(var(--bronze))' }}>{i + 1}º</span>
                   <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={36} />
                   <div className="flex-1">
                     <p className="font-semibold text-sm text-foreground break-words">{a.name}</p>

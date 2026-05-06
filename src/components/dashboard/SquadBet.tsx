@@ -27,6 +27,7 @@ import {
   Vault,
   Loader2,
 } from "lucide-react";
+import { Medal } from "@phosphor-icons/react";
 import {
   RadarChart,
   PolarGrid,
@@ -824,7 +825,7 @@ const SquadBet = ({ assessors }: Props) => {
         <div className="lg:col-span-4">
           <div className="card-glass rounded-xl p-5 h-full">
             <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-              🏅 Conquistas de Squad
+              <Medal size={16} weight="fill" className="text-gold-deep" /> Conquistas de Squad
             </h3>
             <div className="space-y-3">
               {squadBadges.map((badge) => {

@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { Target, Minus, Plus, Loader2, MessageSquare, ChevronDown, ChevronRight } from "lucide-react";
+import { Sun, Moon, CalendarBlank } from "@phosphor-icons/react";
 import type { Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { useMetrics, useUpsertMetric } from "@/hooks/useMetrics";
@@ -131,12 +132,12 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
         <div className="flex gap-2 mb-3 text-[9px] text-muted-foreground">
           {blocks.morning.length > 0 && (
             <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-chart-orange/10 text-chart-orange font-semibold">
-              ☀️ Manhã: {blocks.morning.map((b) => b.time).join(", ")}
+              <Sun size={11} weight="fill" /> Manhã: {blocks.morning.map((b) => b.time).join(", ")}
             </span>
           )}
           {blocks.afternoon.length > 0 && (
             <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 font-semibold">
-              🌙 Tarde: {blocks.afternoon.map((b) => b.time).join(", ")}
+              <Moon size={11} weight="fill" /> Tarde: {blocks.afternoon.map((b) => b.time).join(", ")}
             </span>
           )}
         </div>
@@ -367,8 +368,8 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                   {kpisForDay.length > 0 && (
                     <>
                       {extraKpisForDay.length > 0 && (
-                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">
-                          📅 Cronograma do dia
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5 inline-flex items-center gap-1.5">
+                          <CalendarBlank size={11} weight="bold" /> Cronograma do dia
                         </div>
                       )}
                       <div className="space-y-2">

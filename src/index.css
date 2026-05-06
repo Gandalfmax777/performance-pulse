@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Instrument+Serif&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
 
 /* ─── Print layout ──────────────────────────────────────────────────────────
    Estratégia: NÃO esconder tudo (causava página em branco). Em vez disso,
@@ -100,72 +100,87 @@
 }
 
 @layer base {
-  /* ═══ LIGHT MODE (default — paleta EQI corporativa) ═══
-     Alinhado com o sistema EQI: off-white, verde escuro corporativo,
-     laranja âmbar pra warnings, vermelho sutil pra negativos. */
+  /* ═══ LIGHT MODE — Editorial V1 (warm cream + EQI green + amber gold) ═══
+     Trading-desk premium meets sports broadcast. Paleta warm-cinza
+     (não cinza-azul) com verde EQI e dourado âmbar para destaques. */
   :root {
-    --background: 220 14% 98%;            /* #F9FAFB — off-white */
-    --foreground: 220 39% 11%;            /* #111827 — quase preto */
+    --background: 56 14% 97%;             /* warm cream — oklch(0.985 0.003 95) */
+    --foreground: 240 12% 16%;            /* near-black w/ slight cool */
 
-    --card: 0 0% 100%;                    /* #FFFFFF — cards puros */
-    --card-foreground: 220 39% 11%;
+    --card: 0 0% 100%;                    /* surface card pura */
+    --card-foreground: 240 12% 16%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 39% 11%;
+    --popover-foreground: 240 12% 16%;
 
-    /* Primary: verde EQI escuro (logo) */
-    --primary: 148 70% 18%;               /* #0D5132 — verde corporativo */
+    /* Primary: verde EQI escuro */
+    --primary: 148 70% 18%;               /* #0D5132 */
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: superfície sutil */
-    --secondary: 220 14% 96%;             /* #F3F4F6 */
-    --secondary-foreground: 220 39% 11%;
+    /* Secondary: warm wash sutil */
+    --secondary: 56 6% 95%;
+    --secondary-foreground: 240 12% 16%;
 
     /* Muted */
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;       /* #6B7280 */
+    --muted: 56 6% 95%;
+    --muted-foreground: 240 6% 47%;
 
     /* Accent: verde claro hover */
     --accent: 148 50% 95%;
     --accent-foreground: 148 70% 18%;
 
-    --destructive: 0 84% 50%;             /* #DC2626 */
+    --destructive: 14 80% 50%;            /* warm red */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;                /* #E5E7EB — divisórias sutis */
-    --input: 220 13% 91%;
+    --border: 56 8% 88%;                  /* warm divider */
+    --input: 56 8% 88%;
     --ring: 148 70% 18%;
 
-    --radius: 0.75rem;
+    --radius: 0.875rem;                   /* 14px — cards do design */
 
-    /* Gamification (mantidas pra ranking / pódio) */
-    --gold: 43 80% 50%;
-    --silver: 220 12% 65%;
-    --bronze: 25 60% 45%;
-    --success: 142 76% 36%;               /* #16A34A — verde médio EQI */
-    --warning: 38 92% 50%;                /* #F59E0B — laranja âmbar EQI */
+    /* Gamification — gold âmbar para ranking/conquistas */
+    --gold: 38 80% 60%;                   /* amber gold */
+    --gold-deep: 32 80% 48%;              /* deep gold */
+    --gold-soft: 48 70% 95%;
+    --silver: 240 4% 70%;
+    --bronze: 30 50% 50%;
+    --success: 148 60% 40%;
+    --warning: 38 80% 55%;
 
-    /* Charts (paleta sóbria — não neon) */
-    --chart-blue: 217 91% 50%;            /* #2563EB */
-    --chart-green: 142 76% 36%;           /* #16A34A */
-    --chart-orange: 38 92% 50%;           /* #F59E0B */
-    --chart-red: 0 84% 50%;               /* #DC2626 */
-    --chart-purple: 262 83% 58%;          /* #8B5CF6 */
+    /* Ink scale (texto e acentos sóbrios) */
+    --ink: 240 12% 16%;
+    --ink-2: 240 8% 32%;
+    --ink-3: 240 5% 50%;
+    --ink-4: 240 4% 70%;
 
-    /* EQI brand accents — escala de verde corporativa */
-    --eqi-green: 148 70% 18%;             /* #0D5132 — primário */
-    --eqi-mint: 142 76% 36%;              /* #16A34A — médio */
-    --eqi-forest: 148 80% 12%;            /* #052E1B — escuríssimo */
+    /* Surface scale */
+    --surface: 0 0% 100%;
+    --surface-2: 56 6% 96%;
+    --line: 56 8% 90%;
+    --line-2: 56 8% 82%;
+
+    /* Charts */
+    --chart-blue: 217 91% 50%;
+    --chart-green: 148 70% 36%;
+    --chart-orange: 38 80% 55%;
+    --chart-red: 14 80% 50%;
+    --chart-purple: 262 60% 60%;
+
+    /* EQI brand */
+    --eqi-green: 148 70% 18%;
+    --eqi-mint: 148 60% 45%;
+    --eqi-forest: 148 80% 12%;
+    --eqi-soft: 148 50% 95%;
 
     /* Sidebar */
-    --sidebar-background: 220 14% 96%;    /* #F3F4F6 */
-    --sidebar-foreground: 220 39% 11%;
-    --sidebar-primary: 148 70% 18%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 12% 16%;
+    --sidebar-primary: 240 12% 16%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 100%;          /* item ativo = branco */
-    --sidebar-accent-foreground: 148 70% 18%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 148 70% 18%;
+    --sidebar-accent: 56 6% 95%;
+    --sidebar-accent-foreground: 240 12% 16%;
+    --sidebar-border: 56 8% 90%;
+    --sidebar-ring: 240 12% 16%;
   }
 
   /* ═══ DARK MODE (paleta EQI dark — opção, não default) ═══
@@ -242,17 +257,40 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "ss01", "cv11";
   }
 }
 
 @layer utilities {
   .font-mono {
-    font-family: 'IBM Plex Mono', monospace;
+    font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    font-feature-settings: "tnum", "zero";
   }
 
   .font-display {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  .font-serif {
+    font-family: 'Instrument Serif', Georgia, serif;
+  }
+
+  /* Editorial typography helpers — usados nos headlines TV/podium */
+  .label-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(var(--ink-3));
+  }
+
+  .tv-gigantic {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 700;
+    font-feature-settings: "tnum";
+    line-height: 0.9;
+    letter-spacing: -0.04em;
   }
 
   /* === GLOW EFFECTS (suavizados pra visual EQI corporativo) ===

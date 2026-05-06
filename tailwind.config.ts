@@ -14,9 +14,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['DM Sans', 'sans-serif'],
-        display: ['Outfit', 'sans-serif'],
-        mono: ['IBM Plex Mono', 'monospace'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        serif: ['Instrument Serif', 'Georgia', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -24,6 +25,20 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        ink: {
+          DEFAULT: "hsl(var(--ink))",
+          2: "hsl(var(--ink-2))",
+          3: "hsl(var(--ink-3))",
+          4: "hsl(var(--ink-4))",
+        },
+        surface: {
+          DEFAULT: "hsl(var(--surface))",
+          2: "hsl(var(--surface-2))",
+        },
+        line: {
+          DEFAULT: "hsl(var(--line))",
+          2: "hsl(var(--line-2))",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -52,7 +67,11 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        gold: "hsl(var(--gold))",
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          deep: "hsl(var(--gold-deep))",
+          soft: "hsl(var(--gold-soft))",
+        },
         silver: "hsl(var(--silver))",
         bronze: "hsl(var(--bronze))",
         success: "hsl(var(--success))",

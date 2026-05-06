@@ -3,7 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { apiFetch, ApiError, setAuthToken } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Activity, Loader2 } from "lucide-react";
+import {
+  Pulse,
+  ArrowRight,
+  Television as Tv,
+  CircleNotch,
+} from "@phosphor-icons/react";
 
 interface LoginResponse {
   token: string;
@@ -47,101 +52,144 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* ─── Left: Branding Panel ─────────────────────────────────────── */}
-      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-muted/60 dark:bg-card flex-col justify-between p-10">
-        {/* Decorative circles */}
-        <div className="absolute -top-20 right-[-80px] w-[320px] h-[320px] rounded-full bg-primary/[0.07]" />
-        <div className="absolute -bottom-16 -left-16 w-[400px] h-[400px] rounded-full bg-primary/[0.05]" />
-        <div className="absolute bottom-20 left-40 w-[200px] h-[200px] rounded-full bg-primary/[0.04]" />
+    <div className="min-h-screen grid lg:grid-cols-2 bg-background">
+      {/* ─── Left: Branding Panel (editorial hero) ─────────────────────── */}
+      <div
+        className="hidden lg:flex relative overflow-hidden flex-col justify-between p-14 text-white"
+        style={{
+          background:
+            "linear-gradient(160deg, hsl(var(--ink)) 0%, hsl(var(--eqi-forest)) 100%)",
+        }}
+      >
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            top: 60,
+            right: -40,
+            width: 320,
+            height: 320,
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle, hsl(var(--gold) / 0.18) 0%, transparent 70%)",
+          }}
+        />
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            bottom: -60,
+            left: -60,
+            width: 240,
+            height: 240,
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle, hsl(var(--eqi-mint) / 0.25) 0%, transparent 70%)",
+          }}
+        />
 
-        {/* Logo */}
-        <div className="flex items-center gap-2.5 relative z-10">
+        <div className="flex items-center gap-3 relative z-10">
           <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-            <Activity className="w-4.5 h-4.5 text-primary-foreground" />
+            <Pulse weight="bold" size={18} className="text-primary-foreground" />
           </div>
-          <span className="font-display font-bold text-foreground text-sm tracking-tight">
-            Performance Pulse
-          </span>
+          <div className="leading-tight">
+            <p className="font-extrabold text-base tracking-tight">Performance Pulse</p>
+            <p className="text-[9px] uppercase tracking-[0.16em] text-white/50 font-semibold mt-0.5">
+              EQI · Mesa de Vendas
+            </p>
+          </div>
         </div>
 
-        {/* Hero text */}
-        <div className="relative z-10 max-w-md">
-          <h1 className="font-display font-extrabold text-foreground text-4xl xl:text-5xl leading-[1.1] tracking-tight">
-            Performance{" "}
-            <span className="text-primary">inteligente.</span>
+        <div className="relative z-10 max-w-xl">
+          <p
+            className="text-[11px] uppercase tracking-[0.18em] font-semibold mb-4"
+            style={{ color: "hsl(var(--gold))" }}
+          >
+            Em destaque · Performance da semana
+          </p>
+          <h1 className="font-display font-extrabold text-5xl xl:text-6xl tracking-tight leading-[1.05]">
+            Mesa em ritmo
             <br />
-            Resultados reais.
+            de <span style={{ color: "hsl(var(--gold))" }}>recorde</span>.
           </h1>
-          <p className="mt-5 text-muted-foreground text-base leading-relaxed max-w-sm">
-            O dashboard feito para times de alta performance. KPIs, ranking e gamificação em um só lugar.
+          <p className="mt-5 text-base text-white/70 max-w-md leading-relaxed">
+            Cadência, ranking, KPIs e gamificação numa só tela. Faça login para acompanhar a
+            mesa em tempo real.
           </p>
         </div>
 
-        {/* Stats */}
-        <div className="flex items-center gap-12 relative z-10">
-          <div>
-            <p className="font-display font-black text-foreground text-2xl">100%</p>
-            <p className="text-xs text-muted-foreground mt-0.5">dados em tempo real</p>
-          </div>
-          <div>
-            <p className="font-display font-black text-foreground text-2xl">3&times;</p>
-            <p className="text-xs text-muted-foreground mt-0.5">mais engajamento</p>
-          </div>
-          <div>
-            <p className="font-display font-black text-foreground text-2xl">&infin;</p>
-            <p className="text-xs text-muted-foreground mt-0.5">metas acompanhadas</p>
-          </div>
+        <div className="relative z-10 flex items-end gap-10">
+          {[
+            { v: "108%", l: "meta agregada" },
+            { v: "190", l: "boletas hoje" },
+            { v: "42", l: "ativações" },
+          ].map((s) => (
+            <div key={s.l}>
+              <p className="font-mono tv-gigantic text-4xl text-white">{s.v}</p>
+              <p className="text-[9px] uppercase tracking-[0.16em] text-white/40 font-semibold mt-2">
+                {s.l}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* ─── Right: Login Form ────────────────────────────────────────── */}
-      <div className="flex-1 flex items-center justify-center bg-background p-6 sm:p-10">
+      <div className="flex items-center justify-center p-8 lg:p-14">
         <div className="w-full max-w-sm">
-          {/* Mobile logo (hidden on lg) */}
+          {/* Mobile logo */}
           <div className="flex items-center gap-2.5 mb-10 lg:hidden">
             <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-              <Activity className="w-4.5 h-4.5 text-primary-foreground" />
+              <Pulse weight="bold" size={18} className="text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-foreground text-sm tracking-tight">
+            <span className="font-extrabold text-ink text-sm tracking-tight">
               Performance Pulse
             </span>
           </div>
 
-          <h2 className="font-display font-bold text-foreground text-2xl tracking-tight">
+          <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-2">
+            Entrar na mesa
+          </p>
+          <h2 className="font-extrabold text-ink text-3xl tracking-tight leading-tight">
             Bem-vindo de volta
           </h2>
-          <p className="text-muted-foreground text-sm mt-1.5 mb-8">
-            Entre com sua conta para continuar
+          <p className="text-ink-3 text-[13px] mt-2 mb-8">
+            Entre com seu e-mail corporativo para acessar o painel da sua mesa.
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <label
                 htmlFor="email"
-                className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+                className="text-[11px] font-semibold text-ink-2"
               >
-                Email
+                E-mail
               </label>
               <Input
                 id="email"
                 type="email"
-                placeholder="seu@email.com"
+                placeholder="seu@eqi.com.br"
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
-                className="h-11"
+                className="h-11 rounded-[8px] border-line bg-surface text-ink"
               />
             </div>
             <div className="space-y-1.5">
-              <label
-                htmlFor="password"
-                className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
-              >
-                Senha
-              </label>
+              <div className="flex items-center justify-between">
+                <label
+                  htmlFor="password"
+                  className="text-[11px] font-semibold text-ink-2"
+                >
+                  Senha
+                </label>
+                <a
+                  href="#"
+                  className="text-[11px] font-semibold text-primary hover:underline"
+                >
+                  Esqueci
+                </a>
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -151,7 +199,7 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loading}
-                className="h-11"
+                className="h-11 rounded-[8px] border-line bg-surface text-ink"
               />
             </div>
 
@@ -163,22 +211,45 @@ const Login = () => {
 
             <Button
               type="submit"
-              className="w-full h-11 font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="w-full h-11 rounded-[10px] font-bold text-sm bg-ink text-white hover:bg-ink/90 transition-colors gap-2"
               disabled={loading}
             >
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <CircleNotch size={16} className="animate-spin" weight="bold" />
                   Entrando…
                 </>
               ) : (
-                "Entrar"
+                <>
+                  Entrar no painel
+                  <ArrowRight size={14} weight="bold" />
+                </>
               )}
             </Button>
           </form>
 
-          <p className="text-center text-xs text-muted-foreground mt-6">
-            Acesso exclusivo por convite.
+          <div className="flex items-center gap-3 my-6">
+            <div className="flex-1 h-px bg-line" />
+            <span className="text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-3">
+              ou
+            </span>
+            <div className="flex-1 h-px bg-line" />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => navigate("/tv")}
+            className="w-full h-11 rounded-[10px] flex items-center justify-center gap-2 text-[13px] font-semibold border border-line bg-surface text-ink hover:bg-surface-2 transition-colors"
+          >
+            <Tv size={15} />
+            Entrar como Modo TV
+          </button>
+
+          <p className="text-center text-[11px] text-ink-3 mt-7">
+            Problemas para acessar?{" "}
+            <a href="#" className="text-primary font-semibold hover:underline">
+              Falar com suporte
+            </a>
           </p>
         </div>
       </div>

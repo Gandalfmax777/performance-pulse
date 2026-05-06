@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Pencil, Save, X, Check } from "lucide-react";
+import { PencilSimple, FloppyDisk, X, Check, PushPin } from "@phosphor-icons/react";
 import { useDailyDirection, useUpsertDailyDirection } from "@/hooks/useDailyDirection";
 
 interface DailyDirectionProps {
@@ -51,7 +51,7 @@ const DailyDirection = ({ date, dayLabel }: DailyDirectionProps) => {
     return (
       <div className="card-glass rounded-xl px-4 py-3 border border-primary/40 space-y-2">
         <div className="flex items-center gap-2 text-xs">
-          <span className="font-bold text-primary">📌 Direcionamento — {dayLabel}</span>
+          <span className="font-bold text-primary inline-flex items-center gap-1.5"><PushPin size={12} weight="fill" /> Direcionamento — {dayLabel}</span>
         </div>
         <textarea
           value={text}
@@ -68,7 +68,7 @@ const DailyDirection = ({ date, dayLabel }: DailyDirectionProps) => {
             disabled={upsert.isPending}
             className="flex items-center gap-1 px-3 py-1 rounded-md text-[11px] font-semibold bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors"
           >
-            {upsert.isPending ? <Check className="w-3 h-3 animate-pulse" /> : <Save className="w-3 h-3" />}
+            {upsert.isPending ? <Check size={12} className="animate-pulse" /> : <FloppyDisk size={12} />}
             Salvar
           </button>
           <button
@@ -76,7 +76,7 @@ const DailyDirection = ({ date, dayLabel }: DailyDirectionProps) => {
             disabled={upsert.isPending}
             className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] text-muted-foreground hover:text-foreground"
           >
-            <X className="w-3 h-3" />
+            <X size={12} />
             Cancelar
           </button>
           <span className="text-[10px] text-muted-foreground ml-auto">
@@ -95,8 +95,8 @@ const DailyDirection = ({ date, dayLabel }: DailyDirectionProps) => {
         className="w-full card-glass rounded-xl px-4 py-3 border border-dashed border-border/30 text-left hover:border-primary/40 transition-all group"
       >
         <span className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-foreground transition-all">
-          <Pencil className="w-3.5 h-3.5" />
-          📌 Adicionar direcionamento — {dayLabel}
+          <PencilSimple size={14} />
+          <PushPin size={12} weight="fill" /> Adicionar direcionamento — {dayLabel}
         </span>
       </button>
     );
@@ -108,7 +108,7 @@ const DailyDirection = ({ date, dayLabel }: DailyDirectionProps) => {
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold text-primary">📌 Direcionamento — {dayLabel}</span>
+            <span className="text-xs font-bold text-primary inline-flex items-center gap-1.5"><PushPin size={12} weight="fill" /> Direcionamento — {dayLabel}</span>
             <span className="text-[10px] text-muted-foreground">
               por {direction.createdByName}
             </span>
@@ -120,7 +120,7 @@ const DailyDirection = ({ date, dayLabel }: DailyDirectionProps) => {
           className="flex-shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
           title="Editar direcionamento"
         >
-          <Pencil className="w-3.5 h-3.5" />
+          <PencilSimple size={14} />
         </button>
       </div>
     </div>

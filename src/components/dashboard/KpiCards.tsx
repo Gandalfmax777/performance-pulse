@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Users, PhoneCall, CalendarCheck, Gift, FileText, Zap, Sparkles, Target, Hand, type LucideIcon } from "lucide-react";
+import { TrendUp, CheckCircle, Warning } from "@phosphor-icons/react";
 import { format, startOfWeek, endOfWeek, differenceInCalendarDays, addDays } from "date-fns";
 import { useKpis } from "@/hooks/useKpis";
 import { useWeeklyRanking } from "@/hooks/useRankings";
@@ -120,11 +121,11 @@ const KpiCards = ({ from, to }: KpiCardsProps) => {
             {/* Projeção (só ABSOLUTE — QOB não projeta: cada assessor tem base própria) */}
             {!isQob && projection.remaining > 0 && projection.elapsedDays > 0 && (
               <div className="mt-1.5 flex items-center justify-between text-[10px] font-mono">
-                <span className="text-muted-foreground">
-                  📈 ~{projected} ({projectedPct}%)
+                <span className="text-muted-foreground inline-flex items-center gap-1">
+                  <TrendUp size={11} weight="bold" /> ~{projected} ({projectedPct}%)
                 </span>
-                <span className={onTrack ? "text-success" : "text-chart-orange"}>
-                  {onTrack ? "✅ no ritmo" : "⚠️ ritmo abaixo"}
+                <span className={`inline-flex items-center gap-1 ${onTrack ? "text-success" : "text-chart-orange"}`}>
+                  {onTrack ? <><CheckCircle size={11} weight="fill" /> no ritmo</> : <><Warning size={11} weight="fill" /> ritmo abaixo</>}
                 </span>
               </div>
             )}

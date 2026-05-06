@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
-import { Clock, Menu } from "lucide-react";
+import { Bell, MagnifyingGlass, TextAlignJustify } from "@phosphor-icons/react";
 
 interface Props {
   title: string;
-  /** Abre o drawer da sidebar no mobile. */
+  /** Eyebrow opcional acima do título — segue padrão Editorial V1. */
+  eyebrow?: string;
+  subtitle?: string;
+  actions?: React.ReactNode;
   onMenuClick: () => void;
 }
 
-const DashboardTopbar = ({ title, onMenuClick }: Props) => {
+const DashboardTopbar = ({ title, eyebrow, subtitle, actions, onMenuClick }: Props) => {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -17,35 +20,49 @@ const DashboardTopbar = ({ title, onMenuClick }: Props) => {
 
   const dayName = time.toLocaleDateString("pt-BR", { weekday: "long" });
   const dateStr = time.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" });
+  const computedSubtitle = subtitle ?? `${dayName.charAt(0).toUpperCase() + dayName.slice(1)}, ${dateStr}`;
 
   return (
-    <header className="flex items-center justify-between h-12 px-5 border-b border-border/30 bg-background/40 backdrop-blur-sm sticky top-0 z-30">
-      <div className="flex items-center gap-2 min-w-0">
-        <button
-          onClick={onMenuClick}
-          aria-label="Abrir menu"
-          className="md:hidden p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/30"
-        >
-          <Menu className="w-4 h-4" />
-        </button>
-        <div className="flex items-baseline gap-2 min-w-0">
-          <h2 className="text-sm font-display font-bold text-foreground truncate">{title}</h2>
-          <span className="hidden sm:inline text-[11px] text-muted-foreground capitalize whitespace-nowrap">· {dayName}, {dateStr}</span>
-        </div>
+    <header className="flex items-center gap-4 px-7 py-5 border-b border-line bg-card/70 backdrop-blur-md sticky top-0 z-30">
+      <button
+        onClick={onMenuClick}
+        aria-label="Abrir menu"
+        className="md:hidden p-1.5 rounded-md text-ink-3 hover:text-ink hover:bg-surface-2"
+      >
+        <TextAlignJustify size={18} weight="bold" />
+      </button>
+
+      <div className="flex-1 min-w-0">
+        {eyebrow && (
+          <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
+            {eyebrow}
+          </p>
+        )}
+        <h1 className="text-[22px] font-extrabold text-ink tracking-tight leading-none truncate">{title}</h1>
+        {computedSubtitle && (
+          <p className="text-[12px] text-ink-3 mt-1 truncate capitalize">{computedSubtitle}</p>
+        )}
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/30 border border-border/30">
-          <Clock className="w-3 h-3 text-primary" />
-          <span className="font-mono text-xs font-semibold text-foreground">
-            {time.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-success/10 border border-success/20">
-          <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-          <span className="text-[10px] text-success font-semibold tracking-wider">AO VIVO</span>
-        </div>
+      {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+
+      <div className="relative hidden md:block">
+        <MagnifyingGlass
+          size={14}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3 pointer-events-none"
+        />
+        <input
+          placeholder="Buscar..."
+          className="pl-8 pr-3 py-1.5 text-xs rounded-[7px] border border-line bg-surface-2 outline-none w-[180px] focus:bg-card focus:border-line-2 transition-colors"
+        />
       </div>
+
+      <button
+        title="Notificações"
+        className="hidden md:inline-flex shrink-0 p-2 rounded-[7px] border border-line bg-surface text-ink-2 hover:bg-surface-2 transition-colors"
+      >
+        <Bell size={14} />
+      </button>
     </header>
   );
 };

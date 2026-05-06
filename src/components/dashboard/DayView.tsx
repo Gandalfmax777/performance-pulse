@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Flame, TrendingUp, Clock, Crown, CalendarOff, CheckCircle2, CalendarDays } from "lucide-react";
+import { Target, X as XIcon } from "@phosphor-icons/react";
 import { startOfWeek, addDays, format } from "date-fns";
 import { type Assessor } from "@/types/assessor";
 import PomodoroTimer from "./PomodoroTimer";
@@ -190,7 +191,7 @@ const DayView = ({ assessors }: DayViewProps) => {
               className="ml-1 text-xs text-muted-foreground hover:text-destructive"
               title="Voltar pra semana atual"
             >
-              ✕
+              <XIcon size={12} weight="bold" />
             </button>
           )}
         </label>
@@ -199,7 +200,7 @@ const DayView = ({ assessors }: DayViewProps) => {
       {/* Foco do dia — direcionamento rápido */}
       {!activitiesLoading && activities.length > 0 && (
         <div className="card-glass rounded-xl px-4 py-3 border border-primary/20 flex items-center gap-3 flex-wrap">
-          <span className="text-xs font-bold text-primary">🎯 Foco do dia:</span>
+          <span className="text-xs font-bold text-primary inline-flex items-center gap-1.5"><Target size={13} weight="bold" /> Foco do dia:</span>
           {activities.map((act) => (
             <span key={act.id} className="text-xs text-foreground">
               <span className="font-semibold">{act.name}</span>
