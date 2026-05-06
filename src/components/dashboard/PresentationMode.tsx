@@ -4,10 +4,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Trophy,
-  Target,
   CalendarDays,
-  Sparkles,
   Flame,
   Crown,
   Loader2,
@@ -15,11 +12,19 @@ import {
   ArrowUp,
   ArrowDown,
   Minus,
-  Swords,
   Play,
   Pause,
   TrendingUp,
 } from "lucide-react";
+import {
+  Trophy,
+  Target,
+  Sparkle,
+  Sword as Swords,
+  TrendUp,
+  Medal,
+  ChartBar,
+} from "@phosphor-icons/react";
 import Markdown from "react-markdown";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -179,7 +184,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
         return (
           <div className="space-y-8">
             <h2 className="text-4xl font-display font-bold text-foreground text-center">
-              📈 Destaques do Período
+              <TrendUp size={32} weight="bold" className="inline-block mr-2 text-primary align-middle" />Destaques do Período
             </h2>
             <p className="text-center text-muted-foreground text-lg">
               Comparativo com {prevLabel}
@@ -248,7 +253,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
         return (
           <div className="space-y-8">
             <h2 className="text-4xl font-display font-bold text-foreground text-center">
-              🏆 Top 3 do Período
+              <Trophy size={32} weight="bold" className="inline-block mr-2 text-gold align-middle" />Top 3 do Período
             </h2>
             <div className="flex items-end justify-center gap-6 pt-8">
               {order.map((a, i) => (
@@ -290,7 +295,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
       render: () => (
         <div className="space-y-6">
           <h2 className="text-4xl font-display font-bold text-foreground text-center">
-            📊 KPIs do Período
+<ChartBar size={32} weight="bold" className="inline-block mr-2 text-primary align-middle" />KPIs do Período
           </h2>
           <div className="grid grid-cols-3 gap-4 max-w-5xl mx-auto">
             {kpis.slice(0, 6).map((kpi) => {
@@ -330,7 +335,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
         return (
           <div className="space-y-4 w-full">
             <h2 className="text-3xl font-display font-bold text-foreground text-center">
-              🏅 Ranking Completo
+<Medal size={32} weight="bold" className="inline-block mr-2 text-gold align-middle" />Ranking Completo
             </h2>
             <div
               className={`mx-auto ${useTwoCols ? "max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2" : "max-w-3xl space-y-2"}`}
@@ -404,7 +409,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
         return (
           <div className="space-y-8 max-w-5xl mx-auto">
             <h2 className="text-4xl font-display font-bold text-foreground text-center">
-              ⚔️ Torneios do Período
+<Swords size={32} weight="bold" className="inline-block mr-2 text-primary align-middle" />Torneios do Período
             </h2>
 
             {hasNothing && (
@@ -493,11 +498,11 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
     {
       id: "ai",
       title: "Análise IA",
-      icon: Sparkles,
+      icon: Sparkle,
       render: () => (
         <div className="space-y-6 max-w-4xl mx-auto">
           <h2 className="text-4xl font-display font-bold text-foreground text-center">
-            ✨ Análise IA do Time
+<Sparkle size={32} weight="bold" className="inline-block mr-2 text-gold-deep align-middle" />Análise IA do Time
           </h2>
           {generateTeam.isPending && !teamInsight ? (
             <div className="flex items-center justify-center gap-3 text-muted-foreground py-12">
@@ -519,7 +524,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                 }
                 className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors"
               >
-                <Sparkles className="w-5 h-5 inline mr-2" />
+                <Sparkle className="w-5 h-5 inline mr-2" />
                 Gerar análise agora
               </button>
             </div>
@@ -534,7 +539,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
       render: () => (
         <div className="space-y-6 max-w-3xl mx-auto">
           <h2 className="text-4xl font-display font-bold text-foreground text-center">
-            🎯 Foco da Próxima Semana
+<Target size={32} weight="bold" className="inline-block mr-2 text-primary align-middle" />Foco da Próxima Semana
           </h2>
           <p className="text-center text-muted-foreground">
             Anchor: segunda{" "}
@@ -639,7 +644,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
       {/* Header com controles (escondido em print) */}
       <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-6 py-3 border-b border-border/20 bg-background/80 backdrop-blur-md no-print">
         <div className="flex items-center gap-3">
-          <Sparkles className="w-5 h-5 text-primary" />
+          <Sparkle className="w-5 h-5 text-primary" />
           <span className="text-sm font-bold text-foreground">Modo Apresentação</span>
           <div className="flex gap-1 bg-muted/20 rounded-lg p-1 ml-3">
             {(["weekly", "monthly"] as Period[]).map((p) => (

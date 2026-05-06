@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Crown, Medal, Award, X } from "lucide-react";
+import { Trophy } from "@phosphor-icons/react";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { playGoalHitSound } from "@/lib/sounds";
 
@@ -149,7 +150,7 @@ const TournamentFinishedOverlay = ({ event, onDismiss, autoDismissMs = 12000 }: 
               className="relative inline-block"
             >
               <h1 className="text-6xl md:text-8xl font-display font-black text-secondary" style={{ textShadow: "0 4px 40px hsl(var(--secondary) / 0.5)" }}>
-                🏆 TORNEIO ENCERRADO
+                <Trophy size={64} weight="fill" className="inline-block mr-3 align-middle" /> TORNEIO ENCERRADO
               </h1>
               {/* Pulse glow */}
               <motion.div

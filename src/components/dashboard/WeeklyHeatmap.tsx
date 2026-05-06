@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { X, CheckCircle2, XCircle, TrendingUp } from "lucide-react";
+import { ChartBar, Fire } from "@phosphor-icons/react";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import { type Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
@@ -163,7 +164,7 @@ const WeeklyHeatmap = ({ assessors }: Props) => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-foreground">📊 Consistência dos Assessores</h2>
+              <h2 className="text-lg font-bold text-foreground inline-flex items-center gap-2"><ChartBar size={18} weight="bold" className="text-primary" /> Consistência dos Assessores</h2>
               <button
                 onClick={() => {
                   setShowDetail(false);
@@ -285,8 +286,8 @@ const WeeklyHeatmap = ({ assessors }: Props) => {
                   </div>
                   <div className="bg-muted/20 rounded-xl p-3 border border-border/20 text-center">
                     <p className="text-[10px] text-muted-foreground">Streak</p>
-                    <p className="text-xl font-bold font-mono text-chart-orange">
-                      🔥 {selectedAssessor.streak}
+                    <p className="text-xl font-bold font-mono text-chart-orange inline-flex items-center gap-1.5 justify-center">
+                      <Fire size={18} weight="fill" /> {selectedAssessor.streak}
                     </p>
                   </div>
                   <div className="bg-muted/20 rounded-xl p-3 border border-border/20 text-center">

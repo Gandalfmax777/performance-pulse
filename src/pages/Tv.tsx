@@ -1,5 +1,14 @@
 import { useState, useEffect, useCallback, useRef, useMemo, lazy, Suspense } from "react";
-import { Tv, X, Play, Pause, SkipForward, Timer, Swords } from "lucide-react";
+import {
+  Television,
+  X,
+  Play,
+  Pause,
+  SkipForward,
+  Timer,
+  Sword as Swords,
+  Pulse,
+} from "@phosphor-icons/react";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import KpiCards from "@/components/dashboard/KpiCards";
 import AnnouncementTicker from "@/components/dashboard/AnnouncementTicker";
@@ -11,7 +20,6 @@ import { useActiveTournaments } from "@/hooks/useTournaments";
 import { useTournamentFinishedStream } from "@/hooks/useTournamentFinishedStream";
 import { useSystemNotifications } from "@/hooks/useSystemNotifications";
 
-// Lazy: componentes pesados só baixam quando a rotação chega neles.
 const TvRanking = lazy(() => import("@/components/dashboard/TvRanking"));
 const DailyResults = lazy(() => import("@/components/dashboard/DailyResults"));
 const SquadBet = lazy(() => import("@/components/dashboard/SquadBet"));
@@ -20,7 +28,7 @@ type TvView = "overview" | "results" | "squad" | "tournaments";
 
 const BASE_TV_VIEWS: { key: TvView; label: string }[] = [
   { key: "overview", label: "Visão Geral" },
-  { key: "results", label: "Ranking Geral" },
+  { key: "results", label: "Ranking" },
   { key: "squad", label: "Squad Bet" },
 ];
 
@@ -29,19 +37,11 @@ const TOURNAMENT_VIEW = { key: "tournaments" as TvView, label: "Torneios" };
 const TV_INTERVALS = [10, 15, 20, 30, 45, 60];
 
 /**
- * Rota /tv — TV pública da mesa de vendas.
+ * Rota /tv — TV pública da mesa de vendas (kiosk mode).
  *
- * Sem login. Todos os endpoints que esta página consome são públicos (ver
- * backend/src/routes/*.ts — GETs marcados "PUBLIC"). O apiFetch detecta
- * `window.location.pathname === "/tv"` e pula token + 401-redirect, então
- * os hooks existentes (useAssessors, useRankings, useKpis, etc.) funcionam
- * sem modificação.
- *
- * Features:
- * - Auto-rotação entre 3 views (overview/results/squad)
- * - SSE pra updates em tempo real (<500ms)
- * - Fullscreen automático ao abrir
- * - Controles de play/pause/skip/timer na overlay superior
+ * Sem login. Estilo Editorial V1 sério-mas-divertido: header tipo
+ * placar de estádio com pulso AO VIVO, controles de rotação e
+ * progress bar de transição.
  */
 const TvPage = () => {
   const [view, setView] = useState<TvView>("overview");
@@ -49,12 +49,12 @@ const TvPage = () => {
   const [intervalSec, setIntervalSec] = useState(15);
   const [progress, setProgress] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  const [now, setNow] = useState(new Date());
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { assessors } = useAssessors();
   const { data: activeTournaments = [] } = useActiveTournaments();
 
-  // Views rotativas — inclui "Torneios" só se houver ao menos um ativo
   const TV_VIEWS = useMemo(
     () =>
       activeTournaments.length > 0
@@ -63,20 +63,21 @@ const TvPage = () => {
     [activeTournaments.length],
   );
 
-  // SSE: updates em tempo real
   useRankingStream(true);
   useSystemNotifications(true);
   const { event: finishedEvent, dismiss: dismissFinished } = useTournamentFinishedStream(true);
 
-  // Fullscreen automático no mount — experiência de kiosk
   useEffect(() => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen?.().catch(() => {});
     }
   }, []);
 
-  // Se usuário está na view de torneios mas a lista ficou vazia (último
-  // finalizou), cai pra overview automaticamente.
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
   useEffect(() => {
     if (view === "tournaments" && activeTournaments.length === 0) {
       setView("overview");
@@ -84,10 +85,9 @@ const TvPage = () => {
     }
   }, [view, activeTournaments.length]);
 
-  const now = new Date();
   const overviewRange = {
-    from: format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
-    to: format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
+    from: format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd"),
+    to: format(endOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd"),
   };
 
   const nextTab = useCallback(() => {
@@ -97,7 +97,6 @@ const TvPage = () => {
     setProgress(0);
   }, [view, TV_VIEWS]);
 
-  // Auto-rotation
   useEffect(() => {
     if (!playing) {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -121,25 +120,42 @@ const TvPage = () => {
     if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
   };
 
-  return (
-    <div className="min-h-screen bg-background relative overflow-x-hidden p-6 tv-mode">
-      <div className="fixed inset-0 pointer-events-none bg-mesh" />
+  const dt = now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const tm = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-      {/* Overlay de controles TV */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-2 bg-background/90 backdrop-blur-md border-b border-primary/20">
+  return (
+    <div className="min-h-screen relative overflow-x-hidden tv-mode" style={{ background: 'hsl(var(--background))' }}>
+      {/* ─── TV Header — placar de estádio (sério mas divertido) ─── */}
+      <header
+        className="fixed top-0 left-0 right-0 z-50 flex items-center gap-5 px-8 py-3 border-b text-white"
+        style={{ background: 'hsl(var(--ink))', borderColor: 'hsl(var(--ink-2))' }}
+      >
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-primary">
-            <Tv className="w-4 h-4 text-primary-foreground" />
-            <span className="text-xs font-bold text-primary-foreground tracking-wider">TV</span>
+          <div
+            className="w-9 h-9 rounded-lg flex items-center justify-center font-extrabold text-lg"
+            style={{ background: 'hsl(var(--gold))', color: 'hsl(var(--ink))', fontFamily: "'Instrument Serif', serif" }}
+          >
+            P
           </div>
+          <div className="leading-tight">
+            <p className="font-serif italic text-[18px] font-bold tracking-tight">Performance Pulse</p>
+            <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/55 mt-0.5">
+              Mesa de Vendas · Modo TV
+            </p>
+          </div>
+        </div>
+
+        <div className="w-px h-7 bg-white/20" />
+
+        <div className="flex items-center gap-1.5">
           {TV_VIEWS.map(tab => (
             <button
               key={tab.key}
               onClick={() => { setView(tab.key); setProgress(0); }}
-              className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-[7px] text-xs font-semibold transition-all ${
                 view === tab.key
-                  ? "bg-primary text-secondary border border-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-white/15 text-white"
+                  : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
             >
               {tab.label}
@@ -147,74 +163,121 @@ const TvPage = () => {
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <button onClick={() => setPlaying(p => !p)} className="p-1.5 rounded-lg bg-muted/30 hover:bg-muted/50 text-foreground transition-all">
-            {playing ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-          </button>
-          <button onClick={nextTab} className="p-1.5 rounded-lg bg-muted/30 hover:bg-muted/50 text-foreground transition-all">
-            <SkipForward className="w-3.5 h-3.5" />
-          </button>
-          <button onClick={() => setShowSettings(s => !s)} className="p-1.5 rounded-lg bg-muted/30 hover:bg-muted/50 text-foreground transition-all">
-            <Timer className="w-3.5 h-3.5" />
-          </button>
-          <span className="text-xs text-muted-foreground font-mono mx-1">{intervalSec}s</span>
-          <button onClick={exitFullscreen} className="p-1.5 rounded-lg bg-destructive/20 hover:bg-destructive/30 text-destructive transition-all" title="Sair fullscreen">
-            <X className="w-3.5 h-3.5" />
-          </button>
+        <div className="flex-1" />
 
-          {showSettings && (
-            <div className="absolute right-8 top-12 card-glass rounded-xl p-3 space-y-1 min-w-[160px] animate-fade-in">
-              <p className="text-xs font-semibold text-muted-foreground mb-1">Intervalo</p>
-              {TV_INTERVALS.map(sec => (
-                <button
-                  key={sec}
-                  onClick={() => { setIntervalSec(sec); setProgress(0); setShowSettings(false); }}
-                  className={`block w-full text-left px-3 py-1 rounded-lg text-sm transition-all ${
-                    intervalSec === sec ? "bg-primary text-secondary font-bold" : "text-foreground hover:bg-muted/30"
-                  }`}
-                >
-                  {sec}s
-                </button>
-              ))}
+        {/* AO VIVO pill */}
+        <div
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full border"
+          style={{
+            background: 'oklch(0.55 0.22 25 / 0.18)',
+            borderColor: 'oklch(0.55 0.22 25 / 0.4)',
+          }}
+        >
+          <span
+            className="w-2 h-2 rounded-full animate-pulse"
+            style={{ background: 'oklch(0.65 0.24 25)' }}
+          />
+          <span className="font-mono text-[11px] font-extrabold tracking-[0.1em] text-white">AO VIVO</span>
+        </div>
+
+        <p className="font-mono text-xs text-white/70 font-semibold capitalize">
+          {dt} · {tm}
+        </p>
+
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setPlaying(p => !p)}
+            className="p-1.5 rounded-[7px] bg-white/10 hover:bg-white/20 text-white transition-all"
+            title={playing ? "Pausar rotação" : "Retomar rotação"}
+          >
+            {playing ? <Pause size={14} weight="bold" /> : <Play size={14} weight="bold" />}
+          </button>
+          <button
+            onClick={nextTab}
+            className="p-1.5 rounded-[7px] bg-white/10 hover:bg-white/20 text-white transition-all"
+            title="Próxima view"
+          >
+            <SkipForward size={14} weight="bold" />
+          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowSettings(s => !s)}
+              className="p-1.5 rounded-[7px] bg-white/10 hover:bg-white/20 text-white transition-all"
+              title={`Intervalo: ${intervalSec}s`}
+            >
+              <Timer size={14} weight="bold" />
+            </button>
+            {showSettings && (
+              <div className="absolute right-0 top-9 rounded-[10px] p-2 min-w-[120px] z-10 shadow-xl"
+                   style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--line))' }}>
+                <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 px-2 pb-1">
+                  Intervalo
+                </p>
+                {TV_INTERVALS.map(sec => (
+                  <button
+                    key={sec}
+                    onClick={() => { setIntervalSec(sec); setProgress(0); setShowSettings(false); }}
+                    className={`block w-full text-left px-2 py-1 rounded-[5px] text-xs font-semibold transition-all ${
+                      intervalSec === sec ? "bg-ink text-white" : "text-ink-2 hover:bg-surface-2"
+                    }`}
+                  >
+                    {sec}s
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <span className="font-mono text-[11px] text-white/70 mx-1 font-semibold">{intervalSec}s</span>
+          <button
+            onClick={exitFullscreen}
+            className="p-1.5 rounded-[7px] border bg-white/5 hover:bg-white/10 text-white transition-all"
+            style={{ borderColor: 'hsl(var(--line) / 0.2)' }}
+            title="Sair fullscreen"
+          >
+            <X size={14} weight="bold" />
+          </button>
+        </div>
+
+        {/* Progress bar — dourado */}
+        <div className="absolute bottom-0 left-0 right-0 h-[3px]" style={{ background: 'oklch(1 0 0 / 0.1)' }}>
+          <div
+            className="h-full transition-all duration-100 ease-linear"
+            style={{ width: `${progress}%`, background: 'hsl(var(--gold))' }}
+          />
+        </div>
+      </header>
+
+      <div className="pt-[60px]" />
+
+      <div className="p-6">
+        <Suspense fallback={<InlineLoader />}>
+          {view === "overview" && (
+            <div className="space-y-4">
+              <AnnouncementTicker assessors={assessors} />
+              <KpiCards from={overviewRange.from} to={overviewRange.to} />
+              <TvRanking assessors={assessors} />
             </div>
           )}
-        </div>
-
-        <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-muted/20">
-          <div className="h-full bg-primary transition-all duration-100 ease-linear" style={{ width: `${progress}%` }} />
-        </div>
+          {view === "results" && <DailyResults assessors={assessors} />}
+          {view === "squad" && <SquadBet assessors={assessors} />}
+          {view === "tournaments" && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 mb-2">
+                <Swords size={32} className="text-primary" weight="duotone" />
+                <h2 className="text-3xl font-extrabold tracking-tight text-ink">
+                  {activeTournaments.length === 1 ? "Torneio Ativo" : "Torneios Ativos"}
+                </h2>
+              </div>
+              <div className={`grid gap-6 ${activeTournaments.length === 1 ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2"}`}>
+                {activeTournaments.map((t) => (
+                  <TournamentCard key={t.id} tournament={t} tvMode />
+                ))}
+              </div>
+            </div>
+          )}
+        </Suspense>
       </div>
 
-      <div className="pt-14" />
-
-      <Suspense fallback={<InlineLoader />}>
-        {view === "overview" && (
-          <div className="space-y-4">
-            <AnnouncementTicker assessors={assessors} />
-            <KpiCards from={overviewRange.from} to={overviewRange.to} />
-            <TvRanking assessors={assessors} />
-          </div>
-        )}
-        {view === "results" && <DailyResults assessors={assessors} />}
-        {view === "squad" && <SquadBet assessors={assessors} />}
-        {view === "tournaments" && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 mb-2">
-              <Swords className="w-8 h-8 text-secondary" />
-              <h2 className="text-3xl font-display font-black text-foreground">
-                {activeTournaments.length === 1 ? "Torneio Ativo" : "Torneios Ativos"}
-              </h2>
-            </div>
-            <div className={`grid gap-6 ${activeTournaments.length === 1 ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2"}`}>
-              {activeTournaments.map((t) => (
-                <TournamentCard key={t.id} tournament={t} tvMode />
-              ))}
-            </div>
-          </div>
-        )}
-      </Suspense>
-
-      {/* Overlay fullscreen de celebração quando torneio finaliza */}
       <TournamentFinishedOverlay event={finishedEvent} onDismiss={dismissFinished} />
     </div>
   );
@@ -222,7 +285,7 @@ const TvPage = () => {
 
 const InlineLoader = () => (
   <div className="flex items-center justify-center py-20">
-    <div className="w-8 h-8 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+    <Pulse size={28} className="text-primary animate-pulse" weight="duotone" />
   </div>
 );
 

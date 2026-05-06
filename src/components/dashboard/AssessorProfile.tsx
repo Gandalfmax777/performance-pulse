@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useModalDismiss } from "@/hooks/useModalDismiss";
 import { motion } from "framer-motion";
 import { X, Printer, Trophy, TrendingUp, Flame, Award, Loader2, Sparkles, RefreshCw } from "lucide-react";
+import { Medal, Gift, NotePencil } from "@phosphor-icons/react";
 import Markdown from "react-markdown";
 import {
   BarChart,
@@ -467,7 +468,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
             {prizes && prizes.length > 0 && (
               <div className="p-4 rounded-xl bg-muted/10 border border-primary/20 mt-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-lg">🏅</span>
+                  <Medal size={18} weight="fill" className="text-gold-deep" />
                   <h3 className="text-sm font-bold text-foreground">Prêmios Recebidos</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -476,7 +477,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                       key={p.id}
                       className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/10 border border-accent/20"
                     >
-                      <span className="text-lg">🎁</span>
+                      <Gift size={18} weight="fill" className="text-primary" />
                       <div>
                         <p className="text-xs font-semibold text-foreground">{p.title}</p>
                         <p className="text-[10px] text-muted-foreground">
@@ -493,7 +494,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
             {report.observations && report.observations.length > 0 && (
               <div className="p-4 rounded-xl bg-muted/10 border border-border/20 mt-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-lg">📝</span>
+                  <NotePencil size={18} className="text-ink-2" />
                   <h3 className="text-sm font-bold text-foreground">Observações do Período</h3>
                 </div>
                 <div className="space-y-2">

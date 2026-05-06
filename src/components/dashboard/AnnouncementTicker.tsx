@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Megaphone } from "lucide-react";
+import { Megaphone, PushPin } from "@phosphor-icons/react";
 import type { Assessor } from "@/types/assessor";
 import { useAnnouncements } from "@/hooks/useAnnouncements";
 import { useWeekDirections } from "@/hooks/useDailyDirection";
@@ -41,7 +41,7 @@ const AnnouncementTicker = (_props: AnnouncementTickerProps) => {
       // Trunca em ~120 chars pra ticker não ficar lento — texto completo
       // continua no card DailyDirection do DayView.
       const short = text.length > 120 ? `${text.slice(0, 117)}…` : text;
-      out.push(`📌 ${wd.dayLabel} · ${short}`);
+      out.push(`◆ ${wd.dayLabel} · ${short}`);
     }
 
     return out;
@@ -56,11 +56,14 @@ const AnnouncementTicker = (_props: AnnouncementTickerProps) => {
   const durationSec = Math.max(20, messages.length * 8);
 
   return (
-    <div className="card-glass rounded-lg border border-primary/20 overflow-hidden">
-      <div className="flex items-center gap-3">
-        <div className="flex-shrink-0 px-3 py-2 bg-primary/10 border-r border-primary/20 flex items-center gap-2">
-          <Megaphone className="w-4 h-4 text-primary" />
-          <span className="text-xs font-bold text-primary">Avisos</span>
+    <div className="rounded-[10px] overflow-hidden text-white" style={{ background: 'hsl(var(--ink))' }}>
+      <div className="flex items-center gap-0">
+        <div
+          className="flex-shrink-0 px-3 py-2.5 flex items-center gap-2 font-extrabold text-[11px] tracking-[0.15em]"
+          style={{ background: 'hsl(var(--gold))', color: 'hsl(var(--ink))', borderRadius: 4, marginLeft: 8 }}
+        >
+          <Megaphone size={13} weight="bold" />
+          <span>AVISOS</span>
         </div>
         <div className="flex-1 overflow-hidden">
           <div
@@ -70,7 +73,7 @@ const AnnouncementTicker = (_props: AnnouncementTickerProps) => {
             }}
           >
             {doubled.map((m, i) => (
-              <span key={i} className="text-xs text-foreground py-2">
+              <span key={i} className="text-[13px] py-2 font-medium" style={{ color: 'oklch(1 0 0 / 0.92)' }}>
                 {m}
               </span>
             ))}

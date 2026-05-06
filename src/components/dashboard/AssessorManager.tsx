@@ -278,8 +278,8 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
                       />
                     </div>
                     <div className="flex items-center gap-1">
-                      <span className="text-[9px] text-muted-foreground" title="Esconde do ranking até essa data">
-                        🏖️ até:
+                      <span className="text-[9px] text-muted-foreground inline-flex items-center gap-1" title="Esconde do ranking até essa data">
+                        Férias até:
                       </span>
                       <input
                         type="date"
@@ -293,7 +293,7 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
                           className="text-[9px] text-muted-foreground hover:text-destructive"
                           title="Limpar férias"
                         >
-                          ✕
+                          ×
                         </button>
                       )}
                     </div>
