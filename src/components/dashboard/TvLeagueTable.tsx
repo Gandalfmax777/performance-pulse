@@ -90,7 +90,7 @@ const TvLeagueTable = ({ assessors }: TvLeagueTableProps) => {
         </div>
       </div>
 
-      <div className="rounded-[14px] bg-card border border-line overflow-hidden flex flex-col">
+      <div className="rounded-[14px] bg-card border border-line overflow-hidden">
         {/* Header */}
         <div
           className="grid items-center gap-3 px-6 py-3 text-white"
@@ -118,7 +118,7 @@ const TvLeagueTable = ({ assessors }: TvLeagueTableProps) => {
           </p>
         </div>
 
-        <div className="flex-1 flex flex-col">
+        <div>
           {sorted.map((a, i) => {
             const top3 = i < 3;
             const bg =
@@ -139,25 +139,25 @@ const TvLeagueTable = ({ assessors }: TvLeagueTableProps) => {
             return (
               <div
                 key={a.id}
-                className={`grid items-center gap-3 px-6 ${
+                className={`grid items-center gap-3 px-6 py-3 ${
                   i < sorted.length - 1 ? "border-b border-line" : ""
                 }`}
                 style={{
                   gridTemplateColumns: "60px 60px 1.4fr 90px 130px 100px 90px",
                   background: bg,
-                  flex: 1,
                 }}
               >
                 <span
-                  className="font-serif italic font-bold leading-none tracking-[-0.03em]"
+                  className="font-serif italic font-bold leading-none tracking-[-0.03em] flex items-center"
                   style={{
                     fontFamily: "'Instrument Serif', serif",
-                    fontSize: 36,
+                    fontSize: 32,
                     color: top3 ? "hsl(var(--ink))" : "hsl(var(--ink-3))",
+                    height: 42,
                   }}
                 >
                   {i === 0 ? (
-                    <Crown size={32} weight="fill" className="text-gold-deep" />
+                    <Crown size={28} weight="fill" className="text-gold-deep" />
                   ) : (
                     i + 1
                   )}

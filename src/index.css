@@ -471,6 +471,18 @@
   animation: glow-pulse 2s ease-in-out infinite;
 }
 
+/* TV ticker — marquee preto rolante no rodapé do modo TV.
+   Duplica o conteúdo no JSX e roda 50% (até a primeira cópia terminar)
+   pra dar loop infinito sem "salto" visual. */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 60s linear infinite;
+}
+
 /* Print styles */
 @media print {
   body { background: white !important; color: black !important; }

@@ -9,7 +9,6 @@ import {
   ChartBar,
   Sword as Swords,
   Crown,
-  User,
   Television as Tv,
   Sun,
   Moon,
@@ -34,7 +33,6 @@ export type DashboardView =
   | "kpis"
   | "squad"
   | "tournament"
-  | "profile"
   | "team";
 
 interface NavItem {
@@ -50,7 +48,6 @@ const NAV_ITEMS: NavItem[] = [
   { key: "kpis",       label: "KPIs",        icon: ChartBar },
   { key: "squad",      label: "Squad Bet",   icon: Swords },
   { key: "tournament", label: "Torneio",     icon: Crown },
-  { key: "profile",    label: "Meu Perfil",  icon: User },
 ];
 
 const COLLAPSE_STORAGE_KEY = "pp_sidebar_collapsed";
