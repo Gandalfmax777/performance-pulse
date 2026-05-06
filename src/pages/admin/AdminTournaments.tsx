@@ -7,6 +7,7 @@ import {
   Flag,
   XCircle,
   Lightning,
+  Trash,
 } from "@phosphor-icons/react";
 import { format, parseISO, addDays, startOfWeek, endOfWeek, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -15,6 +16,7 @@ import {
   useCreateTournament,
   useFinishTournament,
   useCancelTournament,
+  useDeleteTournament,
   type TournamentScope,
   type CreateTournamentInput,
 } from "@/hooks/useTournaments";
@@ -119,6 +121,7 @@ const AdminTournaments = () => {
   const create = useCreateTournament();
   const finish = useFinishTournament();
   const cancel = useCancelTournament();
+  const remove = useDeleteTournament();
 
   const [form, setForm] = useState({
     roundLabel: "",
@@ -130,6 +133,7 @@ const AdminTournaments = () => {
   });
 
   const active = (tournaments ?? []).filter((t) => t.status === "ACTIVE");
+  const canceled = (tournaments ?? []).filter((t) => t.status === "CANCELED");
   const finished = (tournaments ?? []).filter((t) => t.status === "FINISHED");
 
   const handleCreate = async () => {
@@ -173,6 +177,21 @@ const AdminTournaments = () => {
       toast.success("Torneio cancelado");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao cancelar");
+    }
+  };
+
+  const handleDelete = async (id: string, label: string) => {
+    if (
+      !confirm(
+        `Excluir "${label}" permanentemente? Essa ação não pode ser desfeita.`,
+      )
+    )
+      return;
+    try {
+      await remove.mutateAsync(id);
+      toast.success("Torneio excluído");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao excluir");
     }
   };
 
@@ -344,18 +363,54 @@ const AdminTournaments = () => {
                 </Button>
                 <Button
                   size="sm"
-                  variant="destructive"
+                  variant="outline"
                   onClick={() => handleCancel(t.id)}
                   disabled={cancel.isPending}
                 >
                   <XCircle size={12} weight="bold" className="mr-2" />
                   Cancelar
                 </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => handleDelete(t.id, t.roundLabel)}
+                  disabled={remove.isPending}
+                  title="Excluir permanentemente"
+                >
+                  <Trash size={12} weight="bold" />
+                </Button>
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Cancelados — admin pode excluir permanentemente pra limpar a lista */}
+      {canceled.length > 0 && (
+        <div>
+          <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+            <XCircle size={16} weight="fill" className="text-ink-3" />
+            Cancelados ({canceled.length})
+          </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {canceled.slice(0, 6).map((t) => (
+              <div key={t.id} className="space-y-2 opacity-70">
+                <TournamentCard tournament={t} />
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => handleDelete(t.id, t.roundLabel)}
+                  disabled={remove.isPending}
+                  className="w-full"
+                >
+                  <Trash size={12} weight="bold" className="mr-2" />
+                  Excluir permanentemente
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Finalizados */}
       {finished.length > 0 && (
