@@ -228,10 +228,18 @@ function SquadVersusCard({
     >
       {leading && (
         <span
-          className="absolute top-3.5 right-3.5 px-2.5 py-1 rounded-full text-white text-[10px] font-extrabold tracking-[0.1em]"
-          style={{ background: "hsl(var(--eqi-green))" }}
+          className="absolute top-3.5 right-3.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-extrabold uppercase tracking-[0.14em]"
+          style={{
+            background: "oklch(0.96 0.05 152)",
+            color: "hsl(var(--eqi-forest))",
+            border: "1px solid oklch(0.78 0.13 152 / 0.4)",
+          }}
         >
-          LIDERANDO
+          <span
+            className="w-1.5 h-1.5 rounded-full animate-pulse"
+            style={{ background: "hsl(var(--eqi-green))" }}
+          />
+          Liderando
         </span>
       )}
       <div className="flex items-start justify-between gap-3">
