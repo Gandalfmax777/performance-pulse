@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { format, addDays, startOfWeek, nextWednesday, isWednesday } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Repeat, Calendar as CalendarIcon, Loader2, Pencil } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { Repeat, CalendarBlank as CalendarIcon, PencilSimple as Pencil } from "@phosphor-icons/react";
 import { useAllActivities, useUpdateActivity } from "@/hooks/useAdminActivities";
 import { isActivityActiveOn, type ActivityCadenceFields } from "@/lib/biweekly";
 import { Button } from "@/components/ui/button";
@@ -55,23 +56,26 @@ const AdminBiweekly = () => {
     <div className="space-y-5">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Repeat className="w-6 h-6 text-primary" />
+        <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
+          ADMINISTRAÇÃO
+        </p>
+        <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
+          <Repeat size={20} weight="bold" className="text-primary" />
           Indique Day (quartas alternadas)
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Felipe pediu que o Indique Day rode a cada 15 dias. Cada activity BIWEEKLY tem uma
-          âncora — todas as quartas que estão a N*14 dias da âncora são ativadas.
+        <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
+          O Indique Day roda a cada 15 dias. Cada activity BIWEEKLY tem uma âncora —
+          todas as quartas que estão a N*14 dias da âncora são ativadas.
         </p>
       </div>
 
       {isLoading ? (
-        <div className="card-glass rounded-xl p-10 flex items-center justify-center">
+        <div className="rounded-[14px] border border-line bg-card p-10 flex items-center justify-center">
           <Loader2 className="w-6 h-6 text-primary animate-spin" />
         </div>
       ) : biweeklyActivities.length === 0 ? (
-        <div className="card-glass rounded-xl p-10 text-center">
-          <Repeat className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-50" />
+        <div className="rounded-[14px] border border-line bg-card p-10 text-center">
+          <Repeat size={40} className="text-ink-4 mx-auto mb-3" />
           <p className="text-sm text-muted-foreground">
             Nenhuma activity BIWEEKLY cadastrada nas quartas.
           </p>
@@ -86,7 +90,7 @@ const AdminBiweekly = () => {
             {biweeklyActivities.map((act) => (
               <div
                 key={act.id}
-                className="card-glass rounded-xl p-5 border border-border/30"
+                className="rounded-[14px] border border-line bg-card p-5"
               >
                 <div className="flex items-start justify-between">
                   <div>
@@ -100,7 +104,7 @@ const AdminBiweekly = () => {
                       {act.startTime}–{act.endTime} • {act.kpis.map((k) => k.label).join(", ")}
                     </p>
                     <div className="mt-3 flex items-center gap-2 text-xs">
-                      <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                      <CalendarIcon size={14} className="text-ink-3" />
                       <span className="text-muted-foreground">Âncora:</span>
                       <span className="font-mono font-bold text-foreground">
                         {act.biweeklyAnchorDate
@@ -124,7 +128,7 @@ const AdminBiweekly = () => {
                     }
                     className="gap-1.5"
                   >
-                    <Pencil className="w-3 h-3" />
+                    <Pencil size={12} />
                     Alterar
                   </Button>
                 </div>
@@ -133,7 +137,7 @@ const AdminBiweekly = () => {
           </div>
 
           {/* Próximas 8 quartas */}
-          <div className="card-glass rounded-xl p-6 border border-border/30">
+          <div className="rounded-[14px] border border-line bg-card p-6">
             <h2 className="text-sm font-bold text-foreground mb-4">
               Próximas 8 quartas-feiras
             </h2>

@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { Target, Pencil, ChevronDown, ChevronUp, History, Loader2, Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Target, PencilSimple, ClockCounterClockwise as History, Plus } from "@phosphor-icons/react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useQueryClient } from "@tanstack/react-query";
@@ -70,22 +71,25 @@ const AdminGoals = () => {
       {/* Page header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Target className="w-6 h-6 text-primary" />
+          <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
+            ADMINISTRAÇÃO
+          </p>
+          <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
+            <Target size={20} weight="bold" className="text-primary" />
             Metas & KPIs
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Edite as definições dos KPIs e suas metas ativas. Mudança retroativa recalcula os
-            históricos.
+          <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
+            Edite as definições dos KPIs e suas metas ativas. Mudança retroativa
+            recalcula os históricos.
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)} className="gap-2">
-          <Plus className="w-4 h-4" /> Novo KPI
+        <Button onClick={() => setCreateOpen(true)} className="gap-2 bg-ink hover:bg-ink/90 text-white">
+          <Plus size={14} weight="bold" /> Novo KPI
         </Button>
       </div>
 
       {/* KPI list */}
-      <div className="card-glass rounded-xl overflow-hidden border border-border/30">
+      <div className="rounded-[14px] overflow-hidden border border-line bg-card">
         {isLoading ? (
           <div className="p-10 flex items-center justify-center">
             <Loader2 className="w-6 h-6 text-primary animate-spin" />
@@ -156,7 +160,7 @@ const AdminGoals = () => {
                           onClick={() => setDialog({ open: true, kpi })}
                           className="h-8 gap-1.5"
                         >
-                          <Pencil className="w-3 h-3" />
+                          <PencilSimple size={12} />
                           Editar
                         </Button>
                       </TableCell>
@@ -511,7 +515,7 @@ function GoalHistoryRow({ kpiId }: { kpiId: string }) {
     <TableRow className="border-border/20 hover:bg-transparent">
       <TableCell colSpan={6} className="bg-muted/10 py-3">
         <div className="flex items-center gap-2 mb-2">
-          <History className="w-3.5 h-3.5 text-muted-foreground" />
+          <History size={14} className="text-ink-3" />
           <span className="text-xs font-semibold text-muted-foreground">Histórico de metas</span>
         </div>
         {isLoading ? (

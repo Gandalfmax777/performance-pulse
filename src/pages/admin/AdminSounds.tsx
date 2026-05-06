@@ -12,7 +12,13 @@
 
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { Volume2, Upload, Trash2, Loader2, VolumeX } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import {
+  SpeakerHigh as Volume2,
+  UploadSimple as Upload,
+  Trash as Trash2,
+  SpeakerSimpleSlash as VolumeX,
+} from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/api/client";
 import {
@@ -38,21 +44,22 @@ export default function AdminSounds() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Volume2 className="w-5 h-5 text-primary" />
-          <h1 className="text-2xl font-display font-bold text-foreground">
-            Sons dos KPIs
-          </h1>
-        </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
+          ADMINISTRAÇÃO
+        </p>
+        <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
+          <Volume2 size={20} weight="fill" className="text-primary" />
+          Sons dos KPIs
+        </h1>
+        <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
           Carregue um arquivo MP3/WAV (até 2MB) por KPI. Quando marcado como{" "}
-          <strong>broadcast</strong>, o som toca em todos dispositivos conectados
-          (TV + dashboards abertos) assim que alguém registra o evento.
+          <strong className="text-ink">broadcast</strong>, o som toca em todos
+          dispositivos conectados (TV + dashboards abertos) assim que alguém registra o evento.
         </p>
       </div>
 
       {/* Lista */}
-      <div className="card-glass rounded-xl divide-y divide-border/20">
+      <div className="rounded-[14px] border border-line bg-card divide-y divide-line">
         {isLoading && (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
@@ -71,7 +78,7 @@ export default function AdminSounds() {
       {/* Info card */}
       <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 space-y-2">
         <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
-          <Volume2 className="w-4 h-4" /> Como funciona
+          <Volume2 size={16} weight="fill" /> Como funciona
         </h3>
         <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
           <li>
@@ -154,7 +161,7 @@ function KpiSoundRow({ kpi }: { kpi: ApiKpi }) {
   // se sem som. Indica a visibilidade do estado sem precisar expandir.
   const statusBadge = !sound ? (
     <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-muted/30 text-muted-foreground">
-      <VolumeX className="w-3 h-3" /> Sem som
+      <VolumeX size={12} /> Sem som
     </span>
   ) : !sound.enabled ? (
     <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-muted/30 text-muted-foreground">
@@ -162,7 +169,7 @@ function KpiSoundRow({ kpi }: { kpi: ApiKpi }) {
     </span>
   ) : sound.broadcast ? (
     <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-success/20 text-success font-semibold">
-      🔊 Broadcast ativo
+      <Volume2 size={11} weight="fill" /> Broadcast ativo
     </span>
   ) : (
     <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-chart-yellow/20 text-chart-yellow font-semibold">
@@ -183,7 +190,7 @@ function KpiSoundRow({ kpi }: { kpi: ApiKpi }) {
       {/* Linha compacta */}
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-lg bg-muted/20 flex items-center justify-center">
-          <Volume2 className="w-4 h-4 text-muted-foreground" />
+          <Volume2 size={16} className="text-ink-3" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -223,7 +230,7 @@ function KpiSoundRow({ kpi }: { kpi: ApiKpi }) {
             {upload.isPending ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
             ) : (
-              <Upload className="w-3.5 h-3.5 mr-1.5" />
+              <Upload size={14} className="mr-1.5" />
             )}
             Carregar som
           </Button>
@@ -302,7 +309,7 @@ function KpiSoundRow({ kpi }: { kpi: ApiKpi }) {
               {upload.isPending ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
               ) : (
-                <Upload className="w-3.5 h-3.5 mr-1.5" />
+                <Upload size={14} className="mr-1.5" />
               )}
               Trocar arquivo
             </Button>
@@ -313,7 +320,7 @@ function KpiSoundRow({ kpi }: { kpi: ApiKpi }) {
               disabled={busy}
               className="text-destructive hover:text-destructive hover:bg-destructive/10"
             >
-              <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+              <Trash2 size={14} className="mr-1.5" />
               Remover som
             </Button>
           </div>

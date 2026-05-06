@@ -1,6 +1,14 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Calendar, Plus, Pencil, Trash2, Link2, Unlink, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import {
+  CalendarBlank as Calendar,
+  Plus,
+  PencilSimple as Pencil,
+  Trash as Trash2,
+  Link as Link2,
+  LinkBreak as Unlink,
+} from "@phosphor-icons/react";
 import {
   useAllActivities,
   useCreateActivity,
@@ -173,18 +181,21 @@ const AdminSchedule = () => {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Calendar className="w-6 h-6 text-primary" />
+        <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
+          ADMINISTRAÇÃO
+        </p>
+        <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
+          <Calendar size={20} weight="bold" className="text-primary" />
           Cronograma Semanal
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Edite atividades, horários e KPIs vinculados. Activities desativadas não aparecem no
-          cronograma do dashboard.
+        <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
+          Edite atividades, horários e KPIs vinculados. Activities desativadas
+          não aparecem no cronograma do dashboard.
         </p>
       </div>
 
       {isLoading ? (
-        <div className="card-glass rounded-xl p-10 flex items-center justify-center">
+        <div className="rounded-[14px] border border-line bg-card p-10 flex items-center justify-center">
           <Loader2 className="w-6 h-6 text-primary animate-spin" />
         </div>
       ) : (
@@ -199,11 +210,11 @@ const AdminSchedule = () => {
 
           {[1, 2, 3, 4, 5].map((dow) => (
             <TabsContent key={dow} value={String(dow)}>
-              <div className="card-glass rounded-xl overflow-hidden border border-border/30">
+              <div className="rounded-[14px] overflow-hidden border border-line bg-card">
                 <div className="flex items-center justify-between px-5 py-3 border-b border-border/30">
                   <span className="text-sm font-bold text-foreground">{DAY_LABELS[dow]}</span>
                   <Button size="sm" onClick={() => openCreate(dow)} className="gap-1.5">
-                    <Plus className="w-3 h-3" /> Nova atividade
+                    <Plus size={12} weight="bold" /> Nova atividade
                   </Button>
                 </div>
                 <Table>
@@ -274,13 +285,13 @@ const AdminSchedule = () => {
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
                             <Button size="sm" variant="ghost" onClick={() => setKpiSheet(act)} title="KPIs">
-                              <Link2 className="w-3.5 h-3.5" />
+                              <Link2 size={14} />
                             </Button>
                             <Button size="sm" variant="ghost" onClick={() => openEdit(act)} title="Editar">
-                              <Pencil className="w-3.5 h-3.5" />
+                              <Pencil size={14} />
                             </Button>
                             <Button size="sm" variant="ghost" onClick={() => setDeleteConfirm(act)} title="Desativar" className="text-destructive hover:text-destructive">
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Trash2 size={14} />
                             </Button>
                           </div>
                         </TableCell>
@@ -441,7 +452,7 @@ function KpiManager({
               </div>
             </div>
             <Button size="sm" variant="ghost" onClick={() => onDetach(k.kpiId)} className="text-destructive">
-              <Unlink className="w-3.5 h-3.5" />
+              <Unlink size={14} />
             </Button>
           </div>
         ))}
@@ -482,7 +493,7 @@ function KpiManager({
               setAddKpiId(""); setAddOverride("");
             }}
           >
-            <Link2 className="w-3.5 h-3.5" />
+            <Link2 size={14} />
           </Button>
         </div>
       )}

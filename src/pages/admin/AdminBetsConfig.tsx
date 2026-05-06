@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Trophy, Plus, XCircle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { Trophy, Plus, XCircle } from "@phosphor-icons/react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useBets, useCreateBet, useCancelBet, type BetWinnerCriteria } from "@/hooks/useBets";
@@ -92,19 +93,22 @@ const AdminBetsConfig = () => {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Trophy className="w-6 h-6 text-primary" />
+        <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
+          ADMINISTRAÇÃO
+        </p>
+        <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
+          <Trophy size={20} weight="bold" className="text-primary" />
           Configurar Apostas
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
           Crie apostas entre squads, escolha o critério de vitória e acompanhe o histórico.
         </p>
       </div>
 
       {/* Create form */}
-      <div className="card-glass rounded-xl p-5 border border-border/30 space-y-4">
-        <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-          <Plus className="w-4 h-4 text-primary" />
+      <div className="rounded-[14px] p-5 border border-line bg-card space-y-4">
+        <h2 className="text-[14px] font-extrabold tracking-tight text-ink flex items-center gap-2">
+          <Plus size={14} weight="bold" className="text-primary" />
           Nova aposta
         </h2>
         <div className="grid grid-cols-4 gap-3">
@@ -156,7 +160,7 @@ const AdminBetsConfig = () => {
         </TabsList>
 
         <TabsContent value="active">
-          <div className="card-glass rounded-xl overflow-hidden border border-border/30">
+          <div className="rounded-[14px] overflow-hidden border border-line bg-card">
             {isLoading ? (
               <div className="p-10 flex items-center justify-center">
                 <Loader2 className="w-6 h-6 text-primary animate-spin" />
@@ -202,7 +206,7 @@ const AdminBetsConfig = () => {
                           onClick={() => setCancelTarget(bet.id)}
                           className="gap-1 text-destructive border-destructive/30 hover:bg-destructive/10"
                         >
-                          <XCircle className="w-3 h-3" />
+                          <XCircle size={12} weight="bold" />
                           Cancelar
                         </Button>
                       </TableCell>
@@ -215,7 +219,7 @@ const AdminBetsConfig = () => {
         </TabsContent>
 
         <TabsContent value="finished">
-          <div className="card-glass rounded-xl overflow-hidden border border-border/30">
+          <div className="rounded-[14px] overflow-hidden border border-line bg-card">
             {finishedBets.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-10">Nenhuma rodada finalizada.</p>
             ) : (

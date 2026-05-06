@@ -1,6 +1,15 @@
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { UserPlus, Trash2, X, Users, Pencil, Camera, Loader2, Check } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import {
+  UserPlus,
+  Trash as Trash2,
+  X,
+  Users,
+  PencilSimple as Pencil,
+  Camera,
+  Check,
+} from "@phosphor-icons/react";
 import type { Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { apiFetch, apiBaseUrl } from "@/api/client";
@@ -163,19 +172,25 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
   return (
     <div
       onClick={onBackdropClick}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm overflow-y-auto py-8"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm overflow-y-auto py-8"
     >
-      <div className="card-glass rounded-2xl p-6 w-full max-w-lg mx-4 border border-primary/20">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-bold text-foreground">Gerenciar Assessores</h2>
+      <div className="rounded-[14px] p-6 w-full max-w-lg mx-4 border border-line bg-card shadow-xl">
+        <div className="flex items-start justify-between mb-5">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
+              ADMINISTRAÇÃO
+            </p>
+            <h2 className="text-[20px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
+              <Users size={18} weight="bold" className="text-primary" />
+              Gerenciar Assessores
+            </h2>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-muted/30 hover:bg-muted/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all"
+            aria-label="Fechar"
+            className="w-8 h-8 rounded-[7px] bg-surface-2 border border-line hover:bg-surface flex items-center justify-center text-ink-3 hover:text-ink transition-all"
           >
-            <X className="w-4 h-4" />
+            <X size={14} weight="bold" />
           </button>
         </div>
 
@@ -187,14 +202,14 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             placeholder="Nome do assessor..."
-            className="flex-1 px-4 py-2.5 rounded-xl bg-muted/30 border border-border/30 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+            className="flex-1 px-3.5 py-2.5 rounded-[8px] bg-surface border border-line text-sm text-ink placeholder:text-ink-3 focus:outline-none focus:border-line-2"
           />
           <button
             onClick={handleAdd}
             disabled={!name.trim()}
-            className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm flex items-center gap-2 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2.5 rounded-[8px] bg-ink text-white font-semibold text-sm flex items-center gap-2 hover:bg-ink/90 disabled:bg-surface-2 disabled:text-ink-3 disabled:cursor-not-allowed transition-colors"
           >
-            <UserPlus className="w-4 h-4" /> Adicionar
+            <UserPlus size={14} weight="bold" /> Adicionar
           </button>
         </div>
 
@@ -227,7 +242,7 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
                   size={44}
                 />
                 <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                  <Camera className="w-4 h-4 text-white" />
+                  <Camera size={16} className="text-white" />
                 </div>
               </button>
 
@@ -320,14 +335,14 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
                       {saving ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
-                        <Check className="w-4 h-4" />
+                        <Check size={16} weight="bold" />
                       )}
                     </button>
                     <button
                       onClick={() => setEditing(null)}
                       className="w-8 h-8 rounded-lg bg-muted/30 hover:bg-muted/50 flex items-center justify-center text-muted-foreground transition-all"
                     >
-                      <X className="w-4 h-4" />
+                      <X size={16} weight="bold" />
                     </button>
                   </>
                 ) : (
@@ -337,14 +352,14 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
                       className="w-8 h-8 rounded-lg bg-muted/30 hover:bg-muted/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all"
                       title="Editar"
                     >
-                      <Pencil className="w-3.5 h-3.5" />
+                      <Pencil size={14} />
                     </button>
                     <button
                       onClick={() => onRemove(a.id)}
                       className="w-8 h-8 rounded-lg bg-destructive/10 hover:bg-destructive/20 flex items-center justify-center text-destructive transition-all"
                       title="Remover"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 size={16} />
                     </button>
                   </>
                 )}
