@@ -1,27 +1,23 @@
-import { useEffect, useState } from "react";
-import { Bell, MagnifyingGlass, TextAlignJustify } from "@phosphor-icons/react";
+import { TextAlignJustify } from "@phosphor-icons/react";
 
 interface Props {
-  title: string;
-  /** Eyebrow opcional acima do título — segue padrão Editorial V1. */
+  /** Eyebrow opcional acima do título (label uppercase tracking-wide). */
   eyebrow?: string;
+  title: string;
   subtitle?: string;
+  /** Slot pro lado direito — segue o artboard Editorial: usado pra
+   *  PeriodTabs / botão "Apresentação" / actions específicas da tela. */
   actions?: React.ReactNode;
   onMenuClick: () => void;
 }
 
-const DashboardTopbar = ({ title, eyebrow, subtitle, actions, onMenuClick }: Props) => {
-  const [time, setTime] = useState(new Date());
-
-  useEffect(() => {
-    const t = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  const dayName = time.toLocaleDateString("pt-BR", { weekday: "long" });
-  const dateStr = time.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" });
-  const computedSubtitle = subtitle ?? `${dayName.charAt(0).toUpperCase() + dayName.slice(1)}, ${dateStr}`;
-
+/**
+ * TopBar Editorial V1 — fiel ao artboard `TopBar` do screens-v1.jsx:
+ * eyebrow + h1 22px extrabold + subtitle + slot `actions`. Sem busca
+ * nem sino — esses elementos não existem no design original; cabem na
+ * própria sidebar quando precisarmos no futuro.
+ */
+const DashboardTopbar = ({ eyebrow, title, subtitle, actions, onMenuClick }: Props) => {
   return (
     <header className="flex items-center gap-4 px-7 py-5 border-b border-line bg-card/70 backdrop-blur-md sticky top-0 z-30">
       <button
@@ -38,31 +34,15 @@ const DashboardTopbar = ({ title, eyebrow, subtitle, actions, onMenuClick }: Pro
             {eyebrow}
           </p>
         )}
-        <h1 className="text-[22px] font-extrabold text-ink tracking-tight leading-none truncate">{title}</h1>
-        {computedSubtitle && (
-          <p className="text-[12px] text-ink-3 mt-1 truncate capitalize">{computedSubtitle}</p>
+        <h1 className="text-[22px] font-extrabold text-ink tracking-tight leading-none truncate">
+          {title}
+        </h1>
+        {subtitle && (
+          <p className="text-[12px] text-ink-3 mt-1 truncate">{subtitle}</p>
         )}
       </div>
 
       {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
-
-      <div className="relative hidden md:block">
-        <MagnifyingGlass
-          size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3 pointer-events-none"
-        />
-        <input
-          placeholder="Buscar..."
-          className="pl-8 pr-3 py-1.5 text-xs rounded-[7px] border border-line bg-surface-2 outline-none w-[180px] focus:bg-card focus:border-line-2 transition-colors"
-        />
-      </div>
-
-      <button
-        title="Notificações"
-        className="hidden md:inline-flex shrink-0 p-2 rounded-[7px] border border-line bg-surface text-ink-2 hover:bg-surface-2 transition-colors"
-      >
-        <Bell size={14} />
-      </button>
     </header>
   );
 };

@@ -8,6 +8,8 @@ import {
   Trophy,
   ChartBar,
   Sword as Swords,
+  Crown,
+  User,
   Television as Tv,
   Sun,
   Moon,
@@ -25,7 +27,14 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useSoundMuted } from "@/hooks/useSoundEffects";
 import { clearAuthToken } from "@/api/client";
 
-export type DashboardView = "overview" | "daily" | "results" | "kpis" | "squad";
+export type DashboardView =
+  | "overview"
+  | "daily"
+  | "results"
+  | "kpis"
+  | "squad"
+  | "tournament"
+  | "profile";
 
 interface NavItem {
   key: DashboardView;
@@ -34,11 +43,13 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { key: "overview", label: "Visão Geral",     icon: Layers },
-  { key: "daily",    label: "Por Dia",         icon: CalendarBlank },
-  { key: "results",  label: "Ranking Geral",   icon: Trophy },
-  { key: "kpis",     label: "KPIs & Insights", icon: ChartBar },
-  { key: "squad",    label: "Squad Bet",       icon: Swords },
+  { key: "overview",   label: "Visão Geral", icon: Layers },
+  { key: "daily",      label: "Por Dia",     icon: CalendarBlank },
+  { key: "results",    label: "Ranking",     icon: Trophy },
+  { key: "kpis",       label: "KPIs",        icon: ChartBar },
+  { key: "squad",      label: "Squad Bet",   icon: Swords },
+  { key: "tournament", label: "Torneio",     icon: Crown },
+  { key: "profile",    label: "Meu Perfil",  icon: User },
 ];
 
 const COLLAPSE_STORAGE_KEY = "pp_sidebar_collapsed";
@@ -138,7 +149,7 @@ const DashboardSidebar = ({
         <nav className="flex-1 px-3 py-3.5 space-y-0.5 overflow-y-auto">
           {!collapsed && (
             <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-ink-3 px-2.5 mb-1">
-              Navegação
+              NAVEGAÇÃO
             </p>
           )}
           {NAV_ITEMS.map((item) => {
@@ -167,7 +178,7 @@ const DashboardSidebar = ({
 
           {!collapsed && (
             <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-ink-3 px-2.5 mb-1">
-              Ferramentas
+              FERRAMENTAS
             </p>
           )}
 

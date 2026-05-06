@@ -4,28 +4,28 @@ import DashboardSidebar, { type DashboardView } from "@/components/dashboard/Das
 import DashboardTopbar from "@/components/dashboard/DashboardTopbar";
 import Leaderboard from "@/components/dashboard/Leaderboard";
 import HeroMetricStrip from "@/components/dashboard/HeroMetricStrip";
-import KpiCards from "@/components/dashboard/KpiCards";
-import WeeklyHeatmap from "@/components/dashboard/WeeklyHeatmap";
+import WeeklyCadenceChart from "@/components/dashboard/WeeklyCadenceChart";
+import KpiGoalsList from "@/components/dashboard/KpiGoalsList";
+import TournamentSidebarCard from "@/components/dashboard/TournamentSidebarCard";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
-import PerformanceChart from "@/components/dashboard/PerformanceChart";
-import ActivationHighlight from "@/components/dashboard/ActivationHighlight";
-import BadgesPanel from "@/components/dashboard/BadgesPanel";
 import AnnouncementTicker from "@/components/dashboard/AnnouncementTicker";
 import TournamentCard from "@/components/dashboard/TournamentCard";
 import TournamentFinishedOverlay from "@/components/dashboard/TournamentFinishedOverlay";
 import { useActiveTournaments } from "@/hooks/useTournaments";
 import { useTournamentFinishedStream } from "@/hooks/useTournamentFinishedStream";
 
-// Lazy: views condicionais (não-overview) e modais carregam só quando o user navega.
-// Reduz o bundle inicial e mantém a "Visão Geral" instantânea.
+// Lazy: views condicionais carregam só quando o user navega
 const DayView = lazy(() => import("@/components/dashboard/DayView"));
 const DailyResults = lazy(() => import("@/components/dashboard/DailyResults"));
 const KpiAnalytics = lazy(() => import("@/components/dashboard/KpiAnalytics"));
 const SquadBet = lazy(() => import("@/components/dashboard/SquadBet"));
 const PresentationMode = lazy(() => import("@/components/dashboard/PresentationMode"));
 const AssessorManager = lazy(() => import("@/components/dashboard/AssessorManager"));
+const AssessorProfile = lazy(() => import("@/components/dashboard/AssessorProfile"));
+
 import { PresentationChart } from "@phosphor-icons/react";
 import { useAssessors } from "@/hooks/useAssessors";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useRankingStream } from "@/hooks/useRankingStream";
 import { useSystemNotifications } from "@/hooks/useSystemNotifications";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
@@ -66,12 +66,26 @@ type View = DashboardView;
 const VIEW_LABELS: Record<View, string> = {
   overview: "Visão Geral",
   daily: "Por Dia",
-  results: "Ranking Geral",
-  kpis: "KPIs & Insights",
+  results: "Ranking",
+  kpis: "KPIs",
   squad: "Squad Bet",
+  tournament: "Torneio",
+  profile: "Meu Perfil",
 };
 
-const VALID_VIEWS: ReadonlySet<View> = new Set(["overview", "daily", "results", "kpis", "squad"]);
+const VIEW_EYEBROWS: Partial<Record<View, string>> = {
+  overview: undefined,
+  daily: "VISÃO POR DIA",
+  results: "LIGA EQI · TEMPORADA",
+  kpis: "ANÁLISE CONSOLIDADA",
+  squad: "ROUND ATIVO",
+  tournament: "TORNEIO ATIVO",
+  profile: "MEU PERFIL",
+};
+
+const VALID_VIEWS: ReadonlySet<View> = new Set([
+  "overview", "daily", "results", "kpis", "squad", "tournament", "profile",
+]);
 const VALID_PERIODS: ReadonlySet<OverviewPeriod> = new Set(["daily", "weekly", "monthly", "semester"]);
 
 function parseView(raw: string | null): View {
@@ -84,7 +98,7 @@ function parsePeriod(raw: string | null): OverviewPeriod {
 const Index = () => {
   const navigate = useNavigate();
 
-  // Legacy: `/?tv=1` virou `/tv` público. Redireciona pra não quebrar bookmarks.
+  // Legacy: `/?tv=1` virou `/tv` público
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("tv") === "1") {
@@ -92,10 +106,6 @@ const Index = () => {
     }
   }, [navigate]);
 
-  // ─── URL state: view + period viram deep-linkáveis ────────────────────────
-  // Permite compartilhar /?view=kpis&period=monthly e abrir direto na KPIs
-  // com filtro mensal. Refresh mantém estado. Botão voltar do navegador
-  // navega entre views.
   const [searchParams, setSearchParams] = useSearchParams();
   const view = parseView(searchParams.get("view"));
   const overviewPeriod = parsePeriod(searchParams.get("period"));
@@ -117,32 +127,82 @@ const Index = () => {
   }, [setSearchParams]);
 
   const { assessors, addAssessor, removeAssessor } = useAssessors();
+  const { user } = useCurrentUser();
   const { data: activeTournaments = [] } = useActiveTournaments();
   const { event: finishedEvent, dismiss: dismissFinished } = useTournamentFinishedStream(true);
   const [showManager, setShowManager] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const overviewRange = rangeForPeriod(overviewPeriod);
 
-  // Modo Apresentação: full-screen com slides pra reunião de fechamento
   const [presentationOpen, setPresentationOpen] = useState(false);
 
-  // SSE: dashboard admin também recebe updates em tempo real pra Leaderboard
-  // refletir upserts de qualquer origem (mesa de vendas, admin numa outra aba).
   useRankingStream(true);
-  // Toasts contextuais quando eventos disparam (ex: assessor bate meta)
   useSystemNotifications(true);
 
-  // Clica "Modo TV" na sidebar → abre `/tv` em nova aba (experiência ideal
-  // pra TV da sala de vendas continuar rodando enquanto admin trabalha).
   const openTv = useCallback(() => {
     window.open("/tv", "_blank", "noopener,noreferrer");
   }, []);
 
+  // Subtitle por view (segue artboards do design)
+  const subtitleFor = (v: View): string | undefined => {
+    if (v === "overview") {
+      const week = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "dd MMM");
+      const weekEnd = format(endOfWeek(new Date(), { weekStartsOn: 1 }), "dd MMM");
+      return `Semana atual · ${week} — ${weekEnd} · ${assessors.length} assessores`;
+    }
+    if (v === "results") return "Atualizado em tempo real";
+    if (v === "kpis") return "Funil completo · todos os assessores";
+    if (v === "squad") return "Squads contra squads. Quem cumprir mais % da meta combinada leva o pote.";
+    if (v === "tournament") return activeTournaments[0]?.roundLabel ?? "Sem torneio ativo";
+    if (v === "profile") return user?.name ? `Performance individual de ${user.name}` : undefined;
+    return undefined;
+  };
+
+  // Period tabs render no slot `actions` da TopBar (segue mockup)
+  const periodTabs = (
+    <div className="flex gap-1 p-[3px] bg-surface-2 rounded-[8px] border border-line">
+      {OVERVIEW_PERIODS.map((opt) => (
+        <button
+          key={opt.value}
+          onClick={() => setOverviewPeriod(opt.value)}
+          className={`px-3 py-[5px] rounded-[5px] text-xs font-semibold transition-all ${
+            overviewPeriod === opt.value ? "bg-ink text-white" : "text-ink-2 hover:text-ink"
+          }`}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+
+  const presentationBtn = (
+    <button
+      onClick={() => setPresentationOpen(true)}
+      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-[8px] border border-line bg-surface text-ink-2 hover:bg-surface-2 hover:text-ink text-xs font-semibold transition-all"
+      title="Modo Apresentação — slides full-screen"
+    >
+      <PresentationChart size={14} />
+      Apresentação
+    </button>
+  );
+
+  const topActionsByView = (v: View): React.ReactNode => {
+    if (v === "overview") {
+      return (
+        <>
+          {periodTabs}
+          {presentationBtn}
+        </>
+      );
+    }
+    if (v === "kpis" || v === "results" || v === "tournament" || v === "profile") {
+      return periodTabs;
+    }
+    return null;
+  };
+
   return (
     <div className="min-h-screen bg-background flex relative">
-      {/* overflow-x-hidden NÃO pode ficar no wrapper: vira scroll container e
-          quebra o `position: sticky` da sidebar (faz a sidebar scrollar junto
-          com a página em vez de grudar no topo). Aplicado só no <main>. */}
       <div className="fixed inset-0 pointer-events-none bg-mesh" />
 
       <DashboardSidebar
@@ -156,73 +216,61 @@ const Index = () => {
 
       <main className="flex-1 min-w-0 flex flex-col overflow-x-hidden">
         <DashboardTopbar
+          eyebrow={VIEW_EYEBROWS[view]}
           title={VIEW_LABELS[view]}
+          subtitle={subtitleFor(view)}
+          actions={topActionsByView(view)}
           onMenuClick={() => setMobileNavOpen(true)}
         />
 
-        <div className="flex-1 p-5 space-y-4">
+        <div className="flex-1 p-7 space-y-5">
           {view === "overview" && (
-            <div className="space-y-4">
+            <>
               <AnnouncementTicker assessors={assessors} />
-
-              {/* Filtro de período (segmented) + botão Apresentação */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3">
-                  Período
-                </span>
-                <div className="flex gap-1 p-[3px] bg-surface-2 rounded-[8px] border border-line">
-                  {OVERVIEW_PERIODS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      onClick={() => setOverviewPeriod(opt.value)}
-                      className={`px-3 py-[5px] rounded-[5px] text-xs font-semibold transition-all ${
-                        overviewPeriod === opt.value
-                          ? "bg-ink text-white"
-                          : "text-ink-2 hover:text-ink"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-                <button
-                  onClick={() => setPresentationOpen(true)}
-                  className="ml-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-[8px] border border-line bg-surface text-ink-2 hover:bg-surface-2 hover:text-ink text-xs font-semibold transition-all"
-                  title="Modo Apresentação — slides full-screen pra reunião de fechamento"
-                >
-                  <PresentationChart size={14} />
-                  Apresentação
-                </button>
-              </div>
-
-              {/* Torneios ativos — aparecem no topo da visão geral */}
-              {activeTournaments.length > 0 && (
-                <div className={`grid gap-4 ${activeTournaments.length === 1 ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2"}`}>
-                  {activeTournaments.map((t) => (
-                    <TournamentCard key={t.id} tournament={t} />
-                  ))}
-                </div>
-              )}
 
               <HeroMetricStrip from={overviewRange.from} to={overviewRange.to} />
 
-              <KpiCards from={overviewRange.from} to={overviewRange.to} />
+              {/* 3-column body editorial: Ranking | Cadência+Atividade | Metas+Tournament */}
+              <div className="grid gap-4 grid-cols-1 lg:grid-cols-[1.2fr_1.6fr_1fr]">
+                {/* LEFT: Ranking */}
+                <Leaderboard assessors={assessors} />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
-                <div className="lg:col-span-4">
-                  <Leaderboard assessors={assessors} />
-                </div>
-                <div className="lg:col-span-5 space-y-4">
-                  <ActivationHighlight from={overviewRange.from} to={overviewRange.to} />
-                  <PerformanceChart />
-                  <BadgesPanel assessors={assessors} />
-                </div>
-                <div className="md:col-span-2 lg:col-span-3 space-y-4">
-                  <WeeklyHeatmap assessors={assessors} />
+                {/* MIDDLE: Cadência + Atividade ao vivo */}
+                <div className="flex flex-col gap-4">
+                  <div className="rounded-[14px] border border-line bg-card p-5">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h3 className="text-[14px] font-extrabold tracking-tight text-ink">
+                          Cadência da Semana
+                        </h3>
+                        <p className="text-[11px] text-ink-3 mt-0.5">
+                          Boletas e ativações por dia
+                        </p>
+                      </div>
+                    </div>
+                    <WeeklyCadenceChart from={overviewRange.from} to={overviewRange.to} />
+                    <div className="flex items-center gap-4 mt-3 text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3">
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(var(--eqi-green))" }} />
+                        Boletas
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(var(--gold))" }} />
+                        Ativações
+                      </span>
+                    </div>
+                  </div>
+
                   <ActivityFeed />
                 </div>
+
+                {/* RIGHT: Metas por KPI + Tournament card */}
+                <div className="flex flex-col gap-4">
+                  <KpiGoalsList from={overviewRange.from} to={overviewRange.to} />
+                  <TournamentSidebarCard onClick={() => setView("tournament")} />
+                </div>
               </div>
-            </div>
+            </>
           )}
 
           <Suspense fallback={<InlineLoader />}>
@@ -230,6 +278,15 @@ const Index = () => {
             {view === "results" && <DailyResults assessors={assessors} />}
             {view === "kpis" && <KpiAnalytics assessors={assessors} />}
             {view === "squad" && <SquadBet assessors={assessors} />}
+            {view === "tournament" && (
+              <TournamentView tournaments={activeTournaments} />
+            )}
+            {view === "profile" && user && (
+              <AssessorProfile
+                assessor={mapUserToAssessor(user, assessors)}
+                onClose={() => setView("overview")}
+              />
+            )}
           </Suspense>
         </div>
       </main>
@@ -254,17 +311,69 @@ const Index = () => {
         </Suspense>
       )}
 
-      {/* Celebração fullscreen quando torneio finaliza (SSE tournament:finished) */}
       <TournamentFinishedOverlay event={finishedEvent} onDismiss={dismissFinished} />
     </div>
   );
 };
 
-// Loader inline simples pra fallback de Suspense em views lazy.
 const InlineLoader = () => (
   <div className="flex items-center justify-center py-12">
     <div className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
   </div>
 );
+
+interface ApiTournament {
+  id: string;
+  // tipos parciais — só pra prop forward
+  [k: string]: unknown;
+}
+
+interface TournamentViewProps {
+  tournaments: unknown[];
+}
+
+const TournamentView = ({ tournaments }: TournamentViewProps) => {
+  if (tournaments.length === 0) {
+    return (
+      <div className="rounded-[14px] border border-line bg-card p-10 text-center">
+        <p className="text-ink-3 text-sm">Sem torneio ativo no momento.</p>
+      </div>
+    );
+  }
+  return (
+    <div className={`grid gap-4 ${tournaments.length === 1 ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2"}`}>
+      {tournaments.map((t) => {
+        const tour = t as ApiTournament;
+        return (
+          <TournamentCard key={tour.id} tournament={tour as unknown as Parameters<typeof TournamentCard>[0]["tournament"]} />
+        );
+      })}
+    </div>
+  );
+};
+
+// "Meu Perfil" reusa o AssessorProfile como página (não como modal). O
+// AssessorProfile foi pensado pra modal mas funciona como conteúdo —
+// passa um onClose que volta à Visão Geral.
+function mapUserToAssessor(
+  user: NonNullable<ReturnType<typeof useCurrentUser>["user"]>,
+  assessors: ReturnType<typeof useAssessors>["assessors"],
+): Parameters<typeof AssessorProfile>[0]["assessor"] {
+  const match = assessors.find((a) => a.name === user.name);
+  if (match) return match;
+  // Fallback: monta um assessor mínimo só pra renderizar o perfil
+  return {
+    id: user.id,
+    name: user.name,
+    avatar: user.name.slice(0, 2).toUpperCase(),
+    photoUrl: null,
+    points: 0,
+    level: "bronze",
+    streak: 0,
+    weeklyGoalPercent: 0,
+    kpis: { leads: 0, cadencia: 0, ligacoes: 0, reunioes: 0, indicacoes: 0, boletos: 0 },
+    dailyActivity: [false, false, false, false, false],
+  };
+}
 
 export default Index;
