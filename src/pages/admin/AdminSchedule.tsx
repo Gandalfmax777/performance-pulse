@@ -234,7 +234,7 @@ const AdminSchedule = () => {
                             endTime={act.endTime}
                             onSave={async (start, end) => {
                               try {
-                                await updateActivity.mutateAsync({
+                                await updateAct.mutateAsync({
                                   id: act.id,
                                   input: { startTime: start, endTime: end },
                                 });
@@ -376,13 +376,19 @@ const AdminSchedule = () => {
               activity={kpiSheet}
               allKpis={allKpis.map((k) => ({ id: k.id, key: k.key, label: k.label }))}
               onAttach={(kpiId, override) =>
-                attachKpi.mutateAsync({ activityId: kpiSheet.id, kpiId, targetOverride: override }).then(() => toast.success("KPI vinculado"))
+                attachKpi.mutateAsync({ activityId: kpiSheet.id, kpiId, targetOverride: override }).then(() => {
+                  toast.success("KPI vinculado");
+                })
               }
               onUpdateOverride={(kpiId, override) =>
-                updateOverride.mutateAsync({ activityId: kpiSheet.id, kpiId, targetOverride: override }).then(() => toast.success("Override atualizado"))
+                updateOverride.mutateAsync({ activityId: kpiSheet.id, kpiId, targetOverride: override }).then(() => {
+                  toast.success("Override atualizado");
+                })
               }
               onDetach={(kpiId) =>
-                detachKpi.mutateAsync({ activityId: kpiSheet.id, kpiId }).then(() => toast.success("KPI desvinculado"))
+                detachKpi.mutateAsync({ activityId: kpiSheet.id, kpiId }).then(() => {
+                  toast.success("KPI desvinculado");
+                })
               }
             />
           )}

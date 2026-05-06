@@ -385,7 +385,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
               <PolarRadiusAxis
                 angle={90}
                 domain={[0, 110]}
-                ticks={[0, 25, 50, 75, 100]}
+                ticks={[0, 25, 50, 75, 100] as never}
                 tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
               />
               <Radar

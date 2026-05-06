@@ -586,7 +586,7 @@ const SquadBet = ({ assessors }: Props) => {
                   <PolarRadiusAxis
                     angle={90}
                     domain={[0, radarDomainMax]}
-                    ticks={radarTicks}
+                    ticks={radarTicks as never}
                     tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
                   />
                   {rankedSquads.map((row, i) => (

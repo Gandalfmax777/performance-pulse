@@ -39,7 +39,7 @@ const AdminAnnouncements = () => {
 
   const handleToggleActive = async (a: ApiAnnouncement) => {
     try {
-      await updateMut.mutateAsync({ id: a.id, input: { active: !a.active } });
+      await updateMut.mutateAsync({ id: a.id, input: { active: !a.active, message: a.message } });
       toast.success(a.active ? "Aviso desativado" : "Aviso ativado");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao atualizar");

@@ -206,7 +206,7 @@ const TournamentCard = ({ tournament, tvMode = false }: Props) => {
                     <AssessorAvatar
                       initials={p.initials ?? "??"}
                       photoUrl={p.photoUrl}
-                      level="BRONZE"
+                      level="bronze"
                       size={tvMode ? 44 : 32}
                     />
                   )}
