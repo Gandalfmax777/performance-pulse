@@ -23,7 +23,8 @@ import { useSystemNotifications } from "@/hooks/useSystemNotifications";
 
 const TvLeagueTable = lazy(() => import("@/components/dashboard/TvLeagueTable"));
 const TvPodium = lazy(() => import("@/components/dashboard/TvPodium"));
-const SquadBet = lazy(() => import("@/components/dashboard/SquadBet"));
+const TvSquadBoard = lazy(() => import("@/components/dashboard/TvSquadBoard"));
+const TvTournamentBoard = lazy(() => import("@/components/dashboard/TvTournamentBoard"));
 
 type TvView = "overview" | "results" | "squad" | "podium" | "tournaments";
 
@@ -264,22 +265,26 @@ const TvPage = () => {
             </div>
           )}
           {view === "results" && <TvLeagueTable assessors={assessors} />}
-          {view === "squad" && <SquadBet assessors={assessors} />}
+          {view === "squad" && <TvSquadBoard assessors={assessors} />}
           {view === "podium" && <TvPodium assessors={assessors} />}
           {view === "tournaments" && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 mb-2">
-                <Swords size={32} className="text-primary" weight="duotone" />
-                <h2 className="text-3xl font-extrabold tracking-tight text-ink">
-                  {activeTournaments.length === 1 ? "Torneio Ativo" : "Torneios Ativos"}
-                </h2>
+            activeTournaments.length === 1 ? (
+              <TvTournamentBoard />
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <Swords size={32} className="text-primary" weight="duotone" />
+                  <h2 className="text-3xl font-extrabold tracking-tight text-ink">
+                    Torneios Ativos
+                  </h2>
+                </div>
+                <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
+                  {activeTournaments.map((t) => (
+                    <TournamentCard key={t.id} tournament={t} tvMode />
+                  ))}
+                </div>
               </div>
-              <div className={`grid gap-6 ${activeTournaments.length === 1 ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2"}`}>
-                {activeTournaments.map((t) => (
-                  <TournamentCard key={t.id} tournament={t} tvMode />
-                ))}
-              </div>
-            </div>
+            )
           )}
         </Suspense>
       </div>
