@@ -90,7 +90,7 @@ const TvSquadBoard = ({ assessors }: TvSquadBoardProps) => {
     <div className="flex flex-col gap-5">
       {/* Marquee */}
       <div
-        className="rounded-2xl text-white p-6 flex items-center justify-between gap-4 relative overflow-hidden flex-wrap"
+        className="rounded-[14px] text-white p-6 flex items-center justify-between gap-4 relative overflow-hidden flex-wrap"
         style={{ background: "hsl(var(--ink))" }}
       >
         <div
@@ -164,7 +164,7 @@ const TvSquadBoard = ({ assessors }: TvSquadBoardProps) => {
           {undercard.slice(0, 4).map((s) => (
             <div
               key={s.squad.id}
-              className="rounded-xl bg-card border border-line p-4 flex items-center gap-4"
+              className="rounded-[14px] bg-card border border-line p-4 flex items-center gap-4"
             >
               <div className="text-[36px] leading-none">{s.squad.emoji || "★"}</div>
               <div className="flex-1 min-w-0">
@@ -214,7 +214,7 @@ function SquadVersusCard({
   const { squad, pct, points, boletas, ativacoes } = standing;
   return (
     <div
-      className="rounded-2xl p-8 flex flex-col gap-5 relative overflow-hidden"
+      className="rounded-[14px] p-8 flex flex-col gap-5 relative overflow-hidden"
       style={{
         background: leading
           ? "linear-gradient(180deg, oklch(0.96 0.06 152) 0%, white 60%)"

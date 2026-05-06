@@ -65,7 +65,7 @@ const AdminAnnouncements = () => {
             ADMINISTRAÇÃO
           </p>
           <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-            <Megaphone size={20} weight="bold" className="text-primary" />
+            <Megaphone size={20} weight="bold" className="text-eqi" />
             Avisos
           </h1>
           <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
@@ -81,10 +81,10 @@ const AdminAnnouncements = () => {
       <div className="rounded-[14px] overflow-hidden border border-line bg-card">
         {isLoading ? (
           <div className="p-10 flex items-center justify-center">
-            <Loader2 className="w-6 h-6 text-primary animate-spin" />
+            <Loader2 className="w-6 h-6 text-eqi animate-spin" />
           </div>
         ) : (announcements ?? []).length === 0 ? (
-          <div className="p-10 text-center text-sm text-muted-foreground">
+          <div className="p-10 text-center text-sm text-ink-3">
             Nenhum aviso cadastrado. O ticker mostra só mensagens auto-geradas.
           </div>
         ) : (
@@ -95,7 +95,7 @@ const AdminAnnouncements = () => {
                 <div key={a.id} className="p-4 flex items-start gap-3">
                   <button
                     onClick={() => handleToggleActive(a)}
-                    className="mt-0.5 text-muted-foreground hover:text-primary transition-all"
+                    className="mt-0.5 text-ink-3 hover:text-eqi transition-all"
                     title={a.active ? "Desativar" : "Ativar"}
                   >
                     {a.active ? <Eye size={16} /> : <EyeSlash size={16} />}
@@ -103,13 +103,13 @@ const AdminAnnouncements = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       {a.emoji && <span className="text-lg">{a.emoji}</span>}
-                      <p className={`text-sm ${a.active && !expired ? "text-foreground" : "text-muted-foreground line-through"}`}>
+                      <p className={`text-sm ${a.active && !expired ? "text-ink" : "text-ink-3 line-through"}`}>
                         {a.message}
                       </p>
                       {!a.active && <Badge variant="outline" className="text-[9px]">INATIVO</Badge>}
                       {expired && <Badge variant="destructive" className="text-[9px]">EXPIRADO</Badge>}
                     </div>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-[10px] text-ink-3">
                       por {a.createdByName} em{" "}
                       {format(new Date(a.createdAt), "dd/MM 'às' HH:mm", { locale: ptBR })}
                       {a.expiresAt && (
@@ -124,14 +124,14 @@ const AdminAnnouncements = () => {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setDialog({ open: true, editing: a })}
-                      className="w-8 h-8 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 flex items-center justify-center transition-all"
+                      className="w-8 h-8 rounded-md text-ink-3 hover:text-eqi hover:bg-eqi/10 flex items-center justify-center transition-all"
                       title="Editar"
                     >
                       <PencilSimple size={14} />
                     </button>
                     <button
                       onClick={() => handleDelete(a)}
-                      className="w-8 h-8 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center transition-all"
+                      className="w-8 h-8 rounded-md text-ink-3 hover:text-destructive hover:bg-destructive/10 flex items-center justify-center transition-all"
                       title="Remover"
                     >
                       <Trash size={14} />
@@ -230,7 +230,7 @@ function AnnouncementDialog({ state, onClose, onSave, saving }: AnnouncementDial
               className="mt-1"
               autoFocus
             />
-            <p className="text-[10px] text-muted-foreground mt-1">{message.length}/500</p>
+            <p className="text-[10px] text-ink-3 mt-1">{message.length}/500</p>
           </div>
           <div className="flex gap-2">
             <div className="w-20">
@@ -253,7 +253,7 @@ function AnnouncementDialog({ state, onClose, onSave, saving }: AnnouncementDial
               />
             </div>
           </div>
-          <div className="flex items-center gap-2 pt-2 border-t border-border/30">
+          <div className="flex items-center gap-2 pt-2 border-t border-line/30">
             <Checkbox
               id="active"
               checked={active}

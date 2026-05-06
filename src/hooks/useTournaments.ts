@@ -98,3 +98,18 @@ export function useCancelTournament() {
     },
   });
 }
+
+/**
+ * Hard delete: apaga torneio + participantes (cascade no backend).
+ * Backend retorna 409 em FINISHED — UI deve esconder o botão nesse status.
+ */
+export function useDeleteTournament() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<null>(`/tournaments/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    },
+  });
+}

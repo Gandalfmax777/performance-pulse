@@ -185,7 +185,7 @@ const AdminSchedule = () => {
           ADMINISTRAÇÃO
         </p>
         <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-          <Calendar size={20} weight="bold" className="text-primary" />
+          <Calendar size={20} weight="bold" className="text-eqi" />
           Cronograma Semanal
         </h1>
         <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
@@ -196,11 +196,11 @@ const AdminSchedule = () => {
 
       {isLoading ? (
         <div className="rounded-[14px] border border-line bg-card p-10 flex items-center justify-center">
-          <Loader2 className="w-6 h-6 text-primary animate-spin" />
+          <Loader2 className="w-6 h-6 text-eqi animate-spin" />
         </div>
       ) : (
         <Tabs defaultValue="1" className="w-full">
-          <TabsList className="bg-muted/30 border border-border/30">
+          <TabsList className="bg-muted/30 border border-line/30">
             {[1, 2, 3, 4, 5].map((d) => (
               <TabsTrigger key={d} value={String(d)} className="text-xs font-semibold">
                 {DAY_LABELS[d]}
@@ -211,15 +211,15 @@ const AdminSchedule = () => {
           {[1, 2, 3, 4, 5].map((dow) => (
             <TabsContent key={dow} value={String(dow)}>
               <div className="rounded-[14px] overflow-hidden border border-line bg-card">
-                <div className="flex items-center justify-between px-5 py-3 border-b border-border/30">
-                  <span className="text-sm font-bold text-foreground">{DAY_LABELS[dow]}</span>
+                <div className="flex items-center justify-between px-5 py-3 border-b border-line/30">
+                  <span className="text-sm font-bold text-ink">{DAY_LABELS[dow]}</span>
                   <Button size="sm" onClick={() => openCreate(dow)} className="gap-1.5">
                     <Plus size={12} weight="bold" /> Nova atividade
                   </Button>
                 </div>
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-border/30 hover:bg-transparent">
+                    <TableRow className="border-line/30 hover:bg-transparent">
                       <TableHead className="text-xs">Nome</TableHead>
                       <TableHead className="text-xs">Horário</TableHead>
                       <TableHead className="text-xs">Cadência</TableHead>
@@ -231,15 +231,15 @@ const AdminSchedule = () => {
                   <TableBody>
                     {byDay[dow].length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-xs text-muted-foreground text-center py-6">
+                        <TableCell colSpan={6} className="text-xs text-ink-3 text-center py-6">
                           Nenhuma atividade
                         </TableCell>
                       </TableRow>
                     )}
                     {byDay[dow].map((act) => (
-                      <TableRow key={act.id} className={`border-border/20 ${!act.active ? "opacity-50" : ""}`}>
-                        <TableCell className="text-sm font-semibold text-foreground">{act.name}</TableCell>
-                        <TableCell className="text-xs font-mono text-muted-foreground">
+                      <TableRow key={act.id} className={`border-line/20 ${!act.active ? "opacity-50" : ""}`}>
+                        <TableCell className="text-sm font-semibold text-ink">{act.name}</TableCell>
+                        <TableCell className="text-xs font-mono text-ink-3">
                           <InlineTimeEditor
                             startTime={act.startTime}
                             endTime={act.endTime}
@@ -257,7 +257,7 @@ const AdminSchedule = () => {
                           />
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="text-[10px] font-mono border-border/40">
+                          <Badge variant="outline" className="text-[10px] font-mono border-line/40">
                             {act.cadenceType}
                           </Badge>
                         </TableCell>
@@ -267,12 +267,12 @@ const AdminSchedule = () => {
                               <Badge key={k.kpiId} variant="secondary" className="text-[10px]">
                                 {k.label}
                                 {k.targetOverride !== null && (
-                                  <span className="ml-1 text-primary font-mono">({k.targetOverride})</span>
+                                  <span className="ml-1 text-eqi font-mono">({k.targetOverride})</span>
                                 )}
                               </Badge>
                             ))}
                             {act.kpis.length === 0 && (
-                              <span className="text-[10px] text-muted-foreground italic">nenhum</span>
+                              <span className="text-[10px] text-ink-3 italic">nenhum</span>
                             )}
                           </div>
                         </TableCell>
@@ -434,11 +434,11 @@ function KpiManager({
       {/* Attached */}
       <div className="space-y-2">
         {activity.kpis.map((k) => (
-          <div key={k.kpiId} className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/20">
+          <div key={k.kpiId} className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-line/20">
             <div>
-              <span className="text-sm font-semibold text-foreground">{k.label}</span>
+              <span className="text-sm font-semibold text-ink">{k.label}</span>
               <div className="flex items-center gap-2 mt-1">
-                <Label className="text-[10px] text-muted-foreground">Override:</Label>
+                <Label className="text-[10px] text-ink-3">Override:</Label>
                 <Input
                   type="number"
                   value={k.targetOverride ?? ""}
@@ -457,13 +457,13 @@ function KpiManager({
           </div>
         ))}
         {activity.kpis.length === 0 && (
-          <p className="text-xs text-muted-foreground text-center py-4">Nenhum KPI vinculado.</p>
+          <p className="text-xs text-ink-3 text-center py-4">Nenhum KPI vinculado.</p>
         )}
       </div>
 
       {/* Add new */}
       {available.length > 0 && (
-        <div className="flex items-end gap-2 pt-3 border-t border-border/30">
+        <div className="flex items-end gap-2 pt-3 border-t border-line/30">
           <div className="flex-1">
             <Label className="text-xs">Vincular KPI</Label>
             <Select value={addKpiId} onValueChange={setAddKpiId}>
@@ -552,7 +552,7 @@ function InlineTimeEditor({
           setEnd(endTime);
           setEditing(true);
         }}
-        className="font-mono text-xs hover:text-primary hover:bg-primary/10 px-1.5 py-0.5 rounded transition-all"
+        className="font-mono text-xs hover:text-eqi hover:bg-eqi/10 px-1.5 py-0.5 rounded transition-all"
         title="Editar horário"
       >
         {startTime}–{endTime}
@@ -572,9 +572,9 @@ function InlineTimeEditor({
         }}
         autoFocus
         disabled={saving}
-        className="w-[70px] px-1 py-0.5 rounded bg-muted/30 border border-primary/30 text-xs font-mono focus:outline-none focus:border-primary"
+        className="w-[70px] px-1 py-0.5 rounded bg-muted/30 border border-eqi/30 text-xs font-mono focus:outline-none focus:border-primary"
       />
-      <span className="text-muted-foreground">–</span>
+      <span className="text-ink-3">–</span>
       <input
         type="time"
         value={end}
@@ -585,9 +585,9 @@ function InlineTimeEditor({
         }}
         onBlur={commit}
         disabled={saving}
-        className="w-[70px] px-1 py-0.5 rounded bg-muted/30 border border-primary/30 text-xs font-mono focus:outline-none focus:border-primary"
+        className="w-[70px] px-1 py-0.5 rounded bg-muted/30 border border-eqi/30 text-xs font-mono focus:outline-none focus:border-primary"
       />
-      {saving && <Loader2 className="w-3 h-3 animate-spin text-primary" />}
+      {saving && <Loader2 className="w-3 h-3 animate-spin text-eqi" />}
     </div>
   );
 }

@@ -121,7 +121,7 @@ const AdminUsers = () => {
             ADMINISTRAÇÃO
           </p>
           <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-            <Users size={20} weight="bold" className="text-primary" />
+            <Users size={20} weight="bold" className="text-eqi" />
             Usuários
           </h1>
           <p className="text-[12px] text-ink-3 mt-1.5">
@@ -136,12 +136,12 @@ const AdminUsers = () => {
       <div className="rounded-[14px] overflow-hidden border border-line bg-card">
         {isLoading ? (
           <div className="p-10 flex items-center justify-center">
-            <Loader2 className="w-6 h-6 text-primary animate-spin" />
+            <Loader2 className="w-6 h-6 text-eqi animate-spin" />
           </div>
         ) : (
           <Table>
             <TableHeader>
-              <TableRow className="border-border/30 hover:bg-transparent">
+              <TableRow className="border-line/30 hover:bg-transparent">
                 <TableHead className="text-xs">Nome</TableHead>
                 <TableHead className="text-xs">E-mail</TableHead>
                 <TableHead className="text-xs">Role</TableHead>
@@ -153,25 +153,25 @@ const AdminUsers = () => {
               {(users ?? []).map((u) => {
                 const isSelf = u.id === currentUser?.id;
                 return (
-                  <TableRow key={u.id} className="border-border/20">
+                  <TableRow key={u.id} className="border-line/20">
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                        <div className="w-8 h-8 rounded-full bg-eqi/20 flex items-center justify-center text-xs font-bold text-eqi">
                           {u.name.slice(0, 2).toUpperCase()}
                         </div>
-                        <span className="text-sm font-semibold text-foreground">
+                        <span className="text-sm font-semibold text-ink">
                           {u.name}
-                          {isSelf && <span className="text-[10px] text-muted-foreground ml-1.5">(você)</span>}
+                          {isSelf && <span className="text-[10px] text-ink-3 ml-1.5">(você)</span>}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-xs font-mono text-muted-foreground">{u.email}</TableCell>
+                    <TableCell className="text-xs font-mono text-ink-3">{u.email}</TableCell>
                     <TableCell>
                       <Badge variant={u.role === "ADMIN" ? "default" : "secondary"} className="text-[10px]">
                         {u.role}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-xs font-mono text-muted-foreground">
+                    <TableCell className="text-xs font-mono text-ink-3">
                       {format(new Date(u.createdAt), "dd/MM/yyyy", { locale: ptBR })}
                     </TableCell>
                     <TableCell className="text-right">

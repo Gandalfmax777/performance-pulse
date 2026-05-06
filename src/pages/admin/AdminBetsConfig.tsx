@@ -97,7 +97,7 @@ const AdminBetsConfig = () => {
           ADMINISTRAÇÃO
         </p>
         <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-          <Trophy size={20} weight="bold" className="text-primary" />
+          <Trophy size={20} weight="bold" className="text-eqi" />
           Configurar Apostas
         </h1>
         <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
@@ -108,7 +108,7 @@ const AdminBetsConfig = () => {
       {/* Create form */}
       <div className="rounded-[14px] p-5 border border-line bg-card space-y-4">
         <h2 className="text-[14px] font-extrabold tracking-tight text-ink flex items-center gap-2">
-          <Plus size={14} weight="bold" className="text-primary" />
+          <Plus size={14} weight="bold" className="text-eqi" />
           Nova aposta
         </h2>
         <div className="grid grid-cols-4 gap-3">
@@ -150,7 +150,7 @@ const AdminBetsConfig = () => {
 
       {/* Tabs ativas / finalizadas */}
       <Tabs defaultValue="active" className="w-full">
-        <TabsList className="bg-muted/30 border border-border/30">
+        <TabsList className="bg-muted/30 border border-line/30">
           <TabsTrigger value="active" className="text-xs font-semibold">
             Ativas ({activeBets.length})
           </TabsTrigger>
@@ -163,14 +163,14 @@ const AdminBetsConfig = () => {
           <div className="rounded-[14px] overflow-hidden border border-line bg-card">
             {isLoading ? (
               <div className="p-10 flex items-center justify-center">
-                <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                <Loader2 className="w-6 h-6 text-eqi animate-spin" />
               </div>
             ) : activeBets.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-10">Nenhuma aposta ativa.</p>
+              <p className="text-sm text-ink-3 text-center py-10">Nenhuma aposta ativa.</p>
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="border-border/30 hover:bg-transparent">
+                  <TableRow className="border-line/30 hover:bg-transparent">
                     <TableHead className="text-xs">Rodada</TableHead>
                     <TableHead className="text-xs">Tipo</TableHead>
                     <TableHead className="text-xs">Valor</TableHead>
@@ -181,13 +181,13 @@ const AdminBetsConfig = () => {
                 </TableHeader>
                 <TableBody>
                   {activeBets.map((bet) => (
-                    <TableRow key={bet.id} className="border-border/20">
+                    <TableRow key={bet.id} className="border-line/20">
                       <TableCell className="font-semibold text-sm">{bet.roundLabel}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className="text-[10px]">{bet.type}</Badge>
                       </TableCell>
-                      <TableCell className="font-mono text-sm text-primary">R$ {bet.value}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
+                      <TableCell className="font-mono text-sm text-eqi">R$ {bet.value}</TableCell>
+                      <TableCell className="text-xs text-ink-3">
                         {criteriaLabel(bet.winnerCriteriaJson)}
                       </TableCell>
                       <TableCell>
@@ -221,11 +221,11 @@ const AdminBetsConfig = () => {
         <TabsContent value="finished">
           <div className="rounded-[14px] overflow-hidden border border-line bg-card">
             {finishedBets.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-10">Nenhuma rodada finalizada.</p>
+              <p className="text-sm text-ink-3 text-center py-10">Nenhuma rodada finalizada.</p>
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="border-border/30 hover:bg-transparent">
+                  <TableRow className="border-line/30 hover:bg-transparent">
                     <TableHead className="text-xs">Rodada</TableHead>
                     <TableHead className="text-xs">Status</TableHead>
                     <TableHead className="text-xs">Valor</TableHead>
@@ -236,7 +236,7 @@ const AdminBetsConfig = () => {
                 </TableHeader>
                 <TableBody>
                   {finishedBets.map((bet) => (
-                    <TableRow key={bet.id} className="border-border/20">
+                    <TableRow key={bet.id} className="border-line/20">
                       <TableCell className="font-semibold text-sm">{bet.roundLabel}</TableCell>
                       <TableCell>
                         <Badge variant={bet.status === "FINISHED" ? "default" : "destructive"} className="text-[10px]">
@@ -247,8 +247,8 @@ const AdminBetsConfig = () => {
                       <TableCell className="text-sm">
                         {bet.winnerSquad ? `${bet.winnerSquad.emoji} ${bet.winnerSquad.name}` : "—"}
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{criteriaLabel(bet.winnerCriteriaJson)}</TableCell>
-                      <TableCell className="text-xs font-mono text-muted-foreground">{bet.endDate}</TableCell>
+                      <TableCell className="text-xs text-ink-3">{criteriaLabel(bet.winnerCriteriaJson)}</TableCell>
+                      <TableCell className="text-xs font-mono text-ink-3">{bet.endDate}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

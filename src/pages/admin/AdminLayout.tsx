@@ -50,8 +50,8 @@ const AdminLayout = () => {
         {/* Brand */}
         <div className="px-5 py-5 border-b border-line">
           <div className="flex items-center gap-2.5">
-            <div className="w-[30px] h-[30px] shrink-0 rounded-[7px] bg-primary flex items-center justify-center">
-              <Pulse weight="bold" size={15} className="text-primary-foreground" />
+            <div className="w-[30px] h-[30px] shrink-0 rounded-[7px] bg-ink flex items-center justify-center">
+              <Pulse weight="bold" size={15} className="text-white" />
             </div>
             <div className="leading-tight min-w-0">
               <h1 className="text-[13px] font-extrabold text-ink tracking-tight truncate">
@@ -109,7 +109,7 @@ const AdminLayout = () => {
         {/* User footer */}
         <div className="px-3 py-3 border-t border-line">
           <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-[7px] bg-surface-2 border border-line">
-            <div className="w-7 h-7 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-extrabold font-mono">
+            <div className="w-7 h-7 shrink-0 rounded-full bg-ink text-white flex items-center justify-center text-[10px] font-extrabold font-mono">
               {user?.name.slice(0, 2).toUpperCase() ?? "??"}
             </div>
             <div className="flex-1 min-w-0">

@@ -56,7 +56,7 @@ const TvLeagueTable = ({ assessors }: TvLeagueTableProps) => {
         </div>
         <div className="flex gap-3">
           <div
-            className="rounded-xl text-white p-4"
+            className="rounded-[14px] text-white p-4"
             style={{ background: "hsl(var(--ink))", minWidth: 130 }}
           >
             <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/50">
@@ -72,7 +72,7 @@ const TvLeagueTable = ({ assessors }: TvLeagueTableProps) => {
             <p className="font-mono text-[10px] text-white/55 mt-1">posições</p>
           </div>
           <div
-            className="rounded-xl text-white p-4"
+            className="rounded-[14px] text-white p-4"
             style={{ background: "hsl(var(--ink))", minWidth: 130 }}
           >
             <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/50">
@@ -90,7 +90,7 @@ const TvLeagueTable = ({ assessors }: TvLeagueTableProps) => {
         </div>
       </div>
 
-      <div className="rounded-2xl bg-card border border-line overflow-hidden flex flex-col">
+      <div className="rounded-[14px] bg-card border border-line overflow-hidden flex flex-col">
         {/* Header */}
         <div
           className="grid items-center gap-3 px-6 py-3 text-white"
