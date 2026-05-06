@@ -131,31 +131,35 @@ const TvSquadBoard = ({ assessors }: TvSquadBoardProps) => {
         </div>
       </div>
 
-      {/* Two squad cards facing off */}
-      <div className="relative grid items-stretch gap-4 sm:grid-cols-2">
+      {/* Two squad cards facing off — grid 3-col com VS dedicado no meio
+          (em vez do antigo overlay absoluto que sobrepunha conteúdo).
+          Em telas pequenas vira coluna única. */}
+      <div
+        className="grid items-stretch gap-5 grid-cols-1 sm:grid-cols-[1fr_auto_1fr]"
+      >
         <SquadVersusCard standing={a} leading />
-        <SquadVersusCard standing={b} leading={false} />
-
-        {/* Centro VS — overlay absoluto */}
-        <div className="hidden sm:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex-col items-center pointer-events-none">
+        <div className="hidden sm:flex flex-col items-center justify-center min-w-[140px] gap-3">
           <p
             className="font-serif italic font-bold leading-none tracking-[-0.04em] text-ink-3"
-            style={{ fontFamily: "'Instrument Serif', serif", fontSize: 64 }}
+            style={{ fontFamily: "'Instrument Serif', serif", fontSize: 56 }}
           >
             vs
           </p>
-          <div className="w-8 h-px bg-line my-2" />
-          <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-ink-3 text-center">
-            VANTAGEM
-          </p>
-          <p
-            className="font-mono font-extrabold leading-none tracking-[-0.02em] mt-1"
-            style={{ fontSize: 22, color: "hsl(var(--eqi-green))" }}
-          >
-            +{gap}
-            <span className="text-xs text-ink-3">p.p.</span>
-          </p>
+          <div className="w-10 h-px bg-line" />
+          <div className="text-center">
+            <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-ink-3">
+              VANTAGEM
+            </p>
+            <p
+              className="font-mono font-extrabold leading-none tracking-[-0.02em] mt-1.5"
+              style={{ fontSize: 24, color: "hsl(var(--eqi-green))" }}
+            >
+              +{gap}
+              <span className="text-xs text-ink-3">p.p.</span>
+            </p>
+          </div>
         </div>
+        <SquadVersusCard standing={b} leading={false} />
       </div>
 
       {/* Undercard */}
@@ -214,7 +218,7 @@ function SquadVersusCard({
   const { squad, pct, points, boletas, ativacoes } = standing;
   return (
     <div
-      className="rounded-[14px] p-8 flex flex-col gap-5 relative overflow-hidden"
+      className="rounded-[14px] p-6 flex flex-col gap-4 relative overflow-hidden"
       style={{
         background: leading
           ? "linear-gradient(180deg, oklch(0.96 0.06 152) 0%, white 60%)"
@@ -232,17 +236,17 @@ function SquadVersusCard({
       )}
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[56px] leading-none">{squad.emoji || "★"}</div>
-          <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mt-3">
+          <div className="text-[44px] leading-none">{squad.emoji || "★"}</div>
+          <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mt-2.5">
             SQUAD
           </p>
           <p
             className="font-serif italic font-bold leading-none tracking-[-0.03em]"
-            style={{ fontFamily: "'Instrument Serif', serif", fontSize: 56 }}
+            style={{ fontFamily: "'Instrument Serif', serif", fontSize: 44 }}
           >
             {squad.name}
           </p>
-          <p className="font-mono text-[12px] text-ink-3 mt-2 font-bold">
+          <p className="font-mono text-[11px] text-ink-3 mt-1.5 font-bold">
             {squad.members.length} membros
           </p>
         </div>
@@ -250,13 +254,13 @@ function SquadVersusCard({
           <p
             className="font-mono font-extrabold leading-none tracking-[-0.04em]"
             style={{
-              fontSize: 96,
+              fontSize: 76,
               color: leading ? "hsl(var(--eqi-green))" : "hsl(var(--ink-2))",
             }}
           >
             {pct}
           </p>
-          <p className="text-2xl text-ink-3 font-bold leading-none -mt-2">%</p>
+          <p className="text-xl text-ink-3 font-bold leading-none -mt-1">%</p>
           <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-ink-3 mt-1">
             DA META COMBINADA
           </p>
@@ -282,16 +286,16 @@ function SquadVersusCard({
               initials={m.initials}
               photoUrl={m.photoUrl}
               level={m.level.toLowerCase() as "bronze" | "silver" | "gold"}
-              size={44}
+              size={36}
             />
           </div>
         ))}
-        <p className="ml-4 text-[12px] font-bold text-ink-2">
+        <p className="ml-3 text-[11px] font-bold text-ink-2">
           {squad.members.length} assessores
         </p>
       </div>
 
-      <div className="grid grid-cols-3 border-t border-line pt-3.5">
+      <div className="grid grid-cols-3 border-t border-line pt-3">
         {[
           { l: "BOLETAS", v: String(boletas) },
           { l: "ATIVAÇÕES", v: String(ativacoes) },
@@ -306,7 +310,7 @@ function SquadVersusCard({
             </p>
             <p
               className="font-mono font-extrabold leading-none tracking-[-0.02em] mt-1"
-              style={{ fontSize: 26 }}
+              style={{ fontSize: 22 }}
             >
               {stat.v}
             </p>

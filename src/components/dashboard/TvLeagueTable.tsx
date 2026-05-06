@@ -121,13 +121,16 @@ const TvLeagueTable = ({ assessors }: TvLeagueTableProps) => {
         <div>
           {sorted.map((a, i) => {
             const top3 = i < 3;
+            // Top 3 ganha gradient com tint da medalha — gold/silver/bronze
+            // visualmente distintos. Silver antigo (oklch 0.97 0.005 240)
+            // estava praticamente branco; agora usa prata mais saturado.
             const bg =
               i === 0
                 ? "oklch(0.97 0.06 90)"
                 : i === 1
-                ? "oklch(0.97 0.005 240)"
+                ? "oklch(0.93 0.012 250)"
                 : i === 2
-                ? "oklch(0.96 0.025 60)"
+                ? "oklch(0.93 0.04 60)"
                 : "transparent";
             const pctColor =
               a.weeklyGoalPercent >= 100
