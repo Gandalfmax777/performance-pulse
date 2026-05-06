@@ -193,7 +193,7 @@ const TournamentFinishedOverlay = ({ event, onDismiss, autoDismissMs = 12000 }: 
                       <AssessorAvatar
                         initials={w.initials ?? "??"}
                         photoUrl={w.photoUrl}
-                        level={w.rank === 1 ? "GOLD" : w.rank === 2 ? "SILVER" : "BRONZE"}
+                        level={w.rank === 1 ? "gold" : w.rank === 2 ? "silver" : "bronze"}
                         size={w.rank === 1 ? 96 : 72}
                       />
                       <p className={`font-display font-bold text-foreground ${w.rank === 1 ? "text-2xl" : "text-xl"}`}>
