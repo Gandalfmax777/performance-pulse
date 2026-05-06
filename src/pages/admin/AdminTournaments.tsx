@@ -236,13 +236,13 @@ const AdminTournaments = () => {
             <button
               key={tpl.id}
               onClick={() => applyTemplate(tpl)}
-              className="text-left p-3 rounded-xl border border-border/30 bg-muted/20 hover:border-secondary/50 hover:bg-secondary/5 transition-all"
+              className="text-left p-3 rounded-[14px] border border-line bg-surface-2/50 hover:border-eqi/40 hover:bg-eqi/5 transition-all"
             >
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xl">{tpl.emoji}</span>
-                <span className="text-sm font-semibold text-foreground truncate">{tpl.label}</span>
+                <span className="text-sm font-semibold text-ink truncate">{tpl.label}</span>
               </div>
-              <p className="text-[11px] text-muted-foreground leading-tight">{tpl.description}</p>
+              <p className="text-[11px] text-ink-3 leading-tight">{tpl.description}</p>
             </button>
           ))}
         </div>
@@ -324,7 +324,7 @@ const AdminTournaments = () => {
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-[10px] text-muted-foreground mt-1">
+            <p className="text-[10px] text-ink-3 mt-1">
               Total do pote: R$ {Object.values(PAYOUT_PRESETS[form.payoutPresetIdx].payout).reduce((a, b) => a + b, 0).toLocaleString("pt-BR")}
             </p>
           </div>
@@ -338,13 +338,13 @@ const AdminTournaments = () => {
 
       {/* Ativos */}
       <div>
-        <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+        <h2 className="text-sm font-bold text-ink mb-3 flex items-center gap-2">
           <Flag size={16} weight="fill" className="text-success" />
           Ativos ({active.length})
         </h2>
-        {isLoading && <p className="text-xs text-muted-foreground">Carregando…</p>}
+        {isLoading && <p className="text-xs text-ink-3">Carregando…</p>}
         {!isLoading && active.length === 0 && (
-          <p className="text-xs text-muted-foreground italic">Nenhum torneio ativo. Crie um acima.</p>
+          <p className="text-xs text-ink-3 italic">Nenhum torneio ativo. Crie um acima.</p>
         )}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {active.map((t) => (
@@ -388,7 +388,7 @@ const AdminTournaments = () => {
       {/* Cancelados — admin pode excluir permanentemente pra limpar a lista */}
       {canceled.length > 0 && (
         <div>
-          <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+          <h2 className="text-sm font-bold text-ink mb-3 flex items-center gap-2">
             <XCircle size={16} weight="fill" className="text-ink-3" />
             Cancelados ({canceled.length})
           </h2>
@@ -415,14 +415,14 @@ const AdminTournaments = () => {
       {/* Finalizados */}
       {finished.length > 0 && (
         <div>
-          <h2 className="text-sm font-bold text-foreground mb-3">
+          <h2 className="text-sm font-bold text-ink mb-3">
             Histórico ({finished.length})
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {finished.slice(0, 6).map((t) => (
               <div key={t.id} className="space-y-1">
                 <TournamentCard tournament={t} />
-                <p className="text-[10px] text-muted-foreground font-mono text-center">
+                <p className="text-[10px] text-ink-3 font-mono text-center">
                   Finalizado em {t.finishedAt ? format(parseISO(t.finishedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) : "—"}
                 </p>
               </div>

@@ -48,7 +48,7 @@ export default function AdminSounds() {
           ADMINISTRAÇÃO
         </p>
         <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-          <Volume2 size={20} weight="fill" className="text-primary" />
+          <Volume2 size={20} weight="fill" className="text-eqi" />
           Sons dos KPIs
         </h1>
         <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
@@ -62,25 +62,25 @@ export default function AdminSounds() {
       <div className="rounded-[14px] border border-line bg-card divide-y divide-line">
         {isLoading && (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+            <Loader2 className="w-5 h-5 animate-spin text-ink-3" />
           </div>
         )}
         {kpis?.map((kpi) => (
           <KpiSoundRow key={kpi.id} kpi={kpi} />
         ))}
         {kpis && kpis.length === 0 && (
-          <p className="text-sm text-muted-foreground text-center py-12">
+          <p className="text-sm text-ink-3 text-center py-12">
             Nenhum KPI cadastrado ainda.
           </p>
         )}
       </div>
 
       {/* Info card */}
-      <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 space-y-2">
-        <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+      <div className="rounded-lg bg-eqi/5 border border-eqi/20 p-4 space-y-2">
+        <h3 className="text-sm font-bold text-ink flex items-center gap-1.5">
           <Volume2 size={16} weight="fill" /> Como funciona
         </h3>
-        <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+        <ul className="text-xs text-ink-3 space-y-1 list-disc list-inside">
           <li>
             <strong>Ativar som</strong>: liga/desliga sem perder o arquivo. Útil
             pra silenciar temporariamente.
@@ -160,11 +160,11 @@ function KpiSoundRow({ kpi }: { kpi: ApiKpi }) {
   // Status visual: verde se tudo ok + broadcast, amarelo se só enabled, cinza
   // se sem som. Indica a visibilidade do estado sem precisar expandir.
   const statusBadge = !sound ? (
-    <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-muted/30 text-muted-foreground">
+    <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-muted/30 text-ink-3">
       <VolumeX size={12} /> Sem som
     </span>
   ) : !sound.enabled ? (
-    <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-muted/30 text-muted-foreground">
+    <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-muted/30 text-ink-3">
       Desativado
     </span>
   ) : sound.broadcast ? (
@@ -194,17 +194,17 @@ function KpiSoundRow({ kpi }: { kpi: ApiKpi }) {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold text-foreground truncate">
+            <p className="text-sm font-semibold text-ink truncate">
               {kpi.label}
             </p>
             {!kpi.active && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted/30 text-muted-foreground">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted/30 text-ink-3">
                 inativo
               </span>
             )}
             {statusBadge}
           </div>
-          <p className="text-[10px] font-mono text-muted-foreground">
+          <p className="text-[10px] font-mono text-ink-3">
             {kpi.key}
           </p>
         </div>
@@ -241,8 +241,8 @@ function KpiSoundRow({ kpi }: { kpi: ApiKpi }) {
       {sound && expanded && (
         <div className="mt-4 pl-12 space-y-3">
           {/* Player preview */}
-          <div className="p-3 rounded-lg bg-muted/10 border border-border/20">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+          <div className="p-3 rounded-lg bg-muted/10 border border-line/20">
+            <p className="text-[10px] uppercase tracking-wider text-ink-3 mb-2">
               Arquivo atual
             </p>
             <audio controls src={sound.url} className="w-full h-8">
@@ -252,7 +252,7 @@ function KpiSoundRow({ kpi }: { kpi: ApiKpi }) {
 
           {/* Toggles */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/10 border border-border/20">
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/10 border border-line/20">
               <Checkbox
                 id={`sound-enabled-${kpi.id}`}
                 checked={sound.enabled}
@@ -267,13 +267,13 @@ function KpiSoundRow({ kpi }: { kpi: ApiKpi }) {
                 >
                   Ativar som
                 </Label>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
+                <p className="text-[10px] text-ink-3 mt-0.5">
                   Quando desativado, nada toca — mesmo com arquivo carregado.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/10 border border-border/20">
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/10 border border-line/20">
               <Checkbox
                 id={`sound-broadcast-${kpi.id}`}
                 checked={sound.broadcast}
@@ -285,12 +285,12 @@ function KpiSoundRow({ kpi }: { kpi: ApiKpi }) {
                 <Label
                   htmlFor={`sound-broadcast-${kpi.id}`}
                   className={`text-xs font-semibold cursor-pointer ${
-                    !sound.enabled ? "text-muted-foreground" : ""
+                    !sound.enabled ? "text-ink-3" : ""
                   }`}
                 >
                   Broadcast (todos dispositivos)
                 </Label>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
+                <p className="text-[10px] text-ink-3 mt-0.5">
                   Toca em TV + laptop + qualquer dashboard aberto ao mesmo
                   tempo.
                 </p>

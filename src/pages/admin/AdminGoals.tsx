@@ -75,7 +75,7 @@ const AdminGoals = () => {
             ADMINISTRAÇÃO
           </p>
           <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-            <Target size={20} weight="bold" className="text-primary" />
+            <Target size={20} weight="bold" className="text-eqi" />
             Metas & KPIs
           </h1>
           <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
@@ -92,12 +92,12 @@ const AdminGoals = () => {
       <div className="rounded-[14px] overflow-hidden border border-line bg-card">
         {isLoading ? (
           <div className="p-10 flex items-center justify-center">
-            <Loader2 className="w-6 h-6 text-primary animate-spin" />
+            <Loader2 className="w-6 h-6 text-eqi animate-spin" />
           </div>
         ) : (
           <Table>
             <TableHeader>
-              <TableRow className="border-border/30 hover:bg-transparent">
+              <TableRow className="border-line/30 hover:bg-transparent">
                 <TableHead className="text-xs">KPI</TableHead>
                 <TableHead className="text-xs">Chave</TableHead>
                 <TableHead className="text-xs">Modo</TableHead>
@@ -116,12 +116,12 @@ const AdminGoals = () => {
                 const expanded = historyOpen === kpi.id;
                 return (
                   <>
-                    <TableRow key={kpi.id} className="border-border/20">
+                    <TableRow key={kpi.id} className="border-line/20">
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => setHistoryOpen(expanded ? null : kpi.id)}
-                            className="text-muted-foreground hover:text-foreground"
+                            className="text-ink-3 hover:text-ink"
                             title="Ver histórico"
                           >
                             {expanded ? (
@@ -130,29 +130,29 @@ const AdminGoals = () => {
                               <ChevronDown className="w-3.5 h-3.5" />
                             )}
                           </button>
-                          <span className="font-semibold text-sm text-foreground">{kpi.label}</span>
+                          <span className="font-semibold text-sm text-ink">{kpi.label}</span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <code className="text-[11px] font-mono text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
+                        <code className="text-[11px] font-mono text-ink-3 bg-muted/30 px-1.5 py-0.5 rounded">
                           {kpi.key}
                         </code>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="text-[10px] font-mono border-border/40">
+                        <Badge variant="outline" className="text-[10px] font-mono border-line/40">
                           {kpi.inputMode}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <span className="font-mono font-bold text-sm text-primary">
+                        <span className="font-mono font-bold text-sm text-eqi">
                           {goalValue}
                           {kpi.unit}
                         </span>
                         {period !== "—" && (
-                          <span className="text-[10px] text-muted-foreground ml-1.5">/ {period.toLowerCase()}</span>
+                          <span className="text-[10px] text-ink-3 ml-1.5">/ {period.toLowerCase()}</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground font-mono">{validFrom}</TableCell>
+                      <TableCell className="text-xs text-ink-3 font-mono">{validFrom}</TableCell>
                       <TableCell className="text-right">
                         <Button
                           size="sm"
@@ -311,7 +311,7 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
         <div className="space-y-5 py-3">
           {/* KPI definition */}
           <div>
-            <h3 className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-3">
+            <h3 className="text-[11px] uppercase tracking-wider text-ink-3 font-semibold mb-3">
               Definição do KPI
             </h3>
             <div className="space-y-3">
@@ -346,7 +346,7 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
                   onChange={(e) => setDefaultTarget(Number(e.target.value))}
                   className="mt-1 font-mono"
                 />
-                <p className="text-[10px] text-muted-foreground mt-1">
+                <p className="text-[10px] text-ink-3 mt-1">
                   Usado quando não há goal ativa cadastrada.
                 </p>
               </div>
@@ -355,7 +355,7 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
 
           {/* Goal */}
           <div>
-            <h3 className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-3">
+            <h3 className="text-[11px] uppercase tracking-wider text-ink-3 font-semibold mb-3">
               Meta ativa
             </h3>
             <div className="space-y-3">
@@ -387,7 +387,7 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
                   </Select>
                 </div>
               </div>
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/20 border border-border/20">
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/20 border border-line/20">
                 <Checkbox
                   id="retroactive"
                   checked={appliesRetroactively}
@@ -398,7 +398,7 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
                   <Label htmlFor="retroactive" className="text-xs font-semibold cursor-pointer">
                     Aplicar retroativamente
                   </Label>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                  <p className="text-[10px] text-ink-3 mt-0.5">
                     Recalcula os pontos e % de todas as métricas já registradas com a nova meta.
                   </p>
                 </div>
@@ -408,7 +408,7 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
 
           {/* Scoring rule */}
           <div>
-            <h3 className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-3">
+            <h3 className="text-[11px] uppercase tracking-wider text-ink-3 font-semibold mb-3">
               Regra de pontuação
             </h3>
             <div className="space-y-3">
@@ -478,12 +478,12 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
                 </div>
               )}
 
-              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+              <div className="p-3 rounded-lg bg-eqi/5 border border-eqi/20">
+                <p className="text-[10px] uppercase tracking-wider text-ink-3 mb-1">
                   Regra atual
                 </p>
-                <p className="text-sm font-mono text-primary">{rulePreview}</p>
-                <p className="text-[10px] text-muted-foreground mt-1">
+                <p className="text-sm font-mono text-eqi">{rulePreview}</p>
+                <p className="text-[10px] text-ink-3 mt-1">
                   Aplica em novos registros. Pra recalcular histórico, rodar
                   <code className="mx-1 px-1 bg-muted/30 rounded">scripts/recompute-all-points.ts</code>.
                 </p>
@@ -512,30 +512,30 @@ function GoalHistoryRow({ kpiId }: { kpiId: string }) {
   const { data, isLoading } = useGoals({ kpiId });
 
   return (
-    <TableRow className="border-border/20 hover:bg-transparent">
+    <TableRow className="border-line/20 hover:bg-transparent">
       <TableCell colSpan={6} className="bg-muted/10 py-3">
         <div className="flex items-center gap-2 mb-2">
           <History size={14} className="text-ink-3" />
-          <span className="text-xs font-semibold text-muted-foreground">Histórico de metas</span>
+          <span className="text-xs font-semibold text-ink-3">Histórico de metas</span>
         </div>
         {isLoading ? (
-          <p className="text-xs text-muted-foreground pl-5">Carregando…</p>
+          <p className="text-xs text-ink-3 pl-5">Carregando…</p>
         ) : (data ?? []).length === 0 ? (
-          <p className="text-xs text-muted-foreground pl-5">Nenhum histórico.</p>
+          <p className="text-xs text-ink-3 pl-5">Nenhum histórico.</p>
         ) : (
           <div className="space-y-1 pl-5">
             {(data ?? []).map((g: ApiGoal) => (
               <div key={g.id} className="flex items-center gap-4 text-xs font-mono">
-                <span className="text-primary font-bold w-12 text-right">
+                <span className="text-eqi font-bold w-12 text-right">
                   {g.value}
                 </span>
-                <span className="text-muted-foreground">{g.period}</span>
-                <span className="text-muted-foreground">
+                <span className="text-ink-3">{g.period}</span>
+                <span className="text-ink-3">
                   {formatYmdBr(g.validFrom.slice(0, 10))} →{" "}
                   {g.validTo ? formatYmdBr(g.validTo.slice(0, 10)) : "atual"}
                 </span>
                 {!g.validTo && (
-                  <Badge variant="outline" className="text-[9px] border-primary/30 text-primary">
+                  <Badge variant="outline" className="text-[9px] border-eqi/30 text-eqi">
                     ATIVA
                   </Badge>
                 )}
@@ -701,7 +701,7 @@ function CreateKpiDialog({ open, onClose, onSuccess }: CreateKpiDialogProps) {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-start gap-2 pt-2 border-t border-border/30">
+          <div className="flex items-start gap-2 pt-2 border-t border-line/30">
             <Checkbox
               id="createGoal"
               checked={createGoal}
@@ -729,7 +729,7 @@ function CreateKpiDialog({ open, onClose, onSuccess }: CreateKpiDialogProps) {
           </div>
 
           {/* Scoring rule (opcional) */}
-          <div className="pt-2 border-t border-border/30 space-y-2">
+          <div className="pt-2 border-t border-line/30 space-y-2">
             <div className="flex items-start gap-2">
               <Checkbox
                 id="createRule"
@@ -740,7 +740,7 @@ function CreateKpiDialog({ open, onClose, onSuccess }: CreateKpiDialogProps) {
                 <Label htmlFor="createRule" className="text-xs font-medium cursor-pointer">
                   Definir regra de pontuação
                 </Label>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[10px] text-ink-3">
                   Sem regra, KPI cai no fallback proporcional (cap 150).
                 </p>
               </div>
