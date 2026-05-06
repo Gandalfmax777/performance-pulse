@@ -2,29 +2,31 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Target,
-  Calendar,
+  CalendarBlank,
   Repeat,
   Trophy,
   Users,
-  LogOut,
-  Shield,
+  SignOut,
+  ShieldCheck,
   Megaphone,
-  Swords,
-  Volume2,
-} from "lucide-react";
+  Sword as Swords,
+  SpeakerHigh,
+  Pulse,
+  type Icon as PhosphorIcon,
+} from "@phosphor-icons/react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { clearAuthToken } from "@/api/client";
 
 interface NavItem {
   to: string;
   label: string;
-  icon: typeof Target;
+  icon: PhosphorIcon;
 }
 
 const NAV_ITEMS: NavItem[] = [
   { to: "/admin/goals",         label: "Metas & KPIs",  icon: Target },
-  { to: "/admin/sounds",        label: "Sons dos KPIs", icon: Volume2 },
-  { to: "/admin/schedule",      label: "Cronograma",    icon: Calendar },
+  { to: "/admin/sounds",        label: "Sons dos KPIs", icon: SpeakerHigh },
+  { to: "/admin/schedule",      label: "Cronograma",    icon: CalendarBlank },
   { to: "/admin/biweekly",      label: "Indique Day",   icon: Repeat },
   { to: "/admin/bets-config",   label: "Apostas",       icon: Trophy },
   { to: "/admin/tournaments",   label: "Torneios",      icon: Swords },
@@ -43,17 +45,22 @@ const AdminLayout = () => {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* ─── Sidebar ───────────────────────────────────────────────────────── */}
-      <aside className="w-60 border-r border-border/30 flex flex-col bg-background/50 backdrop-blur-sm">
+      {/* Sidebar Editorial V1 */}
+      <aside className="w-[220px] shrink-0 border-r border-line flex flex-col bg-surface md:sticky md:top-0 md:h-screen">
         {/* Brand */}
-        <div className="px-5 py-5 border-b border-border/30">
+        <div className="px-5 py-5 border-b border-line">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Shield className="w-4 h-4 text-primary-foreground" />
+            <div className="w-[30px] h-[30px] shrink-0 rounded-[7px] bg-primary flex items-center justify-center">
+              <Pulse weight="bold" size={15} className="text-primary-foreground" />
             </div>
-            <div>
-              <h1 className="text-sm font-display font-bold text-foreground leading-tight">Performance Pulse</h1>
-              <p className="text-[10px] text-muted-foreground leading-tight">Painel Admin</p>
+            <div className="leading-tight min-w-0">
+              <h1 className="text-[13px] font-extrabold text-ink tracking-tight truncate">
+                Performance Pulse
+              </h1>
+              <p className="text-[8px] uppercase tracking-[0.12em] font-semibold text-ink-3 mt-0.5 inline-flex items-center gap-1">
+                <ShieldCheck size={10} weight="bold" />
+                EQI · ADMIN
+              </p>
             </div>
           </div>
         </div>
@@ -62,16 +69,16 @@ const AdminLayout = () => {
         <div className="px-3 pt-3">
           <button
             onClick={() => navigate("/")}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-all"
+            className="w-full flex items-center gap-2 px-2.5 py-2 rounded-[7px] text-[12px] font-semibold text-ink-3 hover:text-ink hover:bg-surface-2 transition-all"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
+            <ArrowLeft size={13} weight="bold" />
             Voltar ao Dashboard
           </button>
         </div>
 
         {/* Nav items */}
-        <nav className="flex-1 px-3 py-3 space-y-1">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground/60 px-3 mb-2 mt-2">
+        <nav className="flex-1 px-3 py-3 space-y-0.5">
+          <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-ink-3 px-2.5 mb-1 mt-2">
             Configurações
           </p>
           {NAV_ITEMS.map((item) => {
@@ -81,44 +88,52 @@ const AdminLayout = () => {
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
-                  `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  `flex items-center gap-2.5 px-2.5 py-2 rounded-[7px] text-[13px] transition-all ${
                     isActive
-                      ? "bg-primary text-secondary font-bold border border-primary shadow-sm"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/30 border border-transparent"
+                      ? "bg-ink text-white font-bold"
+                      : "text-ink-2 hover:bg-surface-2 hover:text-ink font-medium"
                   }`
                 }
               >
-                <Icon className="w-4 h-4" />
-                {item.label}
+                {({ isActive }) => (
+                  <>
+                    <Icon size={14} weight={isActive ? "bold" : "regular"} className="shrink-0" />
+                    {item.label}
+                  </>
+                )}
               </NavLink>
             );
           })}
         </nav>
 
         {/* User footer */}
-        <div className="px-3 py-3 border-t border-border/30">
-          <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-muted/20 border border-border/20">
-            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+        <div className="px-3 py-3 border-t border-line">
+          <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-[7px] bg-surface-2 border border-line">
+            <div className="w-7 h-7 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-extrabold font-mono">
               {user?.name.slice(0, 2).toUpperCase() ?? "??"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-foreground truncate">{user?.name ?? "—"}</p>
-              <p className="text-[10px] text-muted-foreground truncate">{user?.email ?? ""}</p>
+              <p className="text-[12px] font-bold text-ink truncate leading-tight">
+                {user?.name ?? "—"}
+              </p>
+              <p className="text-[9px] font-mono text-ink-3 truncate mt-0.5">
+                {user?.email ?? ""}
+              </p>
             </div>
             <button
               onClick={handleLogout}
               title="Sair"
-              className="w-7 h-7 rounded-md bg-muted/30 hover:bg-destructive/20 hover:text-destructive flex items-center justify-center text-muted-foreground transition-all"
+              className="w-6 h-6 rounded-md hover:bg-destructive/10 hover:text-destructive flex items-center justify-center text-ink-3 transition-all"
             >
-              <LogOut className="w-3.5 h-3.5" />
+              <SignOut size={12} weight="bold" />
             </button>
           </div>
         </div>
       </aside>
 
-      {/* ─── Main ─────────────────────────────────────────────────────────── */}
+      {/* Main */}
       <main className="flex-1 overflow-y-auto">
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="p-7 max-w-7xl mx-auto">
           <Outlet />
         </div>
       </main>

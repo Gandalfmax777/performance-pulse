@@ -28,6 +28,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Medal } from "@phosphor-icons/react";
+import SquadMainEventCard from "./SquadMainEventCard";
 import {
   RadarChart,
   PolarGrid,
@@ -280,6 +281,9 @@ const SquadBet = ({ assessors }: Props) => {
 
   return (
     <div className="space-y-5">
+      {/* Editorial V1 — Main Event hero card no topo (só renderiza se tiver bet ATIVA) */}
+      <SquadMainEventCard assessors={assessors} />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

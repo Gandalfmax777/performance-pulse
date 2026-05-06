@@ -1,0 +1,194 @@
+import { useMemo } from "react";
+import { Crown, Fire } from "@phosphor-icons/react";
+import { type Assessor } from "@/types/assessor";
+import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
+
+interface TvPodiumProps {
+  assessors: Assessor[];
+}
+
+/**
+ * TV Pódio — Hall da Fama cinematográfico (artboard "TvPodium").
+ * Background dark com spotlight dourado, headline serif italic
+ * gigante, 3 podestos retangulares em altura escalonada
+ * (100% / 78% / 64%) com o 1º lugar em coluna central elevada e
+ * gradient dourado.
+ */
+const TvPodium = ({ assessors }: TvPodiumProps) => {
+  const sorted = useMemo(
+    () => [...assessors].sort((a, b) => b.points - a.points),
+    [assessors],
+  );
+  const [first, second, third] = sorted;
+
+  if (!first || !second || !third) {
+    return (
+      <div
+        className="flex-1 flex items-center justify-center text-white/70"
+        style={{
+          background: "linear-gradient(180deg, hsl(var(--ink)) 0%, hsl(var(--eqi-forest)) 100%)",
+          minHeight: 480,
+          borderRadius: 16,
+        }}
+      >
+        Ainda sem pódio definido.
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="relative overflow-hidden text-white p-10 rounded-2xl flex flex-col min-h-[600px]"
+      style={{
+        background: "linear-gradient(180deg, hsl(var(--ink)) 0%, hsl(var(--eqi-forest)) 100%)",
+      }}
+    >
+      {/* Spotlight dourado */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          top: -100,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: 600,
+          height: 400,
+          borderRadius: "50%",
+          background: "radial-gradient(ellipse, hsl(var(--gold)) 0%, transparent 60%)",
+          opacity: 0.25,
+        }}
+      />
+
+      <div className="relative text-center mb-8">
+        <p
+          className="text-[11px] uppercase tracking-[0.25em] font-semibold"
+          style={{ color: "hsl(var(--gold))" }}
+        >
+          HALL DA FAMA
+        </p>
+        <h1
+          className="font-serif italic font-bold leading-none tracking-[-0.03em] mt-2"
+          style={{
+            fontFamily: "'Instrument Serif', serif",
+            fontSize: "min(10vw, 80px)",
+          }}
+        >
+          Os <span style={{ color: "hsl(var(--gold))" }}>três</span> que mexeram a mesa.
+        </h1>
+      </div>
+
+      <div className="relative flex-1 grid items-end gap-5" style={{ gridTemplateColumns: "1fr 1.2fr 1fr" }}>
+        {[second, first, third].map((a, idx) => {
+          const place = idx === 1 ? 1 : idx === 0 ? 2 : 3;
+          const isFirst = place === 1;
+          const heights = { 1: "100%", 2: "78%", 3: "64%" } as const;
+          const accent =
+            place === 1
+              ? "hsl(var(--gold))"
+              : place === 2
+              ? "hsl(var(--silver))"
+              : "hsl(var(--bronze))";
+          const accentText =
+            place === 1
+              ? "hsl(var(--gold-deep))"
+              : place === 2
+              ? "hsl(var(--silver))"
+              : "hsl(var(--bronze))";
+          return (
+            <div
+              key={a.id}
+              className="relative rounded-t-[20px] flex flex-col justify-between p-7"
+              style={{
+                height: heights[place],
+                color: "hsl(var(--ink))",
+                background:
+                  place === 1
+                    ? "linear-gradient(180deg, oklch(0.95 0.08 90) 0%, white 100%)"
+                    : "white",
+                boxShadow:
+                  place === 1
+                    ? "0 -20px 80px hsl(var(--gold) / 0.4)"
+                    : "0 -10px 40px oklch(0 0 0 / 0.3)",
+                border: place === 1 ? `2px solid ${accent}` : "none",
+              }}
+            >
+              {isFirst && (
+                <Crown
+                  size={56}
+                  weight="fill"
+                  className="absolute"
+                  style={{
+                    color: "hsl(var(--gold-deep))",
+                    top: -28,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    filter: "drop-shadow(0 4px 12px hsl(var(--gold) / 0.5))",
+                  }}
+                />
+              )}
+              <p
+                className="font-serif italic font-bold leading-none tracking-[-0.05em]"
+                style={{
+                  fontFamily: "'Instrument Serif', serif",
+                  fontSize: isFirst ? 120 : 88,
+                  color: accentText,
+                }}
+              >
+                {place}º
+              </p>
+              <div className="flex flex-col items-center text-center gap-3">
+                <AssessorAvatar
+                  initials={a.avatar}
+                  photoUrl={a.photoUrl}
+                  level={a.level}
+                  size={isFirst ? 88 : 64}
+                />
+                <div>
+                  <p
+                    className="font-extrabold tracking-tight leading-tight"
+                    style={{ fontSize: isFirst ? 26 : 20 }}
+                  >
+                    {a.name}
+                  </p>
+                  <p className="font-mono text-[11px] text-ink-3 mt-1 font-semibold tracking-[0.1em]">
+                    NÍVEL {String(a.level).toUpperCase()}
+                  </p>
+                </div>
+                <p
+                  className="font-mono font-extrabold leading-none tracking-[-0.04em]"
+                  style={{
+                    fontSize: isFirst ? 76 : 56,
+                    color: isFirst ? "hsl(var(--gold-deep))" : "hsl(var(--ink))",
+                  }}
+                >
+                  {a.weeklyGoalPercent}
+                  <span className="text-base text-ink-3">%</span>
+                </p>
+                <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-ink-3">
+                  DA META
+                </p>
+                <div className="flex gap-2 mt-1">
+                  <span
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold"
+                    style={{ background: "hsl(var(--surface-2))", color: "hsl(var(--ink-2))" }}
+                  >
+                    {a.points.toLocaleString("pt-BR")} pts
+                  </span>
+                  {a.streak > 0 && (
+                    <span
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-extrabold"
+                      style={{ background: "hsl(var(--gold-soft))", color: "hsl(var(--gold-deep))" }}
+                    >
+                      <Fire size={10} weight="fill" /> {a.streak}d
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default TvPodium;

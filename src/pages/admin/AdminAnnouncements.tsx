@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Megaphone, Plus, Pencil, Trash2, Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { Megaphone, Plus, PencilSimple, Trash, Eye, EyeSlash } from "@phosphor-icons/react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -58,23 +59,26 @@ const AdminAnnouncements = () => {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Megaphone className="w-6 h-6 text-primary" />
+          <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
+            ADMINISTRAÇÃO
+          </p>
+          <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
+            <Megaphone size={20} weight="bold" className="text-primary" />
             Avisos
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Mensagens manuais que aparecem no ticker do topo da Visão Geral. Aparecem ANTES das
-            mensagens auto-geradas (líder, streaks, etc).
+          <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
+            Mensagens manuais que aparecem no ticker do topo da Visão Geral. Aparecem
+            ANTES das mensagens auto-geradas (líder, streaks, etc).
           </p>
         </div>
-        <Button onClick={() => setDialog({ open: true, editing: null })} className="gap-2">
-          <Plus className="w-4 h-4" /> Novo Aviso
+        <Button onClick={() => setDialog({ open: true, editing: null })} className="gap-2 bg-ink hover:bg-ink/90 text-white">
+          <Plus size={14} weight="bold" /> Novo Aviso
         </Button>
       </div>
 
-      <div className="card-glass rounded-xl overflow-hidden border border-border/30">
+      <div className="rounded-[14px] overflow-hidden border border-line bg-card">
         {isLoading ? (
           <div className="p-10 flex items-center justify-center">
             <Loader2 className="w-6 h-6 text-primary animate-spin" />
@@ -94,7 +98,7 @@ const AdminAnnouncements = () => {
                     className="mt-0.5 text-muted-foreground hover:text-primary transition-all"
                     title={a.active ? "Desativar" : "Ativar"}
                   >
-                    {a.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    {a.active ? <Eye size={16} /> : <EyeSlash size={16} />}
                   </button>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -123,14 +127,14 @@ const AdminAnnouncements = () => {
                       className="w-8 h-8 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 flex items-center justify-center transition-all"
                       title="Editar"
                     >
-                      <Pencil className="w-3.5 h-3.5" />
+                      <PencilSimple size={14} />
                     </button>
                     <button
                       onClick={() => handleDelete(a)}
                       className="w-8 h-8 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center transition-all"
                       title="Remover"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash size={14} />
                     </button>
                   </div>
                 </div>

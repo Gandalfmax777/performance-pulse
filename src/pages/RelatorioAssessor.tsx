@@ -183,7 +183,7 @@ const RelatorioAssessor = () => {
 
         {/* KPIs detalhados */}
         <section className="r-section r-page-break">
-          <h2>📊 KPIs no Período</h2>
+          <h2>KPIs no Período</h2>
           <table className="r-table">
             <thead>
               <tr>
@@ -198,7 +198,7 @@ const RelatorioAssessor = () => {
               {report.kpis.map((k) => {
                 const pct = Math.round(k.percentOfTarget);
                 const status =
-                  pct >= 100 ? "✅ Bateu" : pct >= 70 ? "🟡 Próximo" : "🔴 Abaixo";
+                  pct >= 100 ? "Bateu" : pct >= 70 ? "Próximo" : "Abaixo";
                 return (
                   <tr key={k.key}>
                     <td>{k.label}</td>
@@ -216,7 +216,7 @@ const RelatorioAssessor = () => {
         {/* Histórico diário compacto */}
         {report.kpis.some((k) => k.history.length > 0) && (
           <section className="r-section r-page-break">
-            <h2>📅 Atividade Diária</h2>
+            <h2>Atividade Diária</h2>
             <table className="r-table r-table-history">
               <thead>
                 <tr>
@@ -262,16 +262,16 @@ const RelatorioAssessor = () => {
         {/* Observações */}
         {report.observations.length > 0 && (
           <section className="r-section r-page-break">
-            <h2>📝 Observações Registradas</h2>
+            <h2>Observações Registradas</h2>
             <ul className="ra-obs-list">
               {report.observations.map((o, i) => {
                 const meeting = isMeetingNote(o.notes);
                 const meetingArea = isMeetingAreaNote(o.notes);
                 const text = meeting || meetingArea ? stripMeetingPrefix(o.notes) : o.notes;
                 const tag = meeting
-                  ? `🤝 Reunião venda +${MEETING_BONUS_POINTS}pts`
+                  ? `Reunião venda +${MEETING_BONUS_POINTS}pts`
                   : meetingArea
-                    ? `🗣️ Reunião áreas +${MEETING_AREA_POINTS}pts`
+                    ? `Reunião áreas +${MEETING_AREA_POINTS}pts`
                     : null;
                 return (
                   <li key={i} className="ra-obs-item">
@@ -292,7 +292,7 @@ const RelatorioAssessor = () => {
         {/* Badges */}
         {report.badgeUnlocks.length > 0 && (
           <section className="r-section">
-            <h2>🏅 Conquistas</h2>
+            <h2>Conquistas</h2>
             <div className="ra-badges">
               {report.badgeUnlocks.map((b) => (
                 <span key={b.id} className="ra-badge">
@@ -305,7 +305,7 @@ const RelatorioAssessor = () => {
 
         {/* Análise IA */}
         <section className="r-section r-page-break">
-          <h2>✨ Análise Individual (IA)</h2>
+          <h2>Análise Individual (IA)</h2>
           {generateInsight.isPending && !insight ? (
             <p className="r-loading">
               <Loader2 className="w-4 h-4 inline animate-spin" /> Analisando…

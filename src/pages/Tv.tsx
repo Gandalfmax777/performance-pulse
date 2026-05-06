@@ -11,6 +11,7 @@ import {
 } from "@phosphor-icons/react";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import KpiCards from "@/components/dashboard/KpiCards";
+import TvOverview from "@/components/dashboard/TvOverview";
 import AnnouncementTicker from "@/components/dashboard/AnnouncementTicker";
 import TournamentCard from "@/components/dashboard/TournamentCard";
 import TournamentFinishedOverlay from "@/components/dashboard/TournamentFinishedOverlay";
@@ -20,16 +21,18 @@ import { useActiveTournaments } from "@/hooks/useTournaments";
 import { useTournamentFinishedStream } from "@/hooks/useTournamentFinishedStream";
 import { useSystemNotifications } from "@/hooks/useSystemNotifications";
 
-const TvRanking = lazy(() => import("@/components/dashboard/TvRanking"));
-const DailyResults = lazy(() => import("@/components/dashboard/DailyResults"));
-const SquadBet = lazy(() => import("@/components/dashboard/SquadBet"));
+const TvLeagueTable = lazy(() => import("@/components/dashboard/TvLeagueTable"));
+const TvPodium = lazy(() => import("@/components/dashboard/TvPodium"));
+const TvSquadBoard = lazy(() => import("@/components/dashboard/TvSquadBoard"));
+const TvTournamentBoard = lazy(() => import("@/components/dashboard/TvTournamentBoard"));
 
-type TvView = "overview" | "results" | "squad" | "tournaments";
+type TvView = "overview" | "results" | "squad" | "podium" | "tournaments";
 
 const BASE_TV_VIEWS: { key: TvView; label: string }[] = [
   { key: "overview", label: "Visão Geral" },
   { key: "results", label: "Ranking" },
   { key: "squad", label: "Squad Bet" },
+  { key: "podium", label: "Hall da Fama" },
 ];
 
 const TOURNAMENT_VIEW = { key: "tournaments" as TvView, label: "Torneios" };
@@ -254,26 +257,34 @@ const TvPage = () => {
           {view === "overview" && (
             <div className="space-y-4">
               <AnnouncementTicker assessors={assessors} />
-              <KpiCards from={overviewRange.from} to={overviewRange.to} />
-              <TvRanking assessors={assessors} />
+              <TvOverview
+                assessors={assessors}
+                from={overviewRange.from}
+                to={overviewRange.to}
+              />
             </div>
           )}
-          {view === "results" && <DailyResults assessors={assessors} />}
-          {view === "squad" && <SquadBet assessors={assessors} />}
+          {view === "results" && <TvLeagueTable assessors={assessors} />}
+          {view === "squad" && <TvSquadBoard assessors={assessors} />}
+          {view === "podium" && <TvPodium assessors={assessors} />}
           {view === "tournaments" && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 mb-2">
-                <Swords size={32} className="text-primary" weight="duotone" />
-                <h2 className="text-3xl font-extrabold tracking-tight text-ink">
-                  {activeTournaments.length === 1 ? "Torneio Ativo" : "Torneios Ativos"}
-                </h2>
+            activeTournaments.length === 1 ? (
+              <TvTournamentBoard />
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <Swords size={32} className="text-primary" weight="duotone" />
+                  <h2 className="text-3xl font-extrabold tracking-tight text-ink">
+                    Torneios Ativos
+                  </h2>
+                </div>
+                <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
+                  {activeTournaments.map((t) => (
+                    <TournamentCard key={t.id} tournament={t} tvMode />
+                  ))}
+                </div>
               </div>
-              <div className={`grid gap-6 ${activeTournaments.length === 1 ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2"}`}>
-                {activeTournaments.map((t) => (
-                  <TournamentCard key={t.id} tournament={t} tvMode />
-                ))}
-              </div>
-            </div>
+            )
           )}
         </Suspense>
       </div>

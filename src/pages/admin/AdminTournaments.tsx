@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Swords, Plus, Loader2, Flag, XCircle, Zap } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import {
+  Sword as Swords,
+  Plus,
+  Flag,
+  XCircle,
+  Lightning,
+} from "@phosphor-icons/react";
 import { format, parseISO, addDays, startOfWeek, endOfWeek, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -185,20 +192,25 @@ const AdminTournaments = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Swords className="w-6 h-6 text-primary" />
-        <div>
-          <h1 className="text-xl font-display font-bold text-foreground">Torneios</h1>
-          <p className="text-xs text-muted-foreground">Corridas time-boxed com prêmio progressivo · top N ganham do cofre</p>
-        </div>
+      <div>
+        <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
+          ADMINISTRAÇÃO
+        </p>
+        <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
+          <Swords size={20} weight="bold" className="text-primary" />
+          Torneios
+        </h1>
+        <p className="text-[12px] text-ink-3 mt-1.5">
+          Corridas time-boxed com prêmio progressivo · top N ganham do cofre
+        </p>
       </div>
 
       {/* Templates quick-create — 1 clique preenche o form abaixo */}
-      <div className="card-glass rounded-xl p-5 space-y-3">
+      <div className="rounded-[14px] border border-line bg-card p-5 space-y-3">
         <div className="flex items-center gap-2">
-          <Zap className="w-4 h-4 text-secondary" />
-          <h2 className="text-sm font-bold text-foreground">Templates rápidos</h2>
-          <span className="text-[10px] text-muted-foreground">Clique pra preencher o formulário</span>
+          <Lightning size={14} weight="fill" className="text-gold-deep" />
+          <h2 className="text-[14px] font-extrabold tracking-tight text-ink">Templates rápidos</h2>
+          <span className="text-[10px] text-ink-3">Clique pra preencher o formulário</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {TEMPLATES.map((tpl) => (
@@ -218,10 +230,10 @@ const AdminTournaments = () => {
       </div>
 
       {/* Criar novo */}
-      <div className="card-glass rounded-xl p-5 space-y-4">
+      <div className="rounded-[14px] border border-line bg-card p-5 space-y-4">
         <div className="flex items-center gap-2">
-          <Plus className="w-4 h-4 text-primary" />
-          <h2 className="text-sm font-bold text-foreground">Novo torneio</h2>
+          <Plus size={14} weight="bold" className="text-primary" />
+          <h2 className="text-[14px] font-extrabold tracking-tight text-ink">Novo torneio</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -300,7 +312,7 @@ const AdminTournaments = () => {
         </div>
 
         <Button onClick={handleCreate} disabled={create.isPending} className="w-full md:w-auto">
-          {create.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
+          {create.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus size={16} className="mr-2" weight="bold" />}
           Criar torneio e anunciar
         </Button>
       </div>
@@ -308,7 +320,7 @@ const AdminTournaments = () => {
       {/* Ativos */}
       <div>
         <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-          <Flag className="w-4 h-4 text-success" />
+          <Flag size={16} weight="fill" className="text-success" />
           Ativos ({active.length})
         </h2>
         {isLoading && <p className="text-xs text-muted-foreground">Carregando…</p>}
@@ -327,7 +339,7 @@ const AdminTournaments = () => {
                   disabled={finish.isPending}
                   className="flex-1"
                 >
-                  <Flag className="w-3 h-3 mr-2" />
+                  <Flag size={12} weight="bold" className="mr-2" />
                   Finalizar agora
                 </Button>
                 <Button
@@ -336,7 +348,7 @@ const AdminTournaments = () => {
                   onClick={() => handleCancel(t.id)}
                   disabled={cancel.isPending}
                 >
-                  <XCircle className="w-3 h-3 mr-2" />
+                  <XCircle size={12} weight="bold" className="mr-2" />
                   Cancelar
                 </Button>
               </div>

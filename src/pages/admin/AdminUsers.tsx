@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Users, Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { Users, Plus, PencilSimple, Trash } from "@phosphor-icons/react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useUsers, useCreateUser, useUpdateUser, useDeleteUser, type ApiUser } from "@/hooks/useUsers";
@@ -116,20 +117,23 @@ const AdminUsers = () => {
     <div className="space-y-5">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Users className="w-6 h-6 text-primary" />
+          <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
+            ADMINISTRAÇÃO
+          </p>
+          <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
+            <Users size={20} weight="bold" className="text-primary" />
             Usuários
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-[12px] text-ink-3 mt-1.5">
             Gerencie os gestores que têm acesso ao sistema.
           </p>
         </div>
-        <Button onClick={openCreate} className="gap-1.5">
-          <Plus className="w-4 h-4" /> Novo usuário
+        <Button onClick={openCreate} className="gap-1.5 bg-ink hover:bg-ink/90 text-white">
+          <Plus size={14} weight="bold" /> Novo usuário
         </Button>
       </div>
 
-      <div className="card-glass rounded-xl overflow-hidden border border-border/30">
+      <div className="rounded-[14px] overflow-hidden border border-line bg-card">
         {isLoading ? (
           <div className="p-10 flex items-center justify-center">
             <Loader2 className="w-6 h-6 text-primary animate-spin" />
@@ -173,14 +177,14 @@ const AdminUsers = () => {
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Button size="sm" variant="ghost" onClick={() => openEdit(u)} title="Editar">
-                          <Pencil className="w-3.5 h-3.5" />
+                          <PencilSimple size={14} />
                         </Button>
                         {isSelf ? (
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span>
                                 <Button size="sm" variant="ghost" disabled className="text-destructive opacity-30">
-                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <Trash size={14} />
                                 </Button>
                               </span>
                             </TooltipTrigger>
@@ -195,7 +199,7 @@ const AdminUsers = () => {
                             onClick={() => setDeleteTarget(u)}
                             className="text-destructive hover:text-destructive"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash size={14} />
                           </Button>
                         )}
                       </div>

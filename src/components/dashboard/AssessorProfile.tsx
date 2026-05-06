@@ -129,22 +129,29 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="printable card-glass rounded-2xl p-6 w-full max-w-4xl mx-4 border border-primary/20"
+        className="printable rounded-2xl p-6 w-full max-w-4xl mx-4 border border-line bg-card"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6 no-print">
-          <div className="flex items-center gap-3">
-            <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={56} />
+        {/* Header Editorial V1 — eyebrow + nome grande + DateRangePicker */}
+        <div className="flex items-start justify-between mb-5 no-print gap-4 flex-wrap">
+          <div className="flex items-center gap-4">
+            <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={64} />
             <div>
-              <h2 className="text-xl font-bold text-foreground">{a.name}</h2>
-              <div className="flex items-center gap-3 mt-0.5">
-                <span className="text-sm text-muted-foreground font-mono">
-                  {report?.rollup.points ?? a.points} pts
+              <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-0.5">
+                ASSESSOR · NÍVEL {String(a.level).toUpperCase()}
+              </p>
+              <h2 className="text-[22px] font-extrabold tracking-tight text-ink leading-tight">
+                {a.name}
+              </h2>
+              <div className="flex items-center gap-3 mt-1.5">
+                <span className="font-mono text-[12px] text-ink-3 font-semibold">
+                  {(report?.rollup.points ?? a.points).toLocaleString("pt-BR")} pts
                 </span>
-                <span className="text-sm capitalize text-muted-foreground">Nível {a.level}</span>
                 {(report?.rollup.streak ?? a.streak) > 0 && (
-                  <span className="flex items-center gap-1 text-sm text-chart-orange font-semibold">
-                    <Flame className="w-4 h-4" /> {report?.rollup.streak ?? a.streak} dias
+                  <span
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-extrabold"
+                    style={{ background: "hsl(var(--gold-soft))", color: "hsl(var(--gold-deep))" }}
+                  >
+                    <Flame className="w-3 h-3" /> {report?.rollup.streak ?? a.streak} dias
                   </span>
                 )}
               </div>
@@ -155,12 +162,10 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
             <button
               onClick={handlePrint}
               title="Abre relatório PDF individual em nova aba e auto-imprime"
-              className="px-4 py-2 rounded-xl bg-primary/10 border border-primary/30 text-primary font-semibold text-sm flex items-center gap-2 hover:bg-primary/20 transition-all"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-[8px] border border-line bg-surface hover:bg-surface-2 text-ink-2 hover:text-ink text-xs font-semibold transition-all"
             >
-              <Printer className="w-4 h-4" /> PDF
+              <Printer className="w-3.5 h-3.5" /> PDF
             </button>
-            {/* X inline removido — usa o botão floating fixo no canto superior
-                da viewport pra não sumir quando user scrolla. */}
           </div>
         </div>
 
@@ -183,18 +188,107 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
 
         {!isLoading && report && (
           <>
-            {/* Overall */}
-            <div className="flex items-center gap-4 mb-4 p-4 rounded-xl bg-primary/5 border border-primary/20">
-              <TrendingUp className="w-6 h-6 text-primary" />
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground">Desempenho Geral</p>
-                <p className="text-2xl font-mono font-bold text-primary">{overallPct}%</p>
-              </div>
-              <div className="w-32 h-3 bg-muted/40 rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-primary"
-                  style={{ width: `${overallPct}%` }}
-                />
+            {/* Hero personal — Editorial V1 (gradient warm + 3 colunas: posição/meta/streak) */}
+            <div
+              className="rounded-[14px] p-6 mb-5 relative overflow-hidden"
+              style={{
+                background:
+                  "linear-gradient(135deg, oklch(0.99 0.005 95) 0%, oklch(0.96 0.04 152) 100%)",
+                border: "1px solid hsl(var(--line))",
+              }}
+            >
+              <div
+                className="absolute pointer-events-none"
+                style={{
+                  top: -60,
+                  right: -60,
+                  width: 220,
+                  height: 220,
+                  borderRadius: "50%",
+                  background:
+                    "radial-gradient(circle, hsl(var(--gold) / 0.18) 0%, transparent 70%)",
+                }}
+              />
+              <div className="relative grid gap-5 grid-cols-1 sm:grid-cols-3 items-center">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1.5">
+                    DESEMPENHO GERAL
+                  </p>
+                  <p
+                    className="font-mono font-extrabold leading-none tracking-[-0.04em]"
+                    style={{
+                      fontSize: 56,
+                      color:
+                        overallPct >= 100
+                          ? "hsl(var(--eqi-green))"
+                          : overallPct >= 70
+                          ? "hsl(var(--ink))"
+                          : "hsl(var(--destructive))",
+                    }}
+                  >
+                    {overallPct}
+                    <span className="text-2xl text-ink-3">%</span>
+                  </p>
+                  <div className="mt-3 h-2 rounded-full bg-line overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${Math.min(100, overallPct)}%`,
+                        background:
+                          overallPct >= 100
+                            ? "hsl(var(--success))"
+                            : "hsl(var(--eqi-green))",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* META SEMANAL — placeholder fica vazio caso o report não retorne weeklyGoalPercent ainda */}
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1.5">
+                    NÍVEL ATUAL
+                  </p>
+                  <p
+                    className="font-extrabold tracking-tight leading-none capitalize"
+                    style={{ fontSize: 28, color: "hsl(var(--ink))" }}
+                  >
+                    {a.level}
+                  </p>
+                  <p className="text-[11px] text-ink-3 mt-1">
+                    {report?.rollup.points ?? 0} pontos no período
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1.5">
+                    STREAK ATUAL
+                  </p>
+                  <div className="flex items-baseline gap-1.5">
+                    <span
+                      className="font-mono font-extrabold leading-none"
+                      style={{ fontSize: 48, color: "hsl(var(--gold-deep))" }}
+                    >
+                      {report?.rollup.streak ?? a.streak}
+                    </span>
+                    <span className="text-[14px] text-ink-2 font-semibold">dias</span>
+                  </div>
+                  <div className="flex gap-1 mt-2.5">
+                    {Array.from({ length: 14 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="rounded-sm"
+                        style={{
+                          width: 7,
+                          height: 22,
+                          background:
+                            i < (report?.rollup.streak ?? a.streak)
+                              ? "hsl(var(--gold))"
+                              : "hsl(var(--line))",
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
