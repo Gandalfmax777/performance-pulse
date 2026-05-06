@@ -1,8 +1,18 @@
 import { useMemo, useState } from "react";
 import { useModalDismiss } from "@/hooks/useModalDismiss";
 import { motion } from "framer-motion";
-import { X, Printer, Trophy, TrendingUp, Flame, Award, Loader2, Sparkles, RefreshCw } from "lucide-react";
-import { Medal, Gift, NotePencil } from "@phosphor-icons/react";
+import { Loader2 } from "lucide-react";
+import {
+  X,
+  Printer,
+  Trophy,
+  Fire,
+  Sparkle,
+  ArrowsClockwise,
+  Medal,
+  Gift,
+  NotePencil,
+} from "@phosphor-icons/react";
 import Markdown from "react-markdown";
 import {
   BarChart,
@@ -121,15 +131,15 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
         onClick={onClose}
         aria-label="Fechar"
         title="Fechar (ESC)"
-        className="fixed top-4 right-4 z-[60] w-10 h-10 rounded-full bg-card border border-border shadow-lg hover:bg-muted/60 flex items-center justify-center text-foreground transition-all"
+        className="fixed top-4 right-4 z-[60] w-10 h-10 rounded-full bg-card border border-line shadow-lg hover:bg-surface-2 flex items-center justify-center text-ink transition-all"
       >
-        <X className="w-5 h-5" />
+        <X size={18} weight="bold" />
       </button>
 
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="printable rounded-2xl p-6 w-full max-w-4xl mx-4 border border-line bg-card"
+        className="printable rounded-[14px] p-6 w-full max-w-4xl mx-4 border border-line bg-card"
       >
         {/* Header Editorial V1 — eyebrow + nome grande + DateRangePicker */}
         <div className="flex items-start justify-between mb-5 no-print gap-4 flex-wrap">
@@ -151,7 +161,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                     className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-extrabold"
                     style={{ background: "hsl(var(--gold-soft))", color: "hsl(var(--gold-deep))" }}
                   >
-                    <Flame className="w-3 h-3" /> {report?.rollup.streak ?? a.streak} dias
+                    <Fire size={11} weight="fill" /> {report?.rollup.streak ?? a.streak} dias
                   </span>
                 )}
               </div>
@@ -164,7 +174,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
               title="Abre relatório PDF individual em nova aba e auto-imprime"
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-[8px] border border-line bg-surface hover:bg-surface-2 text-ink-2 hover:text-ink text-xs font-semibold transition-all"
             >
-              <Printer className="w-3.5 h-3.5" /> PDF
+              <Printer size={13} weight="bold" /> PDF
             </button>
           </div>
         </div>
@@ -182,7 +192,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
 
         {isLoading && (
           <div className="flex items-center justify-center py-10">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            <Loader2 className="w-8 h-8 text-ink-3 animate-spin" />
           </div>
         )}
 
@@ -301,24 +311,24 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
               ]).map(({ key, label, report: r }) => (
                 <div
                   key={key}
-                  className="p-3 rounded-xl bg-muted/10 border border-border/20 space-y-1"
+                  className="p-3 rounded-[14px] bg-surface-2/50 border border-line space-y-1"
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">{label}</p>
-                    <span className={`text-[10px] font-mono ${(r?.rollup.weeklyGoalPercent ?? 0) >= 80 ? "text-success" : (r?.rollup.weeklyGoalPercent ?? 0) >= 50 ? "text-chart-orange" : "text-muted-foreground"}`}>
+                    <p className="text-[10px] uppercase tracking-wider text-ink-3 font-semibold">{label}</p>
+                    <span className={`text-[10px] font-mono ${(r?.rollup.weeklyGoalPercent ?? 0) >= 80 ? "text-eqi-green" : (r?.rollup.weeklyGoalPercent ?? 0) >= 50 ? "text-gold-deep" : "text-ink-3"}`}>
                       {r?.rollup.weeklyGoalPercent ?? 0}%
                     </span>
                   </div>
-                  <p className="text-2xl font-mono font-bold text-foreground leading-none">
+                  <p className="text-2xl font-mono font-bold text-ink leading-none">
                     {r?.rollup.points ?? 0}
-                    <span className="text-xs font-normal text-muted-foreground ml-1">pts</span>
+                    <span className="text-xs font-normal text-ink-3 ml-1">pts</span>
                   </p>
                   {/* Mini-tabela dos KPIs do período (compacto) */}
-                  <div className="space-y-0.5 pt-1 border-t border-border/20">
+                  <div className="space-y-0.5 pt-1 border-t border-line">
                     {(r?.kpis ?? []).slice(0, 4).map((k) => (
                       <div key={k.key} className="flex items-center justify-between text-[10px]">
-                        <span className="text-muted-foreground truncate">{k.label}</span>
-                        <span className="font-mono font-semibold text-foreground">
+                        <span className="text-ink-3 truncate">{k.label}</span>
+                        <span className="font-mono font-semibold text-ink">
                           {k.total.toLocaleString("pt-BR")}{k.unit}
                         </span>
                       </div>
@@ -335,31 +345,31 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                 return (
                   <div
                     key={k.key}
-                    className="p-3 rounded-xl bg-muted/10 border border-border/20"
+                    className="p-3 rounded-[14px] bg-surface-2/50 border border-line"
                   >
-                    <p className="text-xs text-muted-foreground mb-1">{k.label}</p>
+                    <p className="text-xs text-ink-3 mb-1">{k.label}</p>
                     <div className="flex items-baseline gap-1">
                       <span
                         className={`text-lg font-mono font-bold ${
                           pct >= 80
-                            ? "text-primary"
+                            ? "text-eqi-green"
                             : pct >= 50
-                            ? "text-chart-orange"
+                            ? "text-gold-deep"
                             : "text-destructive"
                         }`}
                       >
                         {k.total}
                         {k.unit}
                       </span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-ink-3">
                         / {k.target}
                         {k.unit}
                       </span>
                     </div>
-                    <div className="w-full h-1.5 bg-muted/30 rounded-full mt-2 overflow-hidden">
+                    <div className="w-full h-1.5 bg-line rounded-full mt-2 overflow-hidden">
                       <div
                         className={`h-full rounded-full ${
-                          pct >= 80 ? "bg-success" : "bg-primary"
+                          pct >= 80 ? "bg-eqi-green" : "bg-eqi"
                         }`}
                         style={{ width: `${pct}%` }}
                       />
@@ -399,37 +409,37 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
 
             {/* Charts (hidden on print — renderizam mal em papel) */}
             <div className="grid grid-cols-2 gap-4 mb-6 print-hide">
-              <div className="p-4 rounded-xl bg-muted/10 border border-border/20">
-                <h3 className="text-sm font-bold text-foreground mb-3">KPIs vs Meta</h3>
+              <div className="p-4 rounded-[14px] bg-surface-2/50 border border-line">
+                <h3 className="text-sm font-extrabold tracking-tight text-ink mb-3">KPIs vs Meta</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={barData} barGap={4}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                    <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--line))" opacity={0.5} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--ink-3))" }} />
+                    <YAxis tick={{ fontSize: 10, fill: "hsl(var(--ink-3))" }} />
                     <Tooltip
                       contentStyle={{
                         background: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
+                        border: "1px solid hsl(var(--line))",
                         borderRadius: 8,
                         fontSize: 12,
                       }}
                     />
-                    <Bar dataKey="Resultado" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Resultado" fill="hsl(var(--eqi))" radius={[4, 4, 0, 0]} />
                     <Bar
                       dataKey="Meta"
-                      fill="hsl(var(--muted-foreground))"
+                      fill="hsl(var(--ink-3))"
                       opacity={0.3}
                       radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="p-4 rounded-xl bg-muted/10 border border-border/20">
-                <h3 className="text-sm font-bold text-foreground mb-3">Radar de Desempenho</h3>
+              <div className="p-4 rounded-[14px] bg-surface-2/50 border border-line">
+                <h3 className="text-sm font-extrabold tracking-tight text-ink mb-3">Radar de Desempenho</h3>
                 <ResponsiveContainer width="100%" height={240}>
                   <RadarChart data={radarData} margin={{ top: 15, right: 25, bottom: 15, left: 25 }}>
-                    <PolarGrid stroke="hsl(var(--border))" opacity={0.3} />
-                    <PolarAngleAxis dataKey="kpi" tick={{ fontSize: 11, fill: "hsl(var(--foreground))", fontWeight: 600 }} />
+                    <PolarGrid stroke="hsl(var(--line))" opacity={0.5} />
+                    <PolarAngleAxis dataKey="kpi" tick={{ fontSize: 11, fill: "hsl(var(--ink))", fontWeight: 600 }} />
                     {/* angle=90 = eixo vertical pra cima;
                         domain 110 cria padding acima do 100 pra não grudar
                         no label "Leads" do topo. */}
@@ -437,12 +447,12 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                       angle={90}
                       domain={[0, 110]}
                       ticks={[0, 25, 50, 75, 100] as never}
-                      tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+                      tick={{ fontSize: 9, fill: "hsl(var(--ink-3))" }}
                     />
                     <Radar
                       dataKey="score"
-                      stroke="hsl(var(--primary))"
-                      fill="hsl(var(--primary))"
+                      stroke="hsl(var(--eqi))"
+                      fill="hsl(var(--eqi))"
                       fillOpacity={0.25}
                       strokeWidth={2}
                     />
@@ -452,13 +462,13 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
             </div>
 
             {/* AI Insight */}
-            <div className="p-5 rounded-xl bg-muted/10 border border-primary/20 mb-6">
+            <div className="p-5 rounded-[14px] bg-surface-2/50 border border-line mb-6">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                  <h3 className="text-sm font-bold text-foreground">Insight IA</h3>
+                  <Sparkle size={14} weight="fill" className="text-gold-deep" />
+                  <h3 className="text-sm font-extrabold tracking-tight text-ink">Insight IA</h3>
                   {insightData?.cached && (
-                    <span className="text-[9px] text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
+                    <span className="text-[9px] text-ink-3 bg-surface-2 px-1.5 py-0.5 rounded">
                       cache
                     </span>
                   )}
@@ -472,32 +482,32 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                     })
                   }
                   disabled={generateInsight.isPending}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-primary bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-[7px] text-xs font-medium text-white bg-ink hover:bg-ink/90 transition-all disabled:opacity-50"
                 >
                   {generateInsight.isPending ? (
                     <Loader2 className="w-3 h-3 animate-spin" />
                   ) : (
-                    <RefreshCw className="w-3 h-3" />
+                    <ArrowsClockwise size={11} weight="bold" />
                   )}
                   {generateInsight.isPending ? "Gerando…" : "Gerar"}
                 </button>
               </div>
               {generateInsight.isPending ? (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground py-4">
-                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                <div className="flex items-center gap-2 text-xs text-ink-3 py-4">
+                  <Loader2 className="w-4 h-4 animate-spin text-ink-3" />
                   Analisando desempenho com IA…
                 </div>
               ) : insightData ? (
-                <div className="prose prose-sm prose-invert max-w-none text-sm text-foreground/90 leading-relaxed [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-foreground [&_h3]:text-sm [&_h3]:font-semibold [&_ul]:text-xs [&_li]:text-xs">
+                <div className="prose prose-sm max-w-none text-sm text-ink/90 leading-relaxed [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-ink [&_h3]:text-sm [&_h3]:font-semibold [&_ul]:text-xs [&_li]:text-xs">
                   <Markdown>{insightData.textMarkdown}</Markdown>
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground py-2">
+                <p className="text-xs text-ink-3 py-2">
                   Clique em "Gerar" pra analisar o desempenho deste assessor com IA.
                 </p>
               )}
               {generateInsight.isError && (
-                <div className="mt-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                <div className="mt-3 p-3 rounded-[7px] bg-destructive/10 border border-destructive/20">
                   <p className="text-xs text-destructive font-semibold mb-1">Não foi possível gerar o insight</p>
                   <p className="text-[11px] text-destructive/80">
                     {generateInsight.error instanceof Error
@@ -513,45 +523,45 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
 
             {/* Badges */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-muted/10 border border-border/20">
+              <div className="p-4 rounded-[14px] bg-surface-2/50 border border-line">
                 <div className="flex items-center gap-2 mb-3">
-                  <Award className="w-4 h-4 text-primary" />
-                  <h3 className="text-sm font-bold text-foreground">Conquistas Desbloqueadas</h3>
+                  <Medal size={14} weight="fill" className="text-gold-deep" />
+                  <h3 className="text-sm font-extrabold tracking-tight text-ink">Conquistas Desbloqueadas</h3>
                 </div>
                 {earnedBadges.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">Nenhuma conquista no período.</p>
+                  <p className="text-xs text-ink-3">Nenhuma conquista no período.</p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {earnedBadges.map((b) => (
                       <div
                         key={b.id}
-                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20"
+                        className="flex items-center gap-2 px-3 py-2 rounded-[7px] bg-gold/10 border border-gold/30"
                       >
                         <span className="text-lg">{b.icon}</span>
                         <div>
-                          <p className="text-xs font-semibold text-foreground">{b.name}</p>
-                          <p className="text-[10px] text-muted-foreground">{b.description}</p>
+                          <p className="text-xs font-semibold text-ink">{b.name}</p>
+                          <p className="text-[10px] text-ink-3">{b.description}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
-              <div className="p-4 rounded-xl bg-muted/10 border border-border/20">
+              <div className="p-4 rounded-[14px] bg-surface-2/50 border border-line">
                 <div className="flex items-center gap-2 mb-3">
-                  <Trophy className="w-4 h-4 text-muted-foreground" />
-                  <h3 className="text-sm font-bold text-foreground">Pendentes</h3>
+                  <Trophy size={14} weight="bold" className="text-ink-3" />
+                  <h3 className="text-sm font-extrabold tracking-tight text-ink">Pendentes</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {pendingBadges.map((b) => (
                     <div
                       key={b.id}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/20 border border-border/20 opacity-50"
+                      className="flex items-center gap-2 px-3 py-2 rounded-[7px] bg-surface-2 border border-line opacity-50"
                     >
                       <span className="text-lg grayscale">{b.icon}</span>
                       <div>
-                        <p className="text-xs font-semibold text-foreground">{b.name}</p>
-                        <p className="text-[10px] text-muted-foreground">{b.description}</p>
+                        <p className="text-xs font-semibold text-ink">{b.name}</p>
+                        <p className="text-[10px] text-ink-3">{b.description}</p>
                       </div>
                     </div>
                   ))}
@@ -560,21 +570,21 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
             </div>
             {/* Prêmios individuais */}
             {prizes && prizes.length > 0 && (
-              <div className="p-4 rounded-xl bg-muted/10 border border-primary/20 mt-4">
+              <div className="p-4 rounded-[14px] bg-surface-2/50 border border-line mt-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <Medal size={18} weight="fill" className="text-gold-deep" />
-                  <h3 className="text-sm font-bold text-foreground">Prêmios Recebidos</h3>
+                  <Medal size={14} weight="fill" className="text-gold-deep" />
+                  <h3 className="text-sm font-extrabold tracking-tight text-ink">Prêmios Recebidos</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {prizes.map((p) => (
                     <div
                       key={p.id}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/10 border border-accent/20"
+                      className="flex items-center gap-2 px-3 py-2 rounded-[7px] bg-gold/10 border border-gold/30"
                     >
-                      <Gift size={18} weight="fill" className="text-primary" />
+                      <Gift size={16} weight="fill" className="text-gold-deep" />
                       <div>
-                        <p className="text-xs font-semibold text-foreground">{p.title}</p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-xs font-semibold text-ink">{p.title}</p>
+                        <p className="text-[10px] text-ink-3">
                           {p.period} • por {p.awardedByName}
                         </p>
                       </div>
@@ -586,10 +596,10 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
 
             {/* Observações/justificativas */}
             {report.observations && report.observations.length > 0 && (
-              <div className="p-4 rounded-xl bg-muted/10 border border-border/20 mt-4">
+              <div className="p-4 rounded-[14px] bg-surface-2/50 border border-line mt-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <NotePencil size={18} className="text-ink-2" />
-                  <h3 className="text-sm font-bold text-foreground">Observações do Período</h3>
+                  <NotePencil size={14} weight="bold" className="text-ink-3" />
+                  <h3 className="text-sm font-extrabold tracking-tight text-ink">Observações do Período</h3>
                 </div>
                 <div className="space-y-2">
                   {report.observations.map((obs, i) => {
@@ -599,20 +609,20 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                     return (
                       <div
                         key={i}
-                        className={`flex items-start gap-3 p-2.5 rounded-lg border ${
+                        className={`flex items-start gap-3 p-2.5 rounded-[7px] border ${
                           meetingVenda
-                            ? "bg-success/10 border-success/30"
+                            ? "bg-eqi-green/10 border-eqi-green/30"
                             : meetingArea
                             ? "bg-blue-500/10 border-blue-500/30"
-                            : "bg-muted/20 border-border/20"
+                            : "bg-surface-2 border-line"
                         }`}
                       >
-                        <span className="text-[10px] font-mono text-muted-foreground whitespace-nowrap mt-0.5">
+                        <span className="text-[10px] font-mono text-ink-3 whitespace-nowrap mt-0.5">
                           {obs.date.split("-").reverse().join("/")}
                         </span>
                         <div className="flex-1 min-w-0">
                           {meetingVenda && (
-                            <span className="inline-block mb-1 px-1.5 py-0.5 rounded bg-success/20 text-success text-[9px] font-bold">
+                            <span className="inline-block mb-1 px-1.5 py-0.5 rounded bg-eqi-green/20 text-eqi-green text-[9px] font-bold">
                               REUNIÃO DE VENDA +{MEETING_BONUS_POINTS} PTS
                             </span>
                           )}
@@ -621,7 +631,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                               REUNIÃO C/ ÁREAS +{MEETING_AREA_POINTS} PTS
                             </span>
                           )}
-                          <p className="text-xs text-foreground">{displayText}</p>
+                          <p className="text-xs text-ink">{displayText}</p>
                         </div>
                       </div>
                     );
