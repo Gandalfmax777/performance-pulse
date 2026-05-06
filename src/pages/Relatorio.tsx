@@ -145,7 +145,7 @@ const Relatorio = () => {
 
         {/* KPIs do time */}
         <section className="r-section r-page-break">
-          <h2>📊 KPIs do Time</h2>
+          <h2>KPIs do Time</h2>
           {overviewLoading ? (
             <p className="r-loading">Carregando...</p>
           ) : (
@@ -163,7 +163,7 @@ const Relatorio = () => {
                 {(overview?.byKpi ?? []).map((k) => {
                   const pct = Math.round(k.percent);
                   const status =
-                    pct >= 100 ? "✅ Bateu" : pct >= 70 ? "🟡 Próximo" : "🔴 Abaixo";
+                    pct >= 100 ? "Bateu" : pct >= 70 ? "Próximo" : "Abaixo";
                   return (
                     <tr key={k.kpiId}>
                       <td>{k.label}</td>
@@ -181,7 +181,7 @@ const Relatorio = () => {
 
         {/* Ranking */}
         <section className="r-section r-page-break">
-          <h2>🏆 Ranking Completo</h2>
+          <h2>Ranking Completo</h2>
           <table className="r-table">
             <thead>
               <tr>
@@ -196,12 +196,12 @@ const Relatorio = () => {
               {ranked.map((a, i) => (
                 <tr key={a.id} className={i < 3 ? "r-podium" : ""}>
                   <td className="r-bold">
-                    {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}
+                    {`${i + 1}º`}
                   </td>
                   <td>{a.name}</td>
                   <td className="r-right r-mono r-bold">{a.points}</td>
                   <td className="r-right r-mono">{a.weeklyGoalPercent}%</td>
-                  <td className="r-right r-mono">{a.streak > 0 ? `🔥 ${a.streak}` : "—"}</td>
+                  <td className="r-right r-mono">{a.streak > 0 ? `${a.streak}d` : "—"}</td>
                 </tr>
               ))}
             </tbody>
@@ -210,7 +210,7 @@ const Relatorio = () => {
 
         {/* Análise IA */}
         <section className="r-section r-page-break">
-          <h2>✨ Análise do Time (IA)</h2>
+          <h2>Análise do Time (IA)</h2>
           {generateTeam.isPending && !teamInsight ? (
             <p className="r-loading">
               <Loader2 className="w-4 h-4 inline animate-spin" /> Gemini Flash analisando…
