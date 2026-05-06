@@ -71,7 +71,6 @@ const VIEW_LABELS: Record<View, string> = {
   kpis: "KPIs",
   squad: "Squad Bet",
   tournament: "Torneio",
-  profile: "Meu Perfil",
   team: "Assessores",
 };
 
@@ -82,12 +81,11 @@ const VIEW_EYEBROWS: Partial<Record<View, string>> = {
   kpis: "ANÁLISE CONSOLIDADA",
   squad: "ROUND ATIVO",
   tournament: "TORNEIO ATIVO",
-  profile: "MEU PERFIL",
   team: "ADMINISTRAÇÃO",
 };
 
 const VALID_VIEWS: ReadonlySet<View> = new Set([
-  "overview", "daily", "results", "kpis", "squad", "tournament", "profile", "team",
+  "overview", "daily", "results", "kpis", "squad", "tournament", "team",
 ]);
 const VALID_PERIODS: ReadonlySet<OverviewPeriod> = new Set(["daily", "weekly", "monthly", "semester"]);
 
@@ -175,7 +173,6 @@ const Index = () => {
       const monthLabel = format(new Date(t.startDate), "MMMM");
       return `${monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1)} · ${t.scope === "INDIVIDUAL" ? "Individual" : "Por squad"}`;
     }
-    if (v === "profile") return user?.name ? `Performance individual de ${user.name}` : undefined;
     if (v === "team") return `Gerencie a mesa · ${assessors.length} ativos`;
     return undefined;
   };
@@ -227,7 +224,7 @@ const Index = () => {
         </>
       );
     }
-    if (v === "kpis" || v === "results" || v === "tournament" || v === "profile") {
+    if (v === "kpis" || v === "results" || v === "tournament") {
       return periodTabs;
     }
     if (v === "team") {
@@ -315,12 +312,6 @@ const Index = () => {
             {view === "tournament" && (
               <TournamentView tournaments={activeTournaments} />
             )}
-            {view === "profile" && user && (
-              <AssessorProfile
-                assessor={mapUserToAssessor(user, assessors)}
-                onClose={() => setView("overview")}
-              />
-            )}
             {view === "team" && (
               <TeamScreen
                 assessors={assessors}
@@ -402,29 +393,5 @@ const TournamentView = ({ tournaments }: TournamentViewProps) => {
     </div>
   );
 };
-
-// "Meu Perfil" reusa o AssessorProfile como página (não como modal). O
-// AssessorProfile foi pensado pra modal mas funciona como conteúdo —
-// passa um onClose que volta à Visão Geral.
-function mapUserToAssessor(
-  user: NonNullable<ReturnType<typeof useCurrentUser>["user"]>,
-  assessors: ReturnType<typeof useAssessors>["assessors"],
-): Parameters<typeof AssessorProfile>[0]["assessor"] {
-  const match = assessors.find((a) => a.name === user.name);
-  if (match) return match;
-  // Fallback: monta um assessor mínimo só pra renderizar o perfil
-  return {
-    id: user.id,
-    name: user.name,
-    avatar: user.name.slice(0, 2).toUpperCase(),
-    photoUrl: null,
-    points: 0,
-    level: "bronze",
-    streak: 0,
-    weeklyGoalPercent: 0,
-    kpis: { leads: 0, cadencia: 0, ligacoes: 0, reunioes: 0, indicacoes: 0, boletos: 0 },
-    dailyActivity: [false, false, false, false, false],
-  };
-}
 
 export default Index;

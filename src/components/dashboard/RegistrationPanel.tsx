@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
-import { Target, Minus, Plus, Loader2, MessageSquare, ChevronDown, ChevronRight } from "lucide-react";
-import { Sun, Moon, CalendarBlank } from "@phosphor-icons/react";
+import { Minus, Plus, Loader2, MessageSquare, ChevronDown, ChevronRight } from "lucide-react";
+import { Sun, Moon, CalendarBlank, Target } from "@phosphor-icons/react";
 import type { Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { useMetrics, useUpsertMetric } from "@/hooks/useMetrics";
@@ -122,16 +122,16 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
   }
 
   return (
-    <div className="card-glass rounded-xl p-5 h-full">
+    <div className="rounded-[14px] border border-line bg-card p-5">
       <div className="flex items-center gap-2 mb-2">
-        <Target className="w-4 h-4 text-success" />
-        <h2 className="text-sm font-bold text-foreground">Registrar Resultados</h2>
-        {upsert.isPending && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
+        <Target size={14} weight="bold" className="text-eqi-green" />
+        <h2 className="text-sm font-extrabold tracking-tight text-ink">Registrar Resultados</h2>
+        {upsert.isPending && <Loader2 className="w-3 h-3 animate-spin text-ink-3" />}
       </div>
       {blocks && (blocks.morning.length > 0 || blocks.afternoon.length > 0) && (
-        <div className="flex gap-2 mb-3 text-[9px] text-muted-foreground">
+        <div className="flex gap-2 mb-3 text-[9px] text-ink-3">
           {blocks.morning.length > 0 && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-chart-orange/10 text-chart-orange font-semibold">
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-gold/15 text-gold-deep font-semibold">
               <Sun size={11} weight="fill" /> Manhã: {blocks.morning.map((b) => b.time).join(", ")}
             </span>
           )}
@@ -143,12 +143,12 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
         </div>
       )}
 
-      <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-240px)]">
+      <div className="space-y-4">
         {assessors.map((a) => (
-          <div key={a.id} className="p-3 rounded-lg bg-muted/20 border border-border/30">
+          <div key={a.id} className="p-3 rounded-[10px] bg-surface-2/50 border border-line">
             <div className="flex items-center gap-2 mb-3">
               <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={28} />
-              <span className="text-sm font-semibold text-foreground flex-1">{a.name}</span>
+              <span className="text-sm font-semibold text-ink flex-1">{a.name}</span>
               <button
                 onClick={() => {
                   if (noteOpen === a.id) {
@@ -164,8 +164,8 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                 title="Observação / Reunião de venda"
                 className={`w-7 h-7 rounded-md flex items-center justify-center transition-all ${
                   noteOpen === a.id
-                    ? "bg-primary/20 text-primary"
-                    : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    ? "bg-eqi/20 text-eqi"
+                    : "bg-muted/30 text-ink-3 hover:text-ink hover:bg-muted/50"
                 }`}
               >
                 <MessageSquare className="w-3.5 h-3.5" />
@@ -180,8 +180,8 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                     onClick={() => setNoteType("observation")}
                     className={`flex-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-all ${
                       noteType === "observation"
-                        ? "bg-primary/20 text-primary border border-primary/40"
-                        : "bg-muted/30 text-muted-foreground border border-border/30 hover:text-foreground"
+                        ? "bg-eqi/20 text-eqi border border-eqi/40"
+                        : "bg-muted/30 text-ink-3 border border-line/30 hover:text-ink"
                     }`}
                   >
                     Observação
@@ -191,7 +191,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                     className={`flex-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-all ${
                       noteType === "meeting"
                         ? "bg-success/20 text-success border border-success/40"
-                        : "bg-muted/30 text-muted-foreground border border-border/30 hover:text-foreground"
+                        : "bg-muted/30 text-ink-3 border border-line/30 hover:text-ink"
                     }`}
                   >
                     Reunião venda +10
@@ -201,7 +201,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                     className={`flex-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-all ${
                       noteType === "meeting_area"
                         ? "bg-blue-500/20 text-blue-400 border border-blue-500/40"
-                        : "bg-muted/30 text-muted-foreground border border-border/30 hover:text-foreground"
+                        : "bg-muted/30 text-ink-3 border border-line/30 hover:text-ink"
                     }`}
                   >
                     Reunião áreas +5
@@ -217,7 +217,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                       ? "Qual área? (ex: Seguros, Consórcio, Câmbio)"
                       : "Ex: Ausente hoje (consulta médica), Fez home office, etc."
                   }
-                  className="w-full px-3 py-2 rounded-lg bg-muted/30 border border-border/30 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 resize-none"
+                  className="w-full px-3 py-2 rounded-lg bg-muted/30 border border-line/30 text-xs text-ink placeholder:text-ink-3/50 focus:outline-none focus:border-eqi/50 resize-none"
                   rows={2}
                 />
                 <button
@@ -247,7 +247,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                     } catch {}
                   }}
                   disabled={!noteText.trim()}
-                  className="px-3 py-1 rounded-md text-[10px] font-semibold bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors"
+                  className="px-3 py-1 rounded-md text-[10px] font-semibold bg-primary text-eqi-foreground hover:bg-eqi/90 disabled:bg-muted disabled:text-ink-3 disabled:cursor-not-allowed transition-colors"
                 >
                   {noteType === "meeting"
                     ? "Registrar reunião (+10 pts)"
@@ -275,7 +275,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
 
                 return (
                   <div key={kpi.key} className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground w-24 truncate" title={kpi.label}>
+                    <span className="text-xs text-ink-3 w-24 truncate" title={kpi.label}>
                       {kpi.label}
                     </span>
 
@@ -288,9 +288,9 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                           onChange={(e) => setValueLocal(a.id, kpi.key, parseInt(e.target.value) || 0)}
                           onBlur={() => commit(a.id, kpi.key, val, baseVal || undefined)}
                           placeholder="Qtd"
-                          className="w-12 h-7 rounded-md bg-muted/30 border border-border/30 text-center text-sm font-mono font-semibold text-foreground focus:outline-none focus:border-primary/50"
+                          className="w-12 h-7 rounded-md bg-muted/30 border border-line/30 text-center text-sm font-mono font-semibold text-ink focus:outline-none focus:border-eqi/50"
                         />
-                        <span className="text-[10px] text-muted-foreground">/</span>
+                        <span className="text-[10px] text-ink-3">/</span>
                         <input
                           type="number"
                           min={1}
@@ -301,9 +301,9 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                             if (newBase > 0) commit(a.id, kpi.key, val, newBase);
                           }}
                           placeholder="Lista"
-                          className="w-12 h-7 rounded-md bg-muted/30 border border-border/30 text-center text-sm font-mono font-semibold text-foreground focus:outline-none focus:border-primary/50"
+                          className="w-12 h-7 rounded-md bg-muted/30 border border-line/30 text-center text-sm font-mono font-semibold text-ink focus:outline-none focus:border-eqi/50"
                         />
-                        <span className="text-xs font-mono font-bold text-primary min-w-[32px] text-right">
+                        <span className="text-xs font-mono font-bold text-eqi min-w-[32px] text-right">
                           {pct}%
                         </span>
                       </div>
@@ -315,7 +315,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                             setValueLocal(a.id, kpi.key, next);
                             commit(a.id, kpi.key, next);
                           }}
-                          className="w-7 h-7 rounded-md bg-muted/40 hover:bg-muted/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all"
+                          className="w-7 h-7 rounded-md bg-muted/40 hover:bg-muted/60 flex items-center justify-center text-ink-3 hover:text-ink transition-all"
                         >
                           <Minus className="w-3 h-3" />
                         </button>
@@ -327,7 +327,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                           value={val}
                           onChange={(e) => setValueLocal(a.id, kpi.key, parseInt(e.target.value) || 0)}
                           onBlur={() => commit(a.id, kpi.key, val)}
-                          className="w-14 h-7 rounded-md bg-muted/30 border border-border/30 text-center text-sm font-mono font-semibold text-foreground focus:outline-none focus:border-primary/50"
+                          className="w-14 h-7 rounded-md bg-muted/30 border border-line/30 text-center text-sm font-mono font-semibold text-ink focus:outline-none focus:border-eqi/50"
                         />
 
                         <button
@@ -336,7 +336,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                             setValueLocal(a.id, kpi.key, next);
                             commit(a.id, kpi.key, next);
                           }}
-                          className="w-7 h-7 rounded-md bg-muted/40 hover:bg-muted/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all"
+                          className="w-7 h-7 rounded-md bg-muted/40 hover:bg-muted/60 flex items-center justify-center text-ink-3 hover:text-ink transition-all"
                         >
                           <Plus className="w-3 h-3" />
                         </button>
@@ -344,7 +344,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                     )}
 
                     {!isQOB && (
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[10px] text-ink-3">
                         / {kpi.target}
                         {kpi.unit}
                       </span>
@@ -368,7 +368,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                   {kpisForDay.length > 0 && (
                     <>
                       {extraKpisForDay.length > 0 && (
-                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5 inline-flex items-center gap-1.5">
+                        <div className="text-[10px] uppercase tracking-wider text-ink-3 font-semibold mb-1.5 inline-flex items-center gap-1.5">
                           <CalendarBlank size={11} weight="bold" /> Cronograma do dia
                         </div>
                       )}
@@ -380,11 +380,11 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
 
                   {/* Seção: Outros KPIs (fora do cronograma oficial) — collapsible */}
                   {extraKpisForDay.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-border/20">
+                    <div className="mt-3 pt-3 border-t border-line/20">
                       <button
                         type="button"
                         onClick={() => toggleExtra(a.id)}
-                        className="w-full flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold hover:text-foreground transition-colors"
+                        className="w-full flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-ink-3 font-semibold hover:text-ink transition-colors"
                         aria-expanded={Boolean(extraOpen[a.id])}
                       >
                         {extraOpen[a.id] ? (
@@ -393,7 +393,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                           <ChevronRight className="w-3 h-3" />
                         )}
                         <span>⊕ Outros KPIs</span>
-                        <span className="ml-auto text-muted-foreground/60 font-normal normal-case tracking-normal">
+                        <span className="ml-auto text-ink-3/60 font-normal normal-case tracking-normal">
                           {extraKpisForDay.length} disponíveis
                         </span>
                       </button>

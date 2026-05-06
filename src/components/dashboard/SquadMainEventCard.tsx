@@ -54,15 +54,17 @@ const SquadMainEventCard = ({ assessors: _assessors }: SquadMainEventCardProps) 
   }, [squadsData, ranking]);
 
   const main = standings.slice(0, 2);
-  if (!activeBet || main.length < 2) return null;
+  // Sem squads suficientes pra montar disputa, oculta o card por completo
+  if (main.length < 2) return null;
 
   const [a, b] = main;
   const gap = Math.max(0, a.pct - b.pct);
   const total = Math.max(1, a.pct + b.pct);
+  const hasActive = !!activeBet;
 
   return (
     <div className="rounded-[14px] border border-line bg-card overflow-hidden">
-      {/* Header dark com pote */}
+      {/* Header dark com pote (ou estado aguardando quando não há bet ativa) */}
       <div
         className="flex items-center justify-between px-6 py-3 text-white"
         style={{
@@ -77,38 +79,56 @@ const SquadMainEventCard = ({ assessors: _assessors }: SquadMainEventCardProps) 
               className="text-[9px] uppercase tracking-[0.12em] font-semibold"
               style={{ color: "hsl(var(--gold))" }}
             >
-              MAIN EVENT · {activeBet.roundLabel.toUpperCase()}
+              {hasActive
+                ? `MAIN EVENT · ${activeBet.roundLabel.toUpperCase()}`
+                : "EVENTO PRINCIPAL · AGUARDANDO DISPUTA"}
             </p>
-            <p className="text-[14px] font-bold mt-0.5">Disputa pelo cinturão da semana</p>
+            <p className="text-[14px] font-bold mt-0.5">
+              {hasActive
+                ? "Disputa pelo cinturão da semana"
+                : "Crie uma aposta pra iniciar o round"}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-4">
           <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-white/60">POTE</p>
           <p
             className="font-mono font-extrabold tracking-[-0.02em]"
-            style={{ fontSize: 24, color: "hsl(var(--gold))" }}
+            style={{ fontSize: 24, color: hasActive ? "hsl(var(--gold))" : "oklch(1 0 0 / 0.4)" }}
           >
-            R$ {activeBet.value.toLocaleString("pt-BR")}
+            R$ {hasActive ? activeBet.value.toLocaleString("pt-BR") : "—"}
           </p>
-          <span
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-extrabold tracking-[0.1em]"
-            style={{
-              background: "oklch(0.55 0.22 25 / 0.18)",
-              borderColor: "oklch(0.55 0.22 25 / 0.4)",
-            }}
-          >
+          {hasActive ? (
             <span
-              className="w-1.5 h-1.5 rounded-full animate-pulse"
-              style={{ background: "oklch(0.65 0.24 25)" }}
-            />
-            AO VIVO
-          </span>
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-extrabold tracking-[0.1em]"
+              style={{
+                background: "oklch(0.55 0.22 25 / 0.18)",
+                borderColor: "oklch(0.55 0.22 25 / 0.4)",
+              }}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full animate-pulse"
+                style={{ background: "oklch(0.65 0.24 25)" }}
+              />
+              AO VIVO
+            </span>
+          ) : (
+            <span
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-extrabold tracking-[0.1em] text-white/60"
+              style={{
+                background: "oklch(1 0 0 / 0.08)",
+                borderColor: "oklch(1 0 0 / 0.2)",
+              }}
+            >
+              SEM ROUND ATIVO
+            </span>
+          )}
         </div>
       </div>
 
       {/* Split lateral A · VS · B */}
       <div className="grid items-stretch" style={{ gridTemplateColumns: "1fr 100px 1fr" }}>
-        <SquadSide squad={a.squad} pct={a.pct} side="left" winning />
+        <SquadSide squad={a.squad} pct={a.pct} side="left" winning={hasActive} />
         <div
           className="flex flex-col items-center justify-center py-6 border-x border-line bg-surface-2"
         >
@@ -120,11 +140,11 @@ const SquadMainEventCard = ({ assessors: _assessors }: SquadMainEventCardProps) 
           </p>
           <div className="w-10 h-px bg-line my-2.5" />
           <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-ink-3 text-center">
-            GAP
+            {hasActive ? "GAP" : "VANTAGEM"}
           </p>
           <p
             className="font-mono font-extrabold mt-1"
-            style={{ fontSize: 20, color: "hsl(var(--eqi-green))" }}
+            style={{ fontSize: 20, color: hasActive ? "hsl(var(--eqi-green))" : "hsl(var(--ink-3))" }}
           >
             +{gap}
             <span className="text-[11px] text-ink-3">p.p.</span>

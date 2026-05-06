@@ -25,6 +25,7 @@ const TvLeagueTable = lazy(() => import("@/components/dashboard/TvLeagueTable"))
 const TvPodium = lazy(() => import("@/components/dashboard/TvPodium"));
 const TvSquadBoard = lazy(() => import("@/components/dashboard/TvSquadBoard"));
 const TvTournamentBoard = lazy(() => import("@/components/dashboard/TvTournamentBoard"));
+const TvLiveTicker = lazy(() => import("@/components/dashboard/TvLiveTicker"));
 
 type TvView = "overview" | "results" | "squad" | "podium" | "tournaments";
 
@@ -290,6 +291,14 @@ const TvPage = () => {
       </div>
 
       <TournamentFinishedOverlay event={finishedEvent} onDismiss={dismissFinished} />
+
+      {/* Ticker preto rolante fixo no rodapé com infos dinâmicas (artboard
+          TvSquadBoard). Aparece em todas as views TV; deixa pixels embaixo
+          das views (h-9) pra evitar sobreposição com cards. */}
+      <Suspense fallback={null}>
+        <TvLiveTicker assessors={assessors} />
+      </Suspense>
+      <div className="h-9" />
     </div>
   );
 };

@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { motion } from "framer-motion";
 import {
   BarChart,
   Bar,
@@ -184,10 +183,10 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="card-glass rounded-xl p-4">
+      <div className="rounded-[14px] border border-line bg-card p-4">
         <div className="flex items-center flex-wrap gap-3">
-          <Filter className="w-4 h-4 text-primary" />
-          <span className="text-sm font-bold text-foreground mr-2">Filtros:</span>
+          <Filter className="w-4 h-4 text-eqi" />
+          <span className="text-sm font-bold text-ink mr-2">Filtros:</span>
 
           <DateRangePicker value={range} onChange={setRange} />
 
@@ -207,8 +206,8 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
                   onClick={() => setRange(rangeForPeriod(p.key))}
                   className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
                     active
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "bg-ink text-white"
+                      : "text-ink-3 hover:text-ink"
                   }`}
                 >
                   {p.label}
@@ -225,8 +224,8 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
               }}
               className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1 transition-all ${
                 scope === "geral"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-ink text-white"
+                  : "text-ink-3 hover:text-ink"
               }`}
             >
               <Users className="w-3 h-3" /> Geral
@@ -235,8 +234,8 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
               onClick={() => setScope("individual")}
               className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1 transition-all ${
                 scope === "individual"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-ink text-white"
+                  : "text-ink-3 hover:text-ink"
               }`}
             >
               <User className="w-3 h-3" /> Individual
@@ -247,7 +246,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
             <select
               value={selectedAssessor || ""}
               onChange={(e) => setSelectedAssessor(e.target.value || null)}
-              className="px-3 py-1.5 rounded-md bg-muted/30 border border-border/30 text-sm text-foreground focus:outline-none focus:border-primary/50"
+              className="px-3 py-1.5 rounded-md bg-muted/30 border border-line/30 text-sm text-ink focus:outline-none focus:border-eqi/50"
             >
               <option value="">Selecione...</option>
               {assessors.map((a) => (
@@ -270,24 +269,24 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
             }
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold border transition-all ${
               compareEnabled
-                ? "bg-primary text-secondary border-primary"
-                : "text-muted-foreground bg-muted/20 border-border/30 hover:text-foreground"
+                ? "bg-ink text-white border-ink"
+                : "text-ink-3 bg-muted/20 border-line/30 hover:text-ink"
             }`}
           >
             <GitCompare className="w-3 h-3" />
             {compareEnabled ? "Comparação ativa" : "Comparar com período anterior"}
           </button>
 
-          {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground ml-auto" />}
+          {isLoading && <Loader2 className="w-4 h-4 animate-spin text-ink-3 ml-auto" />}
         </div>
 
         {/* Subtitle explicativo — aparece embaixo quando compare está ativo
             pra deixar ÓBVIO o que está sendo comparado (Felipe pediu clareza). */}
         {compareEnabled && (
-          <p className="mt-2 text-[11px] text-muted-foreground inline-flex items-center gap-1.5 flex-wrap">
-            <ChartBarIcon size={12} /> Comparando <span className="font-mono text-foreground">{range.from} → {range.to}</span>
+          <p className="mt-2 text-[11px] text-ink-3 inline-flex items-center gap-1.5 flex-wrap">
+            <ChartBarIcon size={12} /> Comparando <span className="font-mono text-ink">{range.from} → {range.to}</span>
             {" vs "}
-            <span className="font-mono text-foreground">{previousRange.from} → {previousRange.to}</span>
+            <span className="font-mono text-ink">{previousRange.from} → {previousRange.to}</span>
             {" (evolução entre períodos)"}
           </p>
         )}
@@ -304,20 +303,20 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
                 : `${pct >= 0 ? "+" : ""}${pct.toFixed(0)}%`;
               const color =
                 pct === null
-                  ? "text-muted-foreground"
+                  ? "text-ink-3"
                   : pct > 1
                   ? "text-success"
                   : pct < -1
                   ? "text-destructive"
-                  : "text-muted-foreground";
+                  : "text-ink-3";
               const Icon = pct === null ? Minus : pct > 1 ? ArrowUp : pct < -1 ? ArrowDown : Minus;
               return (
                 <div
                   key={k.key}
-                  className="p-2 rounded-lg bg-muted/20 border border-border/30"
+                  className="p-2 rounded-lg bg-muted/20 border border-line/30"
                   title={`Atual: ${k.actual.toFixed(0)} · Anterior: ${d.prevActual.toFixed(0)}`}
                 >
-                  <div className="text-[10px] text-muted-foreground truncate">{k.label}</div>
+                  <div className="text-[10px] text-ink-3 truncate">{k.label}</div>
                   <div className={`flex items-center gap-1 text-sm font-mono font-bold ${color}`}>
                     <Icon className="w-3 h-3" />
                     {label}
@@ -329,6 +328,67 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
         )}
       </div>
 
+      {/* Hero strip Editorial V1 — 1 card por KPI ativo (Leads, Cadência, Ligações,
+          Reuniões Ag./Real., Touch Point, Ativação Conta, Indicações, Boletas).
+          Cada card: label + valor atual (mono grande) + meta + barra de % + variação
+          vs período anterior (quando compareEnabled). */}
+      {overview && overview.byKpi.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-9 gap-3">
+          {overview.byKpi.map((k) => {
+            const prev = previousOverview?.byKpi.find((p) => p.key === k.key);
+            const variation = prev && prev.actual > 0
+              ? ((k.actual - prev.actual) / prev.actual) * 100
+              : null;
+            const pct = Math.min(100, k.percent);
+            const isAhead = k.percent >= 100;
+            return (
+              <div
+                key={k.key}
+                className="rounded-[14px] border border-line bg-card p-3"
+              >
+                <div className="flex items-center justify-between mb-1.5 gap-2">
+                  <p className="text-[10px] uppercase tracking-[0.08em] font-semibold text-ink-3 truncate">
+                    {k.label}
+                  </p>
+                  {compareEnabled && variation !== null && (
+                    <span
+                      className={`text-[10px] font-mono font-bold whitespace-nowrap ${
+                        variation > 0
+                          ? "text-eqi-green"
+                          : variation < 0
+                          ? "text-destructive"
+                          : "text-ink-3"
+                      }`}
+                    >
+                      {variation > 0 ? "+" : ""}
+                      {variation.toFixed(0)}%
+                    </span>
+                  )}
+                </div>
+                <p className="font-mono text-2xl font-extrabold text-ink leading-none tracking-tight">
+                  {Math.round(k.actual).toLocaleString("pt-BR")}
+                  {k.unit}
+                </p>
+                <p className="text-[10px] font-mono text-ink-3 mt-1">
+                  meta {Math.round(k.target).toLocaleString("pt-BR")}{k.unit}
+                </p>
+                <div className="mt-2 h-1 rounded-full bg-line overflow-hidden">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${pct}%`,
+                      background: isAhead
+                        ? "hsl(var(--eqi-green))"
+                        : "hsl(var(--eqi))",
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Funil de conversão Editorial V1 — barras horizontais empilhadas */}
       <ConversionFunnel
         from={range.from}
@@ -338,15 +398,15 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
 
       {/* Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="card-glass rounded-xl p-5">
+        <div className="rounded-[14px] border border-line bg-card p-5">
           <div className="flex items-baseline justify-between mb-4">
             <div className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-primary" />
-              <h3 className="text-sm font-bold text-foreground">
+              <BarChart3 className="w-4 h-4 text-eqi" />
+              <h3 className="text-sm font-bold text-ink">
                 Cumprimento de Metas — {range.from} → {range.to}
               </h3>
             </div>
-            <span className="text-[10px] text-muted-foreground font-mono">% da meta</span>
+            <span className="text-[10px] text-ink-3 font-mono">% da meta</span>
           </div>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={barData} barGap={4}>
@@ -378,10 +438,10 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
           </ResponsiveContainer>
         </div>
 
-        <div className="card-glass rounded-xl p-5">
+        <div className="rounded-[14px] border border-line bg-card p-5">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-bold text-foreground">Radar de Desempenho</h3>
+            <TrendingUp className="w-4 h-4 text-eqi" />
+            <h3 className="text-sm font-bold text-ink">Radar de Desempenho</h3>
           </div>
           <ResponsiveContainer width="100%" height={280}>
             <RadarChart data={radarData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
@@ -410,99 +470,143 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
         </div>
       </div>
 
-      {/* Assessor cards */}
-      <div className="card-glass rounded-xl p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <Users className="w-4 h-4 text-primary" />
-          <h3 className="text-sm font-bold text-foreground">Comparativo de Assessores</h3>
-          <span className="text-[10px] text-muted-foreground ml-2">Clique no nome para ver perfil completo</span>
+      {/* Matriz por assessor — tabela compacta Editorial V1 (artboard KPIs).
+          Substitui os antigos cards 3-col que ocupavam muita altura por uma
+          tabela densa com 1 linha por assessor + colunas por KPI + %meta + var.
+          Clicar no nome abre o AssessorProfile modal (mantém o fluxo). */}
+      <div className="rounded-[14px] border border-line bg-card overflow-hidden">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-line">
+          <Users className="w-4 h-4 text-ink-3" />
+          <h3 className="text-sm font-extrabold tracking-tight text-ink">Matriz por assessor</h3>
+          <span className="text-[10px] text-ink-3 ml-2">Clique no nome para ver perfil completo</span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {filteredAssessors.map((a) => {
-            // Usa dados do RANGE selecionado, não da semana corrente
-            const perf = performerById.get(a.id);
-            const overallPct = perf?.weeklyGoalPercent ?? 0;
-            const points = perf?.points ?? 0;
-            return (
-              <motion.div
-                key={a.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="p-3 rounded-lg bg-muted/20 border border-border/30 hover:border-primary/30 transition-all"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={32} />
-                  <div className="flex-1 min-w-0">
-                    <button
-                      onClick={() => setProfileAssessor(a)}
-                      className="text-sm font-semibold text-primary hover:underline truncate block text-left"
-                    >
-                      {a.name}
-                    </button>
-                    <p className="text-xs text-muted-foreground">{points} pts</p>
-                  </div>
-                  <span
-                    className={`text-sm font-mono font-bold ${
-                      overallPct >= 80
-                        ? "text-primary"
-                        : overallPct >= 50
-                        ? "text-chart-orange"
-                        : "text-destructive"
-                    }`}
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-line bg-surface-2/30">
+                <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-ink-3 px-5 py-2 w-8">#</th>
+                <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-ink-3 px-3 py-2">NOME</th>
+                {overview?.byKpi.map((kpi) => (
+                  <th
+                    key={kpi.key}
+                    className="text-right text-[10px] uppercase tracking-wider font-semibold text-ink-3 px-3 py-2 whitespace-nowrap"
                   >
-                    {overallPct}%
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-1 text-[10px]">
-                  {overview?.byKpi.map((kpi) => {
-                    // Pega do byAssessor do overview (range atual) em vez de
-                    // a.kpis (weekly sempre). Resolve bug #6 — agora valores
-                    // batem com % e points do card.
-                    const val = kpisByAssessorId.get(a.id)?.[kpi.key] ?? 0;
-                    // Pra unit "%" (cadência, touchpoint), o target é threshold direto
-                    // (não dividir por team). Pra absolutos, dividir é razoável.
-                    const isPercent = kpi.unit === "%";
-                    const perPersonTarget = isPercent
-                      ? Math.round(kpi.target)
-                      : Math.max(1, Math.round(kpi.target / Math.max(assessors.length, 1)));
-                    const pct = Math.min(100, Math.round((val / perPersonTarget) * 100));
-                    return (
-                      <div
-                        key={kpi.key}
-                        className="flex items-center justify-between px-1.5 py-0.5 rounded bg-muted/30"
+                    {kpi.label}
+                  </th>
+                ))}
+                <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-ink-3 px-3 py-2">% META</th>
+                {compareEnabled && (
+                  <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-ink-3 px-3 py-2">VAR</th>
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredAssessors
+                .slice()
+                .sort((x, y) => {
+                  const ax = performerById.get(x.id)?.weeklyGoalPercent ?? 0;
+                  const ay = performerById.get(y.id)?.weeklyGoalPercent ?? 0;
+                  return ay - ax;
+                })
+                .map((a, i) => {
+                  const perf = performerById.get(a.id);
+                  const overallPct = perf?.weeklyGoalPercent ?? 0;
+                  // Variação do assessor: compara overallPct atual vs período anterior
+                  // usando previousOverview.allPerformers
+                  const prevPerf = previousOverview?.allPerformers.find((p) => p.assessorId === a.id);
+                  const varDelta = prevPerf && prevPerf.weeklyGoalPercent > 0
+                    ? overallPct - prevPerf.weeklyGoalPercent
+                    : null;
+                  return (
+                    <tr
+                      key={a.id}
+                      className="border-b border-line last:border-b-0 hover:bg-surface-2/40 transition-colors"
+                    >
+                      <td className="px-5 py-2 font-mono text-[11px] text-ink-3">
+                        {String(i + 1).padStart(2, "0")}
+                      </td>
+                      <td className="px-3 py-2">
+                        <button
+                          onClick={() => setProfileAssessor(a)}
+                          className="flex items-center gap-2 hover:underline"
+                        >
+                          <AssessorAvatar
+                            initials={a.avatar}
+                            photoUrl={a.photoUrl}
+                            level={a.level}
+                            size={22}
+                          />
+                          <span className="text-xs font-semibold text-ink whitespace-nowrap">
+                            {a.name}
+                          </span>
+                        </button>
+                      </td>
+                      {overview?.byKpi.map((kpi) => {
+                        const val = kpisByAssessorId.get(a.id)?.[kpi.key] ?? 0;
+                        const isPercent = kpi.unit === "%";
+                        const perPersonTarget = isPercent
+                          ? Math.round(kpi.target)
+                          : Math.max(1, Math.round(kpi.target / Math.max(assessors.length, 1)));
+                        const cellPct = perPersonTarget > 0 ? (val / perPersonTarget) * 100 : 0;
+                        return (
+                          <td
+                            key={kpi.key}
+                            className={`px-3 py-2 text-right font-mono font-semibold whitespace-nowrap ${
+                              cellPct >= 80
+                                ? "text-eqi-green"
+                                : cellPct >= 50
+                                ? "text-ink"
+                                : "text-destructive"
+                            }`}
+                          >
+                            {Math.round(val)}{kpi.unit}
+                          </td>
+                        );
+                      })}
+                      <td
+                        className={`px-3 py-2 text-right font-mono font-bold whitespace-nowrap ${
+                          overallPct >= 100
+                            ? "text-eqi-green"
+                            : overallPct >= 70
+                            ? "text-ink"
+                            : "text-destructive"
+                        }`}
                       >
-                        <span className="text-muted-foreground">{kpi.label}</span>
-                        <span
-                          className={`font-mono font-semibold ${
-                            pct >= 80
-                              ? "text-primary"
-                              : pct >= 50
-                              ? "text-chart-orange"
-                              : "text-destructive"
+                        {overallPct}%
+                      </td>
+                      {compareEnabled && (
+                        <td
+                          className={`px-3 py-2 text-right font-mono font-semibold whitespace-nowrap ${
+                            varDelta === null
+                              ? "text-ink-3"
+                              : varDelta > 0
+                              ? "text-eqi-green"
+                              : varDelta < 0
+                              ? "text-destructive"
+                              : "text-ink-3"
                           }`}
                         >
-                          {val}
-                          {kpi.unit}/{perPersonTarget}
-                          {kpi.unit}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            );
-          })}
+                          {varDelta === null
+                            ? "—"
+                            : `${varDelta > 0 ? "+" : ""}${Math.round(varDelta)}p.p.`}
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
         </div>
       </div>
 
       {/* AI Insights do Time */}
-      <div className="card-glass rounded-xl p-5">
+      <div className="rounded-[14px] border border-line bg-card p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
-            <h3 className="text-sm font-bold text-foreground">Análise IA do Time</h3>
+            <Sparkles className="w-5 h-5 text-eqi" />
+            <h3 className="text-sm font-bold text-ink">Análise IA do Time</h3>
             {teamInsight?.cached && (
-              <span className="text-[9px] text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
+              <span className="text-[9px] text-ink-3 bg-muted/30 px-1.5 py-0.5 rounded">
                 cache
               </span>
             )}
@@ -510,7 +614,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => window.open("/relatorio?period=weekly&autoprint=1", "_blank")}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground bg-muted/20 border border-border/30 hover:bg-muted/40 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-ink-3 bg-muted/20 border border-line/30 hover:bg-muted/40 transition-all"
               title="Abre relatório dedicado em nova aba e auto-imprime"
             >
               <Printer className="w-3 h-3" />
@@ -524,7 +628,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
                 )
               }
               disabled={generateTeam.isPending}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-primary bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-eqi bg-eqi/10 border border-eqi/20 hover:bg-eqi/20 transition-all disabled:opacity-50"
             >
               {generateTeam.isPending ? (
                 <Loader2 className="w-3 h-3 animate-spin" />
@@ -537,16 +641,16 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
         </div>
 
         {generateTeam.isPending ? (
-          <div className="flex items-center gap-3 text-sm text-muted-foreground py-6">
-            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+          <div className="flex items-center gap-3 text-sm text-ink-3 py-6">
+            <Loader2 className="w-5 h-5 animate-spin text-eqi" />
             Gemini Flash analisando desempenho do time…
           </div>
         ) : teamInsight ? (
-          <div className="prose prose-sm prose-invert max-w-none text-sm text-foreground/90 leading-relaxed [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-foreground [&_h3]:text-sm [&_h3]:font-semibold [&_ul]:text-xs [&_li]:text-xs [&_p]:text-sm">
+          <div className="prose prose-sm prose-invert max-w-none text-sm text-ink/90 leading-relaxed [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-ink [&_h3]:text-sm [&_h3]:font-semibold [&_ul]:text-xs [&_li]:text-xs [&_p]:text-sm">
             <Markdown>{teamInsight.textMarkdown}</Markdown>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground py-4">
+          <p className="text-sm text-ink-3 py-4">
             Clique em "Gerar Análise" pra que a IA analise o desempenho geral do time neste período.
           </p>
         )}
