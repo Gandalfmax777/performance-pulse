@@ -1,25 +1,40 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Users, PhoneCall, CalendarCheck, Gift, FileText, Zap, Sparkles, Target, Hand, type LucideIcon } from "lucide-react";
-import { TrendUp, CheckCircle, Warning } from "@phosphor-icons/react";
-import { format, startOfWeek, endOfWeek, differenceInCalendarDays, addDays } from "date-fns";
+import {
+  Users,
+  Lightning,
+  Phone,
+  CalendarBlank,
+  CheckCircle,
+  Hand,
+  Sparkle,
+  Gift,
+  FileText,
+  TrendUp,
+  TrendDown,
+  Warning,
+  type Icon as PhosphorIcon,
+} from "@phosphor-icons/react";
+import { format, startOfWeek, endOfWeek, differenceInCalendarDays } from "date-fns";
 import { useKpis } from "@/hooks/useKpis";
 import { useWeeklyRanking } from "@/hooks/useRankings";
 import { useOverviewReport } from "@/hooks/useReports";
 
-const KPI_VISUALS: Record<string, { icon: LucideIcon; color: string; bg: string }> = {
-  leads:              { icon: Users,         color: "text-primary",      bg: "bg-primary/10" },
-  cadencia:           { icon: Zap,           color: "text-eqi-mint",     bg: "bg-eqi-mint/10" },
-  ligacoes:           { icon: PhoneCall,     color: "text-chart-blue",   bg: "bg-chart-blue/10" },
-  reunioes:           { icon: CalendarCheck, color: "text-chart-purple", bg: "bg-chart-purple/10" },
-  reunioes_realizadas:{ icon: CalendarCheck, color: "text-chart-purple", bg: "bg-chart-purple/10" },
-  indicacoes:         { icon: Gift,          color: "text-chart-orange", bg: "bg-chart-orange/10" },
-  boletos:            { icon: FileText,      color: "text-gold",         bg: "bg-gold/10" },
-  touchpoint:         { icon: Hand,          color: "text-chart-blue",   bg: "bg-chart-blue/10" },
-  ativacao_conta:     { icon: Sparkles,      color: "text-gold",         bg: "bg-gold/10" },
+const KPI_VISUAL: Record<string, PhosphorIcon> = {
+  leads: Users,
+  cadencia: Lightning,
+  ligacoes: Phone,
+  reunioes: CalendarBlank,
+  reunioes_realizadas: CheckCircle,
+  reunioes_ag: CalendarBlank,
+  reunioes_real: CheckCircle,
+  indicacoes: Gift,
+  boletas: FileText,
+  boletos: FileText,
+  touchpoint: Hand,
+  ativacao: Sparkle,
+  ativacao_conta: Sparkle,
 };
-
-const FALLBACK_VISUAL = { icon: FileText, color: "text-foreground", bg: "bg-muted/30" };
 
 interface KpiCardsProps {
   /** Range opcional (YYYY-MM-DD). Default: semana corrente. */
@@ -27,10 +42,15 @@ interface KpiCardsProps {
   to?: string;
 }
 
+/**
+ * Grid de KPIs Editorial V1 — cards com label uppercase, valor grande
+ * em mono e barra de progresso fina. Verde EQI quando bate meta,
+ * dourado quando acima de 100%, ink no resto. Versão "trading-desk
+ * dense" do artboard de KPIs.
+ */
 const KpiCards = ({ from, to }: KpiCardsProps) => {
   const { kpis } = useKpis();
 
-  // Range default: semana atual (segunda → domingo)
   const now = new Date();
   const defaultFrom = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
   const defaultTo = format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
@@ -38,12 +58,9 @@ const KpiCards = ({ from, to }: KpiCardsProps) => {
   const toDate = to ?? defaultTo;
 
   const { data: overview } = useOverviewReport({ from: fromDate, to: toDate });
-  // Weekly ranking mantido só pra contar teamSize e fallback
   const { data: weeklyRanking } = useWeeklyRanking();
   const teamSize = weeklyRanking?.rankings.length ?? 1;
 
-  // Projeção: dado realizado até hoje, projeta linearmente até o fim do período.
-  // Se já passou todo o período (toDate < hoje), usa o realizado direto.
   const projection = useMemo(() => {
     const start = new Date(`${fromDate}T00:00:00.000Z`);
     const end = new Date(`${toDate}T00:00:00.000Z`);
@@ -62,25 +79,20 @@ const KpiCards = ({ from, to }: KpiCardsProps) => {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
       {kpis.map((kpi, i) => {
-        const visual = KPI_VISUALS[kpi.key] ?? FALLBACK_VISUAL;
-        const Icon = visual.icon;
+        const Icon = KPI_VISUAL[kpi.key] ?? FileText;
         const byKpi = overview?.byKpi.find((k) => k.key === kpi.key);
         const value = Math.round(byKpi?.actual ?? 0);
         const teamTarget = byKpi?.target ?? (kpi.target || 1) * teamSize;
-        // QOB: cada assessor tem base própria (lista do dia) — backend calcula
-        // percent como média dos convertedPercent das entries, usar direto.
         const isQob = kpi.inputMode === "QUANTITY_OVER_BASE";
         const pct = isQob
           ? Math.min(150, Math.round(byKpi?.percent ?? 0))
           : teamTarget > 0
-            ? Math.min(150, Math.round((value / teamTarget) * 100))
-            : 0;
+          ? Math.min(150, Math.round((value / teamTarget) * 100))
+          : 0;
         const barWidth = Math.min(100, pct);
-        // QOB: valor big = % médio do time; target é threshold (ex: 70%)
         const displayValue = isQob ? `${pct}%` : `${value}${kpi.unit}`;
-        const displaySub = isQob ? `meta ${teamTarget}%` : `${value}/${teamTarget}`;
+        const displaySub = isQob ? `meta ${teamTarget}%` : `meta ${teamTarget}`;
 
-        // Projeção linear: se manter o ritmo atual, vai bater X% até o fim
         const projected =
           projection.elapsedDays > 0
             ? Math.round((value / projection.elapsedDays) * projection.totalDays)
@@ -88,50 +100,77 @@ const KpiCards = ({ from, to }: KpiCardsProps) => {
         const projectedPct = teamTarget > 0 ? Math.round((projected / teamTarget) * 100) : 0;
         const onTrack = projectedPct >= 100;
 
+        const valueColor =
+          pct >= 100 ? "hsl(var(--eqi-green))" : "hsl(var(--ink))";
+        const barColor =
+          pct >= 100
+            ? "hsl(var(--success))"
+            : pct >= 70
+            ? "hsl(var(--ink-2))"
+            : "hsl(var(--gold))";
+
         return (
           <motion.div
             key={kpi.id}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.08 }}
-            className="card-glass card-noise rounded-xl p-4 relative overflow-hidden"
+            transition={{ delay: i * 0.04 }}
+            className="rounded-[14px] border border-line bg-card p-4 relative overflow-hidden"
           >
-            <div className="flex items-center justify-between mb-2">
-              <div className={`w-9 h-9 rounded-lg ${visual.bg} flex items-center justify-center`}>
-                <Icon className={`w-4.5 h-4.5 ${visual.color}`} />
+            <div className="flex items-start justify-between mb-2">
+              <div className="inline-flex items-center gap-2 text-ink-2">
+                <Icon size={13} className="text-ink-3" />
+                <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3">
+                  {kpi.label}
+                </p>
               </div>
-              <span className="font-display text-2xl font-bold text-foreground">
-                {displayValue}
-              </span>
+              {byKpi && (
+                <span className="font-mono text-[11px] font-bold text-ink-3 inline-flex items-center gap-0.5">
+                  {pct >= 100 ? (
+                    <TrendUp size={11} weight="bold" className="text-success" />
+                  ) : (
+                    <TrendDown size={11} weight="bold" className="text-ink-3" />
+                  )}
+                  {pct}%
+                </span>
+              )}
             </div>
-            <p className="text-xs text-muted-foreground mb-2">{kpi.label}</p>
-            <div className="flex items-center gap-2">
-              <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${barWidth}%` }}
-                  transition={{ duration: 1.2, delay: i * 0.1 }}
-                  className={`h-full rounded-full ${pct >= 80 ? "bg-success" : "bg-primary"}`}
-                />
-              </div>
-              <span className="text-[10px] font-mono text-muted-foreground">
-                {displaySub}
-              </span>
+
+            <p
+              className="font-mono font-extrabold leading-none tracking-[-0.03em] mt-3"
+              style={{ fontSize: 28, color: valueColor }}
+            >
+              {displayValue}
+            </p>
+
+            <p className="font-mono text-[10px] text-ink-3 mt-1.5 font-semibold">
+              {displaySub}
+            </p>
+
+            <div className="mt-2.5 h-[3px] rounded-full bg-line overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${barWidth}%` }}
+                transition={{ duration: 0.8, delay: i * 0.04 }}
+                className="h-full rounded-full"
+                style={{ background: barColor }}
+              />
             </div>
-            {/* Projeção (só ABSOLUTE — QOB não projeta: cada assessor tem base própria) */}
+
             {!isQob && projection.remaining > 0 && projection.elapsedDays > 0 && (
-              <div className="mt-1.5 flex items-center justify-between text-[10px] font-mono">
-                <span className="text-muted-foreground inline-flex items-center gap-1">
-                  <TrendUp size={11} weight="bold" /> ~{projected} ({projectedPct}%)
-                </span>
-                <span className={`inline-flex items-center gap-1 ${onTrack ? "text-success" : "text-chart-orange"}`}>
-                  {onTrack ? <><CheckCircle size={11} weight="fill" /> no ritmo</> : <><Warning size={11} weight="fill" /> ritmo abaixo</>}
-                </span>
-              </div>
+              <p className="mt-2 font-mono text-[10px] text-ink-3 font-semibold inline-flex items-center gap-1.5">
+                {onTrack ? (
+                  <span className="inline-flex items-center gap-1 text-success">
+                    <TrendUp size={10} weight="bold" /> ~{projected}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-gold-deep">
+                    <Warning size={10} weight="fill" /> ~{projected}
+                  </span>
+                )}
+                <span className="text-ink-4">· proj. ({projectedPct}%)</span>
+              </p>
             )}
-            <div className="absolute -right-4 -bottom-4 opacity-5">
-              <Icon className="w-20 h-20" />
-            </div>
           </motion.div>
         );
       })}
