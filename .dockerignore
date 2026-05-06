@@ -1,0 +1,14 @@
+node_modules
+dist
+.git
+.github
+.vscode
+.claude
+.env
+.env.*
+!.env.example
+*.log
+README.md
+vercel.json
+bun.lockb
+bun.lock
