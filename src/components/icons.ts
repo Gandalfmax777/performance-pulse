@@ -1,142 +1,26 @@
 /* Phosphor icon registry — Editorial V1 redesign.
-   Importações nomeadas centralizadas para que o app inteiro consuma
-   ícones do mesmo lugar e fique fácil trocar pesos no futuro.
+   Concentra mapas de ícones (KPIs, squads) usados pela UI. Os ícones
+   pontuais continuam sendo importados direto de '@phosphor-icons/react'
+   nos componentes — esse arquivo é só para mapeamentos compartilhados.
 */
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 import {
-  Activity,
-  ArrowRight,
-  ArrowUp,
-  ArrowDown,
-  ArrowsLeftRight,
-  Bell,
   Bird,
   CalendarBlank,
-  CaretLeft,
-  CaretRight,
   Cat,
-  ChartBar,
-  ChartLineUp,
   CheckCircle,
-  Clock,
-  Confetti,
-  Crown,
-  CurrencyCircleDollar,
   Dog,
-  DownloadSimple,
-  Export,
-  Eye,
-  EyeSlash,
   FileText,
-  Fire,
   Flag,
-  Funnel,
-  GearSix,
   Gift,
   Hand,
   HouseSimple,
   Lightning,
-  ListBullets,
-  MagnifyingGlass,
-  Medal,
-  Moon,
-  PaperPlaneTilt,
-  Pause,
   Phone,
-  Play,
-  Plus,
-  Pulse,
-  Question,
-  Rocket,
-  ShieldCheck,
-  SignOut,
-  SkipForward,
   Sparkle,
-  SpeakerHigh,
-  SpeakerSimpleSlash,
-  Squares,
-  Stack,
   Star,
-  Sun,
-  Sword as Swords,
-  Target,
-  Television,
-  TextAlignJustify,
-  TrendUp,
-  Trophy,
   Users,
-  UsersThree,
-  X,
 } from '@phosphor-icons/react';
-
-// Re-export individual icons keeping legacy aliases used across the app.
-export {
-  Activity,
-  ArrowRight,
-  ArrowUp,
-  ArrowDown,
-  ArrowsLeftRight,
-  Bell,
-  CaretLeft,
-  CaretRight,
-  ChartBar,
-  ChartLineUp,
-  CheckCircle,
-  Clock,
-  Confetti,
-  Crown,
-  CurrencyCircleDollar,
-  DownloadSimple,
-  Export,
-  Eye,
-  EyeSlash,
-  FileText,
-  Fire,
-  Flag,
-  Gift,
-  Hand,
-  Lightning,
-  ListBullets,
-  Medal,
-  Moon,
-  PaperPlaneTilt,
-  Pause,
-  Phone,
-  Play,
-  Plus,
-  Pulse,
-  Question,
-  Rocket,
-  ShieldCheck,
-  SignOut,
-  Sparkle,
-  SpeakerHigh,
-  SpeakerSimpleSlash,
-  Squares,
-  Star,
-  Sun,
-  Sword as Swords,
-  Target,
-  TrendUp,
-  Trophy,
-  Users,
-  UsersThree,
-  X,
-};
-
-// Aliases para ícones renomeados (lucide → phosphor)
-export const ActivityIcon = Activity;
-export const Calendar = CalendarBlank;
-export const Filter = Funnel;
-export const Home = HouseSimple;
-export const Layers = Stack;
-export const Menu = TextAlignJustify;
-export const Next = SkipForward;
-export const Search = MagnifyingGlass;
-export const Settings = GearSix;
-export const Tv = Television;
-export const Volume2 = SpeakerHigh;
-export const VolumeX = SpeakerSimpleSlash;
 
 // Mapeamento de KPIs → ícones.
 export const KPI_ICON: Record<string, PhosphorIcon> = {
