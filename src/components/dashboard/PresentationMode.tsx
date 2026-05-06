@@ -147,21 +147,21 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
       icon: Trophy,
       render: () => (
         <div className="text-center space-y-8">
-          <h1 className="font-display text-7xl font-black text-foreground tracking-tight">
+          <h1 className="font-display text-7xl font-black text-ink tracking-tight">
             Performance Pulse
           </h1>
-          <p className="text-3xl text-muted-foreground">{range.label}</p>
+          <p className="text-3xl text-ink-3">{range.label}</p>
           <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto pt-8">
-            <div className="card-glass rounded-2xl p-6">
-              <p className="text-xs uppercase text-muted-foreground tracking-wider mb-2">Total Pontos</p>
-              <p className="font-display text-5xl font-black text-primary">{totalPoints}</p>
+            <div className="bg-card border border-line rounded-[14px] p-6">
+              <p className="text-xs uppercase text-ink-3 tracking-wider mb-2">Total Pontos</p>
+              <p className="font-display text-5xl font-black text-eqi">{totalPoints}</p>
             </div>
-            <div className="card-glass rounded-2xl p-6">
-              <p className="text-xs uppercase text-muted-foreground tracking-wider mb-2">% Meta Médio</p>
+            <div className="bg-card border border-line rounded-[14px] p-6">
+              <p className="text-xs uppercase text-ink-3 tracking-wider mb-2">% Meta Médio</p>
               <p className="font-display text-5xl font-black text-success">{avgGoalPct}%</p>
             </div>
-            <div className="card-glass rounded-2xl p-6">
-              <p className="text-xs uppercase text-muted-foreground tracking-wider mb-2">Time</p>
+            <div className="bg-card border border-line rounded-[14px] p-6">
+              <p className="text-xs uppercase text-ink-3 tracking-wider mb-2">Time</p>
               <p className="font-display text-5xl font-black text-chart-purple">{ranked.length}</p>
             </div>
           </div>
@@ -183,10 +183,10 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
         const prevLabel = period === "weekly" ? "semana passada" : "mês passado";
         return (
           <div className="space-y-8">
-            <h2 className="text-4xl font-display font-bold text-foreground text-center">
-              <TrendUp size={32} weight="bold" className="inline-block mr-2 text-primary align-middle" />Destaques do Período
+            <h2 className="text-4xl font-display font-bold text-ink text-center">
+              <TrendUp size={32} weight="bold" className="inline-block mr-2 text-eqi align-middle" />Destaques do Período
             </h2>
-            <p className="text-center text-muted-foreground text-lg">
+            <p className="text-center text-ink-3 text-lg">
               Comparativo com {prevLabel}
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
@@ -196,12 +196,12 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                 const isDown = pct !== null && pct !== undefined && pct < -1;
                 const Icon = pct === null || pct === undefined ? Minus : isUp ? ArrowUp : isDown ? ArrowDown : Minus;
                 const color = pct === null || pct === undefined
-                  ? "text-muted-foreground"
+                  ? "text-ink-3"
                   : isUp
                   ? "text-success"
                   : isDown
                   ? "text-destructive"
-                  : "text-muted-foreground";
+                  : "text-ink-3";
                 const deltaLabel = pct === null || pct === undefined
                   ? it.delta && it.delta.previous === 0 && it.actual > 0 ? "novo!" : "—"
                   : `${pct >= 0 ? "+" : ""}${pct.toFixed(0)}%`;
@@ -211,19 +211,19 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className="card-glass rounded-2xl p-6"
+                    className="bg-card border border-line rounded-[14px] p-6"
                   >
-                    <p className="text-sm text-muted-foreground uppercase tracking-wider mb-3">
+                    <p className="text-sm text-ink-3 uppercase tracking-wider mb-3">
                       {it.label}
                     </p>
-                    <p className="font-display text-5xl font-black text-foreground mb-2">
+                    <p className="font-display text-5xl font-black text-ink mb-2">
                       {it.actual.toLocaleString("pt-BR")}
                     </p>
                     <div className={`flex items-center gap-1.5 text-lg font-mono font-bold ${color}`}>
                       <Icon className="w-5 h-5" />
                       {deltaLabel}
                       {it.delta && it.delta.previous > 0 && (
-                        <span className="text-xs text-muted-foreground ml-1">
+                        <span className="text-xs text-ink-3 ml-1">
                           vs {Math.round(it.delta.previous).toLocaleString("pt-BR")}
                         </span>
                       )}
@@ -247,12 +247,12 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
         const labels = ["2º", "1º", "3º"];
         const colors = [
           "from-silver/30 to-silver/5 border-silver/40",
-          "from-primary/30 to-primary/5 border-primary/40",
+          "from-eqi/30 to-eqi/5 border-eqi/40",
           "from-bronze/30 to-bronze/5 border-bronze/40",
         ];
         return (
           <div className="space-y-8">
-            <h2 className="text-4xl font-display font-bold text-foreground text-center">
+            <h2 className="text-4xl font-display font-bold text-ink text-center">
               <Trophy size={32} weight="bold" className="inline-block mr-2 text-gold align-middle" />Top 3 do Período
             </h2>
             <div className="flex items-end justify-center gap-6 pt-8">
@@ -271,13 +271,13 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                     size={96}
                     className="mb-3"
                   />
-                  <p className="text-xl font-bold text-foreground mb-1">{a.name}</p>
-                  <p className="text-sm text-muted-foreground mb-3">{a.points} pts</p>
+                  <p className="text-xl font-bold text-ink mb-1">{a.name}</p>
+                  <p className="text-sm text-ink-3 mb-3">{a.points} pts</p>
                   <div
                     style={{ height: heights[i] }}
                     className={`w-32 rounded-t-2xl bg-gradient-to-t ${colors[i]} border-2 flex items-start justify-center pt-4`}
                   >
-                    <span className="text-3xl font-display font-black text-foreground">
+                    <span className="text-3xl font-display font-black text-ink">
                       {labels[i]}
                     </span>
                   </div>
@@ -294,8 +294,8 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
       icon: Target,
       render: () => (
         <div className="space-y-6">
-          <h2 className="text-4xl font-display font-bold text-foreground text-center">
-<ChartBar size={32} weight="bold" className="inline-block mr-2 text-primary align-middle" />KPIs do Período
+          <h2 className="text-4xl font-display font-bold text-ink text-center">
+<ChartBar size={32} weight="bold" className="inline-block mr-2 text-eqi align-middle" />KPIs do Período
           </h2>
           <div className="grid grid-cols-3 gap-4 max-w-5xl mx-auto">
             {kpis.slice(0, 6).map((kpi) => {
@@ -304,11 +304,11 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
               const target = byKpi?.target ?? 1;
               const pct = target > 0 ? Math.min(150, Math.round((value / target) * 100)) : 0;
               return (
-                <div key={kpi.id} className="card-glass rounded-2xl p-6">
-                  <p className="text-sm text-muted-foreground mb-2">{kpi.label}</p>
-                  <p className="font-display text-4xl font-black text-foreground mb-2">
+                <div key={kpi.id} className="bg-card border border-line rounded-[14px] p-6">
+                  <p className="text-sm text-ink-3 mb-2">{kpi.label}</p>
+                  <p className="font-display text-4xl font-black text-ink mb-2">
                     {value}
-                    <span className="text-lg text-muted-foreground"> / {target}</span>
+                    <span className="text-lg text-ink-3"> / {target}</span>
                   </p>
                   <div className="h-2 bg-muted/40 rounded-full overflow-hidden">
                     <div
@@ -316,7 +316,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                       className={`h-full rounded-full ${pct >= 80 ? "bg-success" : pct >= 50 ? "bg-chart-orange" : "bg-destructive"}`}
                     />
                   </div>
-                  <p className="text-xs font-mono text-muted-foreground mt-1 text-right">{pct}%</p>
+                  <p className="text-xs font-mono text-ink-3 mt-1 text-right">{pct}%</p>
                 </div>
               );
             })}
@@ -334,7 +334,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
         const useTwoCols = ranked.length > 6;
         return (
           <div className="space-y-4 w-full">
-            <h2 className="text-3xl font-display font-bold text-foreground text-center">
+            <h2 className="text-3xl font-display font-bold text-ink text-center">
 <Medal size={32} weight="bold" className="inline-block mr-2 text-gold align-middle" />Ranking Completo
             </h2>
             <div
@@ -346,25 +346,25 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: Math.min(i * 0.03, 0.4) }}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-xl border ${
+                  className={`flex items-center gap-3 px-3 py-2 rounded-[14px] border ${
                     i === 0
-                      ? "bg-primary/10 border-primary/40"
+                      ? "bg-eqi/10 border-eqi/40"
                       : i === 1
                         ? "bg-silver/5 border-silver/30"
                         : i === 2
                           ? "bg-bronze/5 border-bronze/30"
-                          : "border-border/20 bg-muted/10"
+                          : "border-line/20 bg-muted/10"
                   }`}
                 >
                   <span
                     className={`w-9 h-9 shrink-0 rounded-lg flex items-center justify-center font-display font-black text-sm ${
                       i === 0
-                        ? "bg-primary/20 text-primary"
+                        ? "bg-eqi/20 text-eqi"
                         : i === 1
                           ? "bg-silver/15 text-silver"
                           : i === 2
                             ? "bg-bronze/15 text-bronze"
-                            : "bg-muted/30 text-muted-foreground"
+                            : "bg-muted/30 text-ink-3"
                     }`}
                   >
                     {i === 0 ? <Crown className="w-4 h-4" /> : `#${i + 1}`}
@@ -376,7 +376,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                     size={40}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-foreground truncate">{a.name}</p>
+                    <p className="text-sm font-bold text-ink truncate">{a.name}</p>
                     {a.streak > 0 && (
                       <p className="text-[10px] text-chart-orange flex items-center gap-1">
                         <Flame className="w-3 h-3" /> {a.streak}d
@@ -384,10 +384,10 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                     )}
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-display text-lg font-bold text-primary leading-none">
-                      {a.points} <span className="text-xs font-normal text-muted-foreground">pts</span>
+                    <p className="font-display text-lg font-bold text-eqi leading-none">
+                      {a.points} <span className="text-xs font-normal text-ink-3">pts</span>
                     </p>
-                    <p className="text-[10px] text-muted-foreground">{a.weeklyGoalPercent}% meta</p>
+                    <p className="text-[10px] text-ink-3">{a.weeklyGoalPercent}% meta</p>
                   </div>
                 </motion.div>
               ))}
@@ -408,12 +408,12 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
         const hasNothing = activeT.length === 0 && recentFinished.length === 0;
         return (
           <div className="space-y-8 max-w-5xl mx-auto">
-            <h2 className="text-4xl font-display font-bold text-foreground text-center">
-<Swords size={32} weight="bold" className="inline-block mr-2 text-primary align-middle" />Torneios do Período
+            <h2 className="text-4xl font-display font-bold text-ink text-center">
+<Swords size={32} weight="bold" className="inline-block mr-2 text-eqi align-middle" />Torneios do Período
             </h2>
 
             {hasNothing && (
-              <p className="text-center text-muted-foreground text-lg py-12">
+              <p className="text-center text-ink-3 text-lg py-12">
                 Nenhum torneio ativo ou recente. Considere criar um em /admin/tournaments
                 pra aumentar o engajamento da próxima semana.
               </p>
@@ -421,7 +421,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
 
             {activeT.length > 0 && (
               <div>
-                <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                <h3 className="text-xl font-bold text-ink mb-4 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
                   Ativos ({activeT.length})
                 </h3>
@@ -430,27 +430,27 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                     const leader = [...t.participants]
                       .sort((a, b) => (b.finalScore ?? 0) - (a.finalScore ?? 0))[0];
                     return (
-                      <div key={t.id} className="card-glass rounded-2xl p-5 border-secondary/30">
+                      <div key={t.id} className="bg-card border border-line rounded-[14px] p-5 border-secondary/30">
                         <div className="flex items-start justify-between gap-3 mb-3">
-                          <h4 className="font-display font-bold text-lg text-foreground">
+                          <h4 className="font-display font-bold text-lg text-ink">
                             {t.roundLabel}
                           </h4>
                           <span className="font-mono font-black text-2xl text-secondary">
                             R$ {t.totalPrizePool.toLocaleString("pt-BR")}
                           </span>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-3">
+                        <p className="text-sm text-ink-3 mb-3">
                           {format(parseISO(t.startDate), "dd/MM")} → {format(parseISO(t.endDate), "dd/MM")}
                           {" · "}
                           {t.scope === "INDIVIDUAL" ? "Individual" : "Squads"}
                         </p>
                         {leader && (
-                          <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                          <div className="flex items-center gap-3 p-3 rounded-lg bg-eqi/5 border border-eqi/20">
                             <Crown className="w-5 h-5 text-secondary" />
-                            <span className="font-semibold text-foreground flex-1">
+                            <span className="font-semibold text-ink flex-1">
                               Liderando: {leader.displayName}
                             </span>
-                            <span className="font-mono font-black text-primary">
+                            <span className="font-mono font-black text-eqi">
                               {(leader.finalScore ?? 0).toLocaleString("pt-BR")}
                             </span>
                           </div>
@@ -464,7 +464,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
 
             {recentFinished.length > 0 && (
               <div>
-                <h3 className="text-xl font-bold text-foreground mb-4">Finalizados recentes</h3>
+                <h3 className="text-xl font-bold text-ink mb-4">Finalizados recentes</h3>
                 <div className="space-y-3">
                   {recentFinished.map((t) => {
                     const champion = t.participants.find((p) => p.rank === 1);
@@ -472,17 +472,17 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                     return (
                       <div
                         key={t.id}
-                        className="flex items-center gap-4 p-4 rounded-xl bg-muted/10 border border-border/20"
+                        className="flex items-center gap-4 p-4 rounded-[14px] bg-muted/10 border border-line/20"
                       >
                         <Trophy className="w-8 h-8 text-secondary" />
                         <div className="flex-1 min-w-0">
-                          <p className="font-bold text-foreground">{t.roundLabel}</p>
-                          <p className="text-sm text-muted-foreground">
-                            Campeão: <span className="text-foreground font-semibold">{champion?.displayName ?? "—"}</span>
+                          <p className="font-bold text-ink">{t.roundLabel}</p>
+                          <p className="text-sm text-ink-3">
+                            Campeão: <span className="text-ink font-semibold">{champion?.displayName ?? "—"}</span>
                             {" · "}R$ {topPayout.toLocaleString("pt-BR")}
                           </p>
                         </div>
-                        <span className="text-xs font-mono text-muted-foreground">
+                        <span className="text-xs font-mono text-ink-3">
                           {format(parseISO(t.endDate), "dd/MM")}
                         </span>
                       </div>
@@ -501,16 +501,16 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
       icon: Sparkle,
       render: () => (
         <div className="space-y-6 max-w-4xl mx-auto">
-          <h2 className="text-4xl font-display font-bold text-foreground text-center">
+          <h2 className="text-4xl font-display font-bold text-ink text-center">
 <Sparkle size={32} weight="bold" className="inline-block mr-2 text-gold-deep align-middle" />Análise IA do Time
           </h2>
           {generateTeam.isPending && !teamInsight ? (
-            <div className="flex items-center justify-center gap-3 text-muted-foreground py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            <div className="flex items-center justify-center gap-3 text-ink-3 py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-eqi" />
               <span className="text-lg">Gemini Flash analisando…</span>
             </div>
           ) : teamInsight ? (
-            <div className="card-glass rounded-2xl p-8 prose prose-invert max-w-none text-base leading-relaxed">
+            <div className="bg-card border border-line rounded-[14px] p-8 prose prose-invert max-w-none text-base leading-relaxed">
               <Markdown>{teamInsight.textMarkdown}</Markdown>
             </div>
           ) : (
@@ -522,7 +522,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                     { onSuccess: (data) => setTeamInsight(data) },
                   )
                 }
-                className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors"
+                className="px-6 py-3 rounded-[14px] bg-ink text-white font-bold hover:bg-ink/90 transition-colors"
               >
                 <Sparkle className="w-5 h-5 inline mr-2" />
                 Gerar análise agora
@@ -538,55 +538,55 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
       icon: CalendarDays,
       render: () => (
         <div className="space-y-6 max-w-3xl mx-auto">
-          <h2 className="text-4xl font-display font-bold text-foreground text-center">
-<Target size={32} weight="bold" className="inline-block mr-2 text-primary align-middle" />Foco da Próxima Semana
+          <h2 className="text-4xl font-display font-bold text-ink text-center">
+<Target size={32} weight="bold" className="inline-block mr-2 text-eqi align-middle" />Foco da Próxima Semana
           </h2>
-          <p className="text-center text-muted-foreground">
+          <p className="text-center text-ink-3">
             Anchor: segunda{" "}
-            <span className="font-mono text-foreground">
+            <span className="font-mono text-ink">
               {format(new Date(`${nextMonday}T00:00:00.000Z`), "dd/MM (EEEE)", { locale: ptBR })}
             </span>
           </p>
 
           {nextDirection ? (
-            <div className="card-glass rounded-2xl p-6 space-y-4">
+            <div className="bg-card border border-line rounded-[14px] p-6 space-y-4">
               <div className="flex items-center gap-2 flex-wrap text-sm">
-                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-xs">
+                <span className="px-2 py-0.5 rounded-full bg-eqi/10 text-eqi font-bold text-xs">
                   {nextDirection.period === "DAILY" ? "Foco Diário"
                     : nextDirection.period === "WEEKLY" ? "Foco Semanal"
                     : "Foco Mensal"}
                 </span>
                 {nextDirection.targetKpiKeys.length > 0 && (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-ink-3">
                     KPIs alvo: {nextDirection.targetKpiKeys.length}
                   </span>
                 )}
               </div>
-              <p className="text-lg text-foreground whitespace-pre-wrap">
+              <p className="text-lg text-ink whitespace-pre-wrap">
                 {nextDirection.text}
               </p>
               <button
                 onClick={() => setDirectionEditOpen(true)}
-                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
+                className="px-4 py-2 rounded-lg bg-ink text-white font-semibold text-sm hover:bg-ink/90 transition-colors"
               >
                 Editar foco
               </button>
             </div>
           ) : (
-            <div className="card-glass rounded-2xl p-8 text-center">
-              <p className="text-base text-muted-foreground mb-4">
+            <div className="bg-card border border-line rounded-[14px] p-8 text-center">
+              <p className="text-base text-ink-3 mb-4">
                 Nenhum foco definido pra próxima semana ainda.
               </p>
               <button
                 onClick={() => setDirectionEditOpen(true)}
-                className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors"
+                className="px-6 py-3 rounded-[14px] bg-ink text-white font-bold hover:bg-ink/90 transition-colors"
               >
                 Definir foco da próxima semana
               </button>
             </div>
           )}
 
-          <p className="text-center text-xs text-muted-foreground">
+          <p className="text-center text-xs text-ink-3">
             Você pode escolher o período (dia/semana/mês) e KPIs alvo no modal.
             Cumprimento aparece em KPIs &amp; Insights.
           </p>
@@ -642,10 +642,10 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
   return (
     <div className="fixed inset-0 z-50 bg-background overflow-hidden presentation-mode">
       {/* Header com controles (escondido em print) */}
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-6 py-3 border-b border-border/20 bg-background/80 backdrop-blur-md no-print">
+      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-6 py-3 border-b border-line/20 bg-background/80 backdrop-blur-md no-print">
         <div className="flex items-center gap-3">
-          <Sparkle className="w-5 h-5 text-primary" />
-          <span className="text-sm font-bold text-foreground">Modo Apresentação</span>
+          <Sparkle className="w-5 h-5 text-eqi" />
+          <span className="text-sm font-bold text-ink">Modo Apresentação</span>
           <div className="flex gap-1 bg-muted/20 rounded-lg p-1 ml-3">
             {(["weekly", "monthly"] as Period[]).map((p) => (
               <button
@@ -653,8 +653,8 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                 onClick={() => setPeriod(p)}
                 className={`px-3 py-1 rounded-md text-xs font-semibold ${
                   period === p
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-ink text-white"
+                    : "text-ink-3 hover:text-ink"
                 }`}
               >
                 {p === "weekly" ? "Semanal" : "Mensal"}
@@ -670,8 +670,8 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
               onClick={() => setSlideIdx(i)}
               className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${
                 i === slideIdx
-                  ? "bg-primary/20 text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-eqi/20 text-eqi"
+                  : "text-ink-3 hover:text-ink"
               }`}
             >
               {i + 1}. {s.title}
@@ -684,8 +684,8 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
             onClick={() => setAutoPlay((v) => !v)}
             className={`p-2 rounded-lg transition-all ${
               autoPlay
-                ? "bg-primary/20 text-primary"
-                : "bg-muted/30 hover:bg-muted/50 text-foreground"
+                ? "bg-eqi/20 text-eqi"
+                : "bg-muted/30 hover:bg-muted/50 text-ink"
             }`}
             title={autoPlay ? "Pausar auto-advance" : "Auto-advance a cada 12s"}
           >
@@ -693,7 +693,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
           </button>
           <button
             onClick={() => window.print()}
-            className="p-2 rounded-lg bg-muted/30 hover:bg-muted/50 text-foreground"
+            className="p-2 rounded-lg bg-muted/30 hover:bg-muted/50 text-ink"
             title="Exportar como PDF"
           >
             <Printer className="w-4 h-4" />
@@ -737,7 +737,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
           <ChevronLeft className="w-6 h-6" />
         </button>
 
-        <span className="text-sm font-mono text-muted-foreground">
+        <span className="text-sm font-mono text-ink-3">
           {slideIdx + 1} / {slides.length}
         </span>
 

@@ -34,7 +34,7 @@ const TvTournamentBoard = () => {
 
   if (!tournament) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-[480px] rounded-2xl border border-line bg-card">
+      <div className="flex-1 flex items-center justify-center min-h-[480px] rounded-[14px] border border-line bg-card">
         <p className="text-ink-3">Sem torneio ativo no momento.</p>
       </div>
     );
@@ -60,7 +60,7 @@ const TvTournamentBoard = () => {
     <div className="grid gap-5 grid-cols-1 lg:grid-cols-[1fr_1.4fr] min-h-[600px]">
       {/* Trophy poster */}
       <div
-        className="rounded-2xl p-8 relative overflow-hidden flex flex-col justify-between"
+        className="rounded-[14px] p-8 relative overflow-hidden flex flex-col justify-between"
         style={{
           background:
             "linear-gradient(160deg, oklch(0.96 0.08 90) 0%, oklch(0.93 0.12 80) 100%)",
@@ -124,7 +124,7 @@ const TvTournamentBoard = () => {
 
         <div className="relative grid grid-cols-2 gap-3">
           <div
-            className="rounded-xl p-4"
+            className="rounded-[14px] p-4"
             style={{ background: "oklch(1 0 0 / 0.6)", backdropFilter: "blur(10px)" }}
           >
             <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-ink-3">
@@ -138,7 +138,7 @@ const TvTournamentBoard = () => {
             </p>
           </div>
           <div
-            className="rounded-xl p-4 text-white"
+            className="rounded-[14px] p-4 text-white"
             style={{ background: "hsl(var(--ink))" }}
           >
             <p
@@ -160,7 +160,7 @@ const TvTournamentBoard = () => {
       </div>
 
       {/* Boletômetro */}
-      <div className="rounded-2xl bg-card border border-line p-6 flex flex-col">
+      <div className="rounded-[14px] bg-card border border-line p-6 flex flex-col">
         <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
           <div>
             <h3

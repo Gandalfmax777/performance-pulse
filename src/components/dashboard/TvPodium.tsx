@@ -38,7 +38,7 @@ const TvPodium = ({ assessors }: TvPodiumProps) => {
 
   return (
     <div
-      className="relative overflow-hidden text-white p-10 rounded-2xl flex flex-col min-h-[600px]"
+      className="relative overflow-hidden text-white p-10 rounded-[14px] flex flex-col min-h-[600px]"
       style={{
         background: "linear-gradient(180deg, hsl(var(--ink)) 0%, hsl(var(--eqi-forest)) 100%)",
       }}

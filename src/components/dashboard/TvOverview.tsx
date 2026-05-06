@@ -37,7 +37,7 @@ const TvOverview = ({ assessors, from, to }: TvOverviewProps) => {
     <div className="grid gap-5 grid-cols-1 lg:grid-cols-[1.55fr_1fr] grid-rows-[1fr_auto]">
       {/* HERO LEADER — stadium hero card */}
       <div
-        className="relative overflow-hidden rounded-2xl text-white p-9 flex flex-col justify-between min-h-[420px]"
+        className="relative overflow-hidden rounded-[14px] text-white p-9 flex flex-col justify-between min-h-[420px]"
         style={{
           background:
             "linear-gradient(135deg, hsl(var(--ink)) 0%, hsl(var(--eqi-forest)) 60%, hsl(var(--eqi-green)) 100%)",
@@ -162,7 +162,7 @@ const TvOverview = ({ assessors, from, to }: TvOverviewProps) => {
       </div>
 
       {/* SCOREBOARD — perseguidores */}
-      <div className="rounded-2xl bg-white border border-line flex flex-col overflow-hidden">
+      <div className="rounded-[14px] bg-white border border-line flex flex-col overflow-hidden">
         <div
           className="flex items-center justify-between px-5 py-4 text-white"
           style={{ background: "hsl(var(--ink))", borderBottom: "2px solid hsl(var(--ink))" }}
@@ -223,7 +223,7 @@ const TvOverview = ({ assessors, from, to }: TvOverviewProps) => {
 
       {/* KPI STRIP — bottom full width */}
       <div
-        className="rounded-2xl bg-white border border-line overflow-hidden grid"
+        className="rounded-[14px] bg-white border border-line overflow-hidden grid"
         style={{
           gridColumn: "1 / -1",
           gridTemplateColumns: `repeat(${Math.max(1, Math.min(9, kpis.length || 1))}, minmax(0, 1fr))`,
