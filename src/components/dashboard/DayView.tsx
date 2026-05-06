@@ -140,41 +140,53 @@ const DayView = ({ assessors }: DayViewProps) => {
 
   return (
     <div className="space-y-4">
-      {/* Tabs dos 5 dias úteis + date picker pra navegar pra dias arbitrários */}
-      <div className="flex gap-2 items-center flex-wrap">
-        {[1, 2, 3, 4, 5].map((dow) => {
-          const i = dow - 1;
-          const lbl = DAY_LABELS[dow];
-          const selected = !customDate && activeDay === i;
-          return (
-            <button
-              key={dow}
-              onClick={() => { setCustomDate(null); setActiveDay(i); }}
-              className={`relative px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                selected
-                  ? "bg-primary text-secondary font-bold shadow-sm border border-primary"
-                  : "bg-muted/30 text-muted-foreground hover:bg-muted/50 border border-border/30"
-              }`}
-            >
-              <span className="hidden md:inline">{lbl.label}</span>
-              <span className="md:hidden">{lbl.short}</span>
-              {i === defaultTab && !customDate && (
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
-              )}
-            </button>
-          );
-        })}
+      {/* Day picker Editorial V1 — 5 cards horizontais com nº mono grande */}
+      <div className="rounded-[14px] border border-line bg-card overflow-hidden">
+        <div className="grid grid-cols-5">
+          {[1, 2, 3, 4, 5].map((dow) => {
+            const i = dow - 1;
+            const lbl = DAY_LABELS[dow];
+            const selected = !customDate && activeDay === i;
+            return (
+              <button
+                key={dow}
+                onClick={() => { setCustomDate(null); setActiveDay(i); }}
+                className={`relative text-left px-4 py-3.5 transition-all ${
+                  i < 4 ? "border-r border-line" : ""
+                } ${selected ? "" : "hover:bg-surface-2"}`}
+                style={{
+                  background: selected ? "hsl(var(--ink))" : "transparent",
+                  color: selected ? "white" : "hsl(var(--ink))",
+                }}
+              >
+                <p
+                  className="text-[9px] uppercase tracking-[0.12em] font-semibold"
+                  style={{ color: selected ? "oklch(1 0 0 / 0.5)" : "hsl(var(--ink-3))" }}
+                >
+                  <span className="hidden md:inline">{lbl.label}</span>
+                  <span className="md:hidden">{lbl.short}</span>
+                </p>
+                {i === defaultTab && !customDate && (
+                  <span
+                    className="absolute top-2 right-2 w-2 h-2 rounded-full animate-pulse"
+                    style={{ background: selected ? "hsl(var(--gold))" : "hsl(var(--eqi-green))" }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-        {/* Date picker pra editar dias fora da semana atual — com label
-            explícito pra ficar claro o propósito (antes só aparecia o
-            placeholder nativo "dd/mm/aaaa" do browser, confundia Felipe). */}
+      {/* Date picker pra editar dias fora da semana atual */}
+      <div className="flex justify-end">
         <label
-          className={`ml-auto flex items-center gap-2 px-3 py-1.5 rounded-lg border cursor-pointer transition-all ${
+          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-[8px] border cursor-pointer transition-all ${
             customDate
-              ? "bg-primary/10 border-primary/40 text-primary"
-              : "bg-muted/30 border-border/30 text-muted-foreground hover:text-foreground hover:border-border/60"
+              ? "bg-accent border-primary/15 text-primary"
+              : "bg-surface border-line text-ink-3 hover:text-ink"
           }`}
-          title="Navegar pra uma data específica (qualquer dia passado ou futuro)"
+          title="Navegar pra uma data específica"
         >
           <CalendarDays className="w-4 h-4" />
           <span className="text-xs font-semibold whitespace-nowrap">Ir pra outra data</span>
@@ -188,7 +200,7 @@ const DayView = ({ assessors }: DayViewProps) => {
           {customDate && (
             <button
               onClick={(e) => { e.preventDefault(); setCustomDate(null); }}
-              className="ml-1 text-xs text-muted-foreground hover:text-destructive"
+              className="ml-1 text-ink-3 hover:text-destructive"
               title="Voltar pra semana atual"
             >
               <XIcon size={12} weight="bold" />
@@ -199,8 +211,8 @@ const DayView = ({ assessors }: DayViewProps) => {
 
       {/* Foco do dia — direcionamento rápido */}
       {!activitiesLoading && activities.length > 0 && (
-        <div className="card-glass rounded-xl px-4 py-3 border border-primary/20 flex items-center gap-3 flex-wrap">
-          <span className="text-xs font-bold text-primary inline-flex items-center gap-1.5"><Target size={13} weight="bold" /> Foco do dia:</span>
+        <div className="rounded-[14px] border border-line bg-card px-4 py-3 flex items-center gap-3 flex-wrap">
+          <span className="text-xs font-extrabold text-primary inline-flex items-center gap-1.5"><Target size={13} weight="bold" /> Foco do dia:</span>
           {activities.map((act) => (
             <span key={act.id} className="text-xs text-foreground">
               <span className="font-semibold">{act.name}</span>
