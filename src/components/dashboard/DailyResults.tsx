@@ -3,10 +3,7 @@ import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import {
   Trophy,
-  Medal,
-  TrendDown,
   Fire,
-  Moon,
   Crown,
 } from "@phosphor-icons/react";
 import { type Assessor } from "@/types/assessor";
@@ -18,6 +15,8 @@ import {
   useSemesterRanking,
   type ApiRankingEntry,
 } from "@/hooks/useRankings";
+import LeagueTable from "./LeagueTable";
+import RankingHighlights from "./RankingHighlights";
 
 type Period = "daily" | "weekly" | "monthly" | "semester";
 
@@ -90,15 +89,6 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
   // atividade (convertedPercent > 0) mas nenhum scoring rule pagou pts
   // (ex: cadência abaixo do threshold). Mostrar pódio nesses casos engana.
   const top3 = ranked.filter((r) => r.points > 0).slice(0, 3);
-  // "Piores" só faz sentido quando há DIFERENCIAÇÃO — ex: 1 pessoa com 5 pts
-  // e outras com 0 não é "pior", é "inativo". Regra: mostra bottom3 só se
-  // houver variância real (alguém pontuou mas nem todos) E excluindo os
-  // totalmente inativos (isInactive=0pts+0dias).
-  const scoredCount = ranked.filter((r) => r.points > 0).length;
-  const showBottom = scoredCount > 0 && scoredCount < ranked.length;
-  const bottom3 = showBottom
-    ? ranked.filter((r) => !r.isInactive).slice(-3).reverse()
-    : [];
   const hasAnyPoints = top3.length > 0;
   // Ordem: 2º na esquerda, 1º no centro (hero), 3º na direita.
   const podiumOrder = [top3[1], top3[0], top3[2]];
@@ -271,99 +261,10 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
         )}
       </div>
 
-      {/* Top 3 + Bottom 3 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="rounded-[14px] border border-line bg-card p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Medal size={14} weight="fill" className="text-gold-deep" />
-            <h3 className="text-[14px] font-extrabold tracking-tight text-ink">Top 3</h3>
-          </div>
-          <div className="space-y-3">
-            {top3.length === 0 && (
-              <p className="text-xs text-muted-foreground text-center py-6 italic">
-                Ninguém pontuou neste período ainda
-              </p>
-            )}
-            {top3.map((a, i) => (
-              <motion.div
-                key={a.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="p-3 rounded-lg bg-muted/20 border border-border/30"
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-base font-mono font-extrabold" style={{ color: i === 0 ? 'hsl(var(--gold-deep))' : i === 1 ? 'hsl(var(--silver))' : 'hsl(var(--bronze))' }}>{i + 1}º</span>
-                  <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={36} />
-                  <div className="flex-1">
-                    <p className="font-semibold text-sm text-foreground break-words">{a.name}</p>
-                    <p className="text-xs text-muted-foreground">{a.points} pts • {a.level}</p>
-                  </div>
-                  <span className="text-lg font-mono font-bold text-primary">{a.weeklyGoalPercent}%</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        <div className="rounded-[14px] border border-line bg-card p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <TrendDown size={14} weight="bold" className="text-destructive" />
-            <h3 className="text-[14px] font-extrabold tracking-tight text-ink">Piores Resultados</h3>
-          </div>
-          <div className="space-y-3">
-            {bottom3.length === 0 && (
-              <p className="text-xs text-muted-foreground text-center py-6 italic">
-                {scoredCount === 0
-                  ? "Sem pontuação ainda — nada a destacar aqui"
-                  : "Todo mundo no mesmo patamar — sem 'piores' a destacar"}
-              </p>
-            )}
-            {bottom3.map((a, i) => {
-              const rank = ranked.length - i;
-              return (
-                <motion.div
-                  key={a.id}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className={`p-3 rounded-lg border ${
-                    a.isInactive
-                      ? "bg-muted/10 border-border/20"
-                      : "bg-destructive/5 border-destructive/20"
-                  }`}
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-mono font-bold ${
-                      a.isInactive
-                        ? "bg-muted/30 text-muted-foreground"
-                        : "bg-destructive/10 text-destructive"
-                    }`}>
-                      #{rank}
-                    </span>
-                    <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={36} />
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm text-foreground break-words flex items-center gap-2">
-                        {a.name}
-                        {a.isInactive && (
-                          <span className="inline-flex items-center gap-1 text-[10px] text-ink-3 bg-surface-2 border border-line px-1.5 py-0.5 rounded">
-                            <Moon size={10} weight="fill" /> inativo
-                          </span>
-                        )}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{a.points} pts</p>
-                    </div>
-                    <span className={`text-lg font-mono font-bold ${
-                      a.isInactive ? "text-muted-foreground" : "text-destructive"
-                    }`}>
-                      {a.weeklyGoalPercent}%
-                    </span>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
+      {/* Tabela da Liga + Highlights side panel (artboard RankingScreen) */}
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-[1.7fr_1fr]">
+        <LeagueTable rows={ranked} />
+        <RankingHighlights assessors={assessors} />
       </div>
     </div>
   );

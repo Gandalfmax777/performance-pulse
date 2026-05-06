@@ -143,6 +143,16 @@ const Index = () => {
     window.open("/tv", "_blank", "noopener,noreferrer");
   }, []);
 
+  // Title custom por view — geralmente vem de VIEW_LABELS, mas Torneio
+  // usa o nome do round atual ("Liga das Boletas") quando há torneio
+  // ativo, seguindo o artboard TournamentScreen.
+  const titleFor = (v: View): string => {
+    if (v === "tournament" && activeTournaments[0]) {
+      return activeTournaments[0].roundLabel;
+    }
+    return VIEW_LABELS[v];
+  };
+
   // Subtitle por view (segue artboards do design)
   const subtitleFor = (v: View): string | undefined => {
     if (v === "overview") {
@@ -153,7 +163,12 @@ const Index = () => {
     if (v === "results") return "Atualizado em tempo real";
     if (v === "kpis") return "Funil completo · todos os assessores";
     if (v === "squad") return "Squads contra squads. Quem cumprir mais % da meta combinada leva o pote.";
-    if (v === "tournament") return activeTournaments[0]?.roundLabel ?? "Sem torneio ativo";
+    if (v === "tournament") {
+      const t = activeTournaments[0];
+      if (!t) return "Sem torneio ativo no momento.";
+      const monthLabel = format(new Date(t.startDate), "MMMM");
+      return `${monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1)} · ${t.scope === "INDIVIDUAL" ? "Individual" : "Por squad"}`;
+    }
     if (v === "profile") return user?.name ? `Performance individual de ${user.name}` : undefined;
     return undefined;
   };
@@ -217,7 +232,7 @@ const Index = () => {
       <main className="flex-1 min-w-0 flex flex-col overflow-x-hidden">
         <DashboardTopbar
           eyebrow={VIEW_EYEBROWS[view]}
-          title={VIEW_LABELS[view]}
+          title={titleFor(view)}
           subtitle={subtitleFor(view)}
           actions={topActionsByView(view)}
           onMenuClick={() => setMobileNavOpen(true)}

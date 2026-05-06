@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { Medal } from "@phosphor-icons/react";
 import SquadMainEventCard from "./SquadMainEventCard";
+import SquadUndercardStandings from "./SquadUndercardStandings";
 import {
   RadarChart,
   PolarGrid,
@@ -282,6 +283,9 @@ const SquadBet = ({ assessors }: Props) => {
     <div className="space-y-5">
       {/* Editorial V1 — Main Event hero card no topo (só renderiza se tiver bet ATIVA) */}
       <SquadMainEventCard assessors={assessors} />
+
+      {/* Undercard + Standings (artboard SquadBetV1) */}
+      <SquadUndercardStandings />
 
       {/* Action bar — título já vem da DashboardTopbar do Index */}
       <div className="flex items-center justify-end">

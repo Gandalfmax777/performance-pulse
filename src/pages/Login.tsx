@@ -103,16 +103,16 @@ const Login = () => {
             className="text-[11px] uppercase tracking-[0.18em] font-semibold mb-4"
             style={{ color: "hsl(var(--gold))" }}
           >
-            Em destaque · Performance da semana
+            Em destaque · Esta semana
           </p>
           <h1 className="font-display font-extrabold text-5xl xl:text-6xl tracking-tight leading-[1.05]">
-            Mesa em ritmo
+            A mesa toda
             <br />
-            de <span style={{ color: "hsl(var(--gold))" }}>recorde</span>.
+            <span style={{ color: "hsl(var(--gold))" }}>em ritmo</span> de meta.
           </h1>
           <p className="mt-5 text-base text-white/70 max-w-md leading-relaxed">
-            Cadência, ranking, KPIs e gamificação numa só tela. Faça login para acompanhar a
-            mesa em tempo real.
+            Hoje na mesa: boletas fechando, contas ativando e squads disputando ponto a ponto.
+            Faça login para acompanhar o movimento em tempo real.
           </p>
         </div>
 
