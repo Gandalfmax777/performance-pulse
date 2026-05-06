@@ -8,6 +8,8 @@ import {
   Trophy,
   ChartBar,
   Sword as Swords,
+  Crown,
+  User,
   Television as Tv,
   Sun,
   Moon,
@@ -25,7 +27,15 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useSoundMuted } from "@/hooks/useSoundEffects";
 import { clearAuthToken } from "@/api/client";
 
-export type DashboardView = "overview" | "daily" | "results" | "kpis" | "squad";
+export type DashboardView =
+  | "overview"
+  | "daily"
+  | "results"
+  | "kpis"
+  | "squad"
+  | "tournament"
+  | "profile"
+  | "team";
 
 interface NavItem {
   key: DashboardView;
@@ -34,11 +44,13 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { key: "overview", label: "Visão Geral",     icon: Layers },
-  { key: "daily",    label: "Por Dia",         icon: CalendarBlank },
-  { key: "results",  label: "Ranking Geral",   icon: Trophy },
-  { key: "kpis",     label: "KPIs & Insights", icon: ChartBar },
-  { key: "squad",    label: "Squad Bet",       icon: Swords },
+  { key: "overview",   label: "Visão Geral", icon: Layers },
+  { key: "daily",      label: "Por Dia",     icon: CalendarBlank },
+  { key: "results",    label: "Ranking",     icon: Trophy },
+  { key: "kpis",       label: "KPIs",        icon: ChartBar },
+  { key: "squad",      label: "Squad Bet",   icon: Swords },
+  { key: "tournament", label: "Torneio",     icon: Crown },
+  { key: "profile",    label: "Meu Perfil",  icon: User },
 ];
 
 const COLLAPSE_STORAGE_KEY = "pp_sidebar_collapsed";
@@ -47,7 +59,6 @@ interface Props {
   view: DashboardView;
   onViewChange: (v: DashboardView) => void;
   onEnterTv: () => void;
-  onOpenAssessors: () => void;
   /** Mobile drawer state — controlado pelo Index via hamburger no Topbar. */
   mobileOpen: boolean;
   onMobileClose: () => void;
@@ -57,7 +68,6 @@ const DashboardSidebar = ({
   view,
   onViewChange,
   onEnterTv,
-  onOpenAssessors,
   mobileOpen,
   onMobileClose,
 }: Props) => {
@@ -138,7 +148,7 @@ const DashboardSidebar = ({
         <nav className="flex-1 px-3 py-3.5 space-y-0.5 overflow-y-auto">
           {!collapsed && (
             <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-ink-3 px-2.5 mb-1">
-              Navegação
+              NAVEGAÇÃO
             </p>
           )}
           {NAV_ITEMS.map((item) => {
@@ -167,7 +177,7 @@ const DashboardSidebar = ({
 
           {!collapsed && (
             <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-ink-3 px-2.5 mb-1">
-              Ferramentas
+              FERRAMENTAS
             </p>
           )}
 
@@ -183,27 +193,34 @@ const DashboardSidebar = ({
             {!collapsed && <span>Modo TV</span>}
           </button>
           <button
-            onClick={() => { onOpenAssessors(); onMobileClose(); }}
+            onClick={() => handleViewChange("team")}
             title={collapsed ? "Assessores" : undefined}
             className={cn(
-              "w-full flex items-center gap-2.5 rounded-[7px] text-[13px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink transition-all",
+              "w-full flex items-center gap-2.5 rounded-[7px] text-[13px] transition-all",
               collapsed ? "px-0 py-2 justify-center" : "px-2.5 py-2",
+              view === "team"
+                ? "bg-ink text-white font-bold"
+                : "text-ink-2 hover:bg-surface-2 hover:text-ink font-medium",
             )}
           >
-            <Users size={14} weight="regular" className="shrink-0" />
+            <Users
+              size={14}
+              weight={view === "team" ? "bold" : "regular"}
+              className="shrink-0"
+            />
             {!collapsed && <span>Assessores</span>}
           </button>
           {isAdmin && (
             <button
               onClick={() => { navigate("/admin"); onMobileClose(); }}
-              title={collapsed ? "Admin" : undefined}
+              title={collapsed ? "Configurações" : undefined}
               className={cn(
                 "w-full flex items-center gap-2.5 rounded-[7px] text-[13px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink transition-all",
                 collapsed ? "px-0 py-2 justify-center" : "px-2.5 py-2",
               )}
             >
               <ShieldCheck size={14} weight="regular" className="shrink-0" />
-              {!collapsed && <span>Admin</span>}
+              {!collapsed && <span>Configurações</span>}
             </button>
           )}
         </nav>

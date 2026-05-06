@@ -23,12 +23,12 @@ import {
   ChevronDown,
   ChevronUp,
   Flame,
-  Shield,
   Vault,
   Loader2,
 } from "lucide-react";
 import { Medal } from "@phosphor-icons/react";
 import SquadMainEventCard from "./SquadMainEventCard";
+import SquadUndercardStandings from "./SquadUndercardStandings";
 import {
   RadarChart,
   PolarGrid,
@@ -284,17 +284,11 @@ const SquadBet = ({ assessors }: Props) => {
       {/* Editorial V1 — Main Event hero card no topo (só renderiza se tiver bet ATIVA) */}
       <SquadMainEventCard assessors={assessors} />
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-            <Shield className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-foreground">Squad Bet</h2>
-            <p className="text-xs text-muted-foreground">Competição por equipes com apostas</p>
-          </div>
-        </div>
+      {/* Undercard + Standings (artboard SquadBetV1) */}
+      <SquadUndercardStandings />
+
+      {/* Action bar — título já vem da DashboardTopbar do Index */}
+      <div className="flex items-center justify-end">
         <button
           onClick={() => setShowCreate(!showCreate)}
           className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold flex items-center gap-2 hover:bg-primary/90 transition-colors"
