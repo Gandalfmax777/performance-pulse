@@ -11,6 +11,7 @@ import {
 } from "@phosphor-icons/react";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import KpiCards from "@/components/dashboard/KpiCards";
+import TvOverview from "@/components/dashboard/TvOverview";
 import AnnouncementTicker from "@/components/dashboard/AnnouncementTicker";
 import TournamentCard from "@/components/dashboard/TournamentCard";
 import TournamentFinishedOverlay from "@/components/dashboard/TournamentFinishedOverlay";
@@ -254,8 +255,11 @@ const TvPage = () => {
           {view === "overview" && (
             <div className="space-y-4">
               <AnnouncementTicker assessors={assessors} />
-              <KpiCards from={overviewRange.from} to={overviewRange.to} />
-              <TvRanking assessors={assessors} />
+              <TvOverview
+                assessors={assessors}
+                from={overviewRange.from}
+                to={overviewRange.to}
+              />
             </div>
           )}
           {view === "results" && <DailyResults assessors={assessors} />}
