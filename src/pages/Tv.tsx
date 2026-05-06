@@ -21,16 +21,17 @@ import { useActiveTournaments } from "@/hooks/useTournaments";
 import { useTournamentFinishedStream } from "@/hooks/useTournamentFinishedStream";
 import { useSystemNotifications } from "@/hooks/useSystemNotifications";
 
-const TvRanking = lazy(() => import("@/components/dashboard/TvRanking"));
-const DailyResults = lazy(() => import("@/components/dashboard/DailyResults"));
+const TvLeagueTable = lazy(() => import("@/components/dashboard/TvLeagueTable"));
+const TvPodium = lazy(() => import("@/components/dashboard/TvPodium"));
 const SquadBet = lazy(() => import("@/components/dashboard/SquadBet"));
 
-type TvView = "overview" | "results" | "squad" | "tournaments";
+type TvView = "overview" | "results" | "squad" | "podium" | "tournaments";
 
 const BASE_TV_VIEWS: { key: TvView; label: string }[] = [
   { key: "overview", label: "Visão Geral" },
   { key: "results", label: "Ranking" },
   { key: "squad", label: "Squad Bet" },
+  { key: "podium", label: "Hall da Fama" },
 ];
 
 const TOURNAMENT_VIEW = { key: "tournaments" as TvView, label: "Torneios" };
@@ -262,8 +263,9 @@ const TvPage = () => {
               />
             </div>
           )}
-          {view === "results" && <DailyResults assessors={assessors} />}
+          {view === "results" && <TvLeagueTable assessors={assessors} />}
           {view === "squad" && <SquadBet assessors={assessors} />}
+          {view === "podium" && <TvPodium assessors={assessors} />}
           {view === "tournaments" && (
             <div className="space-y-4">
               <div className="flex items-center gap-3 mb-2">
