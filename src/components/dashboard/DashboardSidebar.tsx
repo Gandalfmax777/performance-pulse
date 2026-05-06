@@ -34,7 +34,8 @@ export type DashboardView =
   | "kpis"
   | "squad"
   | "tournament"
-  | "profile";
+  | "profile"
+  | "team";
 
 interface NavItem {
   key: DashboardView;
@@ -58,7 +59,6 @@ interface Props {
   view: DashboardView;
   onViewChange: (v: DashboardView) => void;
   onEnterTv: () => void;
-  onOpenAssessors: () => void;
   /** Mobile drawer state — controlado pelo Index via hamburger no Topbar. */
   mobileOpen: boolean;
   onMobileClose: () => void;
@@ -68,7 +68,6 @@ const DashboardSidebar = ({
   view,
   onViewChange,
   onEnterTv,
-  onOpenAssessors,
   mobileOpen,
   onMobileClose,
 }: Props) => {
@@ -194,27 +193,34 @@ const DashboardSidebar = ({
             {!collapsed && <span>Modo TV</span>}
           </button>
           <button
-            onClick={() => { onOpenAssessors(); onMobileClose(); }}
+            onClick={() => handleViewChange("team")}
             title={collapsed ? "Assessores" : undefined}
             className={cn(
-              "w-full flex items-center gap-2.5 rounded-[7px] text-[13px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink transition-all",
+              "w-full flex items-center gap-2.5 rounded-[7px] text-[13px] transition-all",
               collapsed ? "px-0 py-2 justify-center" : "px-2.5 py-2",
+              view === "team"
+                ? "bg-ink text-white font-bold"
+                : "text-ink-2 hover:bg-surface-2 hover:text-ink font-medium",
             )}
           >
-            <Users size={14} weight="regular" className="shrink-0" />
+            <Users
+              size={14}
+              weight={view === "team" ? "bold" : "regular"}
+              className="shrink-0"
+            />
             {!collapsed && <span>Assessores</span>}
           </button>
           {isAdmin && (
             <button
               onClick={() => { navigate("/admin"); onMobileClose(); }}
-              title={collapsed ? "Admin" : undefined}
+              title={collapsed ? "Configurações" : undefined}
               className={cn(
                 "w-full flex items-center gap-2.5 rounded-[7px] text-[13px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink transition-all",
                 collapsed ? "px-0 py-2 justify-center" : "px-2.5 py-2",
               )}
             >
               <ShieldCheck size={14} weight="regular" className="shrink-0" />
-              {!collapsed && <span>Admin</span>}
+              {!collapsed && <span>Configurações</span>}
             </button>
           )}
         </nav>

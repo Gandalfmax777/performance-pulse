@@ -22,8 +22,9 @@ const SquadBet = lazy(() => import("@/components/dashboard/SquadBet"));
 const PresentationMode = lazy(() => import("@/components/dashboard/PresentationMode"));
 const AssessorManager = lazy(() => import("@/components/dashboard/AssessorManager"));
 const AssessorProfile = lazy(() => import("@/components/dashboard/AssessorProfile"));
+const TeamScreen = lazy(() => import("@/components/dashboard/TeamScreen"));
 
-import { PresentationChart } from "@phosphor-icons/react";
+import { PresentationChart, Plus } from "@phosphor-icons/react";
 import { useAssessors } from "@/hooks/useAssessors";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useRankingStream } from "@/hooks/useRankingStream";
@@ -71,6 +72,7 @@ const VIEW_LABELS: Record<View, string> = {
   squad: "Squad Bet",
   tournament: "Torneio",
   profile: "Meu Perfil",
+  team: "Assessores",
 };
 
 const VIEW_EYEBROWS: Partial<Record<View, string>> = {
@@ -81,10 +83,11 @@ const VIEW_EYEBROWS: Partial<Record<View, string>> = {
   squad: "ROUND ATIVO",
   tournament: "TORNEIO ATIVO",
   profile: "MEU PERFIL",
+  team: "ADMINISTRAÇÃO",
 };
 
 const VALID_VIEWS: ReadonlySet<View> = new Set([
-  "overview", "daily", "results", "kpis", "squad", "tournament", "profile",
+  "overview", "daily", "results", "kpis", "squad", "tournament", "profile", "team",
 ]);
 const VALID_PERIODS: ReadonlySet<OverviewPeriod> = new Set(["daily", "weekly", "monthly", "semester"]);
 
@@ -131,6 +134,9 @@ const Index = () => {
   const { data: activeTournaments = [] } = useActiveTournaments();
   const { event: finishedEvent, dismiss: dismissFinished } = useTournamentFinishedStream(true);
   const [showManager, setShowManager] = useState(false);
+  // Profile modal aberto a partir do TeamScreen — clicar em um card de
+  // assessor abre o AssessorProfile com os dados dele.
+  const [selectedProfile, setSelectedProfile] = useState<Parameters<typeof AssessorProfile>[0]["assessor"] | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const overviewRange = rangeForPeriod(overviewPeriod);
 
@@ -170,6 +176,7 @@ const Index = () => {
       return `${monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1)} · ${t.scope === "INDIVIDUAL" ? "Individual" : "Por squad"}`;
     }
     if (v === "profile") return user?.name ? `Performance individual de ${user.name}` : undefined;
+    if (v === "team") return `Gerencie a mesa · ${assessors.length} ativos`;
     return undefined;
   };
 
@@ -201,6 +208,16 @@ const Index = () => {
     </button>
   );
 
+  const teamManageBtn = (
+    <button
+      onClick={() => setShowManager(true)}
+      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-ink text-white text-xs font-semibold hover:bg-ink/90 transition-colors"
+    >
+      <Plus size={14} weight="bold" />
+      Gerenciar
+    </button>
+  );
+
   const topActionsByView = (v: View): React.ReactNode => {
     if (v === "overview") {
       return (
@@ -213,6 +230,9 @@ const Index = () => {
     if (v === "kpis" || v === "results" || v === "tournament" || v === "profile") {
       return periodTabs;
     }
+    if (v === "team") {
+      return teamManageBtn;
+    }
     return null;
   };
 
@@ -224,7 +244,6 @@ const Index = () => {
         view={view}
         onViewChange={setView}
         onEnterTv={openTv}
-        onOpenAssessors={() => setShowManager(true)}
         mobileOpen={mobileNavOpen}
         onMobileClose={() => setMobileNavOpen(false)}
       />
@@ -302,7 +321,24 @@ const Index = () => {
                 onClose={() => setView("overview")}
               />
             )}
+            {view === "team" && (
+              <TeamScreen
+                assessors={assessors}
+                onSelectAssessor={(a) => setSelectedProfile(a)}
+                onManage={() => setShowManager(true)}
+              />
+            )}
           </Suspense>
+
+          {/* Profile modal — abre quando o user clica num card de assessor no TeamScreen */}
+          {selectedProfile && (
+            <Suspense fallback={null}>
+              <AssessorProfile
+                assessor={selectedProfile}
+                onClose={() => setSelectedProfile(null)}
+              />
+            </Suspense>
+          )}
         </div>
       </main>
 
