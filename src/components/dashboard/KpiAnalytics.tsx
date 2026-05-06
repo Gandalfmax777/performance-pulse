@@ -27,6 +27,7 @@ import DirectionComplianceTable from "./DirectionComplianceTable";
 import Markdown from "react-markdown";
 import { Filter, TrendingUp, Lightbulb, Sparkles, RefreshCw, User, Users, BarChart3, Loader2, Printer, GitCompare, ArrowUp, ArrowDown, Minus } from "lucide-react";
 import { ChartBar as ChartBarIcon } from "@phosphor-icons/react";
+import ConversionFunnel from "./ConversionFunnel";
 
 type Scope = "geral" | "individual";
 
@@ -327,6 +328,13 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
           </div>
         )}
       </div>
+
+      {/* Funil de conversão Editorial V1 — barras horizontais empilhadas */}
+      <ConversionFunnel
+        from={range.from}
+        to={range.to}
+        assessorId={scope === "individual" && selectedAssessor ? selectedAssessor : undefined}
+      />
 
       {/* Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
