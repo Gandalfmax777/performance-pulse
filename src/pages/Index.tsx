@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import DashboardSidebar, { type DashboardView } from "@/components/dashboard/DashboardSidebar";
 import DashboardTopbar from "@/components/dashboard/DashboardTopbar";
 import Leaderboard from "@/components/dashboard/Leaderboard";
+import HeroMetricStrip from "@/components/dashboard/HeroMetricStrip";
 import KpiCards from "@/components/dashboard/KpiCards";
 import WeeklyHeatmap from "@/components/dashboard/WeeklyHeatmap";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
@@ -202,6 +203,8 @@ const Index = () => {
                   ))}
                 </div>
               )}
+
+              <HeroMetricStrip from={overviewRange.from} to={overviewRange.to} />
 
               <KpiCards from={overviewRange.from} to={overviewRange.to} />
 
