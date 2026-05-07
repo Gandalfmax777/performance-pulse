@@ -76,7 +76,10 @@ const TvPodium = ({ assessors }: TvPodiumProps) => {
         </h1>
       </div>
 
-      <div className="relative flex-1 grid items-end gap-5" style={{ gridTemplateColumns: "1fr 1.2fr 1fr" }}>
+      <div
+        className="relative flex-1 grid items-end gap-3 lg:gap-5"
+        style={{ gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr)" }}
+      >
         {[second, first, third].map((a, idx) => {
           const place = idx === 1 ? 1 : idx === 0 ? 2 : 3;
           const isFirst = place === 1;
@@ -96,7 +99,7 @@ const TvPodium = ({ assessors }: TvPodiumProps) => {
           return (
             <div
               key={a.id}
-              className="relative rounded-t-[20px] flex flex-col justify-between p-7"
+              className="relative rounded-t-[20px] flex flex-col justify-between p-4 lg:p-7 min-w-0"
               style={{
                 height: heights[place],
                 color: "hsl(var(--ink))",
@@ -129,7 +132,7 @@ const TvPodium = ({ assessors }: TvPodiumProps) => {
                 className="font-serif italic font-bold leading-none tracking-[-0.05em]"
                 style={{
                   fontFamily: "'Instrument Serif', serif",
-                  fontSize: isFirst ? 120 : 88,
+                  fontSize: isFirst ? "clamp(72px, 8vw, 120px)" : "clamp(52px, 5.5vw, 88px)",
                   color: accentText,
                 }}
               >
@@ -144,8 +147,8 @@ const TvPodium = ({ assessors }: TvPodiumProps) => {
                 />
                 <div>
                   <p
-                    className="font-extrabold tracking-tight leading-tight"
-                    style={{ fontSize: isFirst ? 26 : 20 }}
+                    className="font-extrabold tracking-tight leading-tight truncate max-w-full"
+                    style={{ fontSize: isFirst ? "clamp(18px, 1.8vw, 26px)" : "clamp(14px, 1.4vw, 20px)" }}
                   >
                     {a.name}
                   </p>
@@ -156,7 +159,7 @@ const TvPodium = ({ assessors }: TvPodiumProps) => {
                 <p
                   className="font-mono font-extrabold leading-none tracking-[-0.04em]"
                   style={{
-                    fontSize: isFirst ? 76 : 56,
+                    fontSize: isFirst ? "clamp(48px, 5.5vw, 76px)" : "clamp(36px, 4vw, 56px)",
                     color: isFirst ? "hsl(var(--gold-deep))" : "hsl(var(--ink))",
                   }}
                 >

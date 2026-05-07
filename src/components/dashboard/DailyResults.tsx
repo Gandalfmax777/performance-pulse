@@ -84,14 +84,17 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
     });
   }, [apiRankings, assessors]);
 
-  // Top 3 inclui só quem realmente pontuou (points > 0). Felipe reportou
-  // confusão vendo "Diego 1º com 0 pts + 43%" — isso acontecia porque havia
-  // atividade (convertedPercent > 0) mas nenhum scoring rule pagou pts
-  // (ex: cadência abaixo do threshold). Mostrar pódio nesses casos engana.
-  const top3 = ranked.filter((r) => r.points > 0).slice(0, 3);
+  // Pódio só aparece quando o LÍDER pontuou (regra do Felipe: evita "Diego 1º
+  // com 0 pts + 43%" que confunde). Quando há líder, mostramos top 3 do
+  // ranking direto (mesmo se 2º/3º têm 0 pts) — preserva consistência com a
+  // Tabela da Liga abaixo e evita slot vazio no grid.
+  const leaderHasPoints = (ranked[0]?.points ?? 0) > 0;
+  const top3 = leaderHasPoints ? ranked.slice(0, 3) : [];
   const hasAnyPoints = top3.length > 0;
-  // Ordem: 2º na esquerda, 1º no centro (hero), 3º na direita.
-  const podiumOrder = [top3[1], top3[0], top3[2]];
+  const hasFullPodium = top3.length === 3;
+  // Ordem: 2º na esquerda, 1º no centro (hero), 3º na direita. Quando o
+  // ranking tem < 3 elementos, exibimos só o que existe sem reservar slots.
+  const podiumOrder = hasFullPodium ? [top3[1], top3[0], top3[2]] : top3;
 
   return (
     <div className="space-y-6">
@@ -170,10 +173,21 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-3 items-stretch">
+          <div
+            className={`grid items-stretch ${
+              hasFullPodium
+                ? "grid-cols-3"
+                : top3.length === 2
+                ? "grid-cols-2"
+                : "grid-cols-1"
+            }`}
+          >
             {podiumOrder.map((a, i) => {
               if (!a) return null;
-              const place = i === 1 ? 1 : i === 0 ? 2 : 3;
+              // Em pódio cheio (3 cards) usamos a ordem [2º, 1º, 3º] pra
+              // posicionar o líder no centro (hero). Sem pódio cheio (1 ou 2),
+              // mantemos a ordem natural (1º à esquerda).
+              const place = hasFullPodium ? (i === 1 ? 1 : i === 0 ? 2 : 3) : i + 1;
               const hero = place === 1;
               const accent =
                 place === 1
@@ -181,13 +195,14 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
                   : place === 2
                   ? "hsl(var(--silver))"
                   : "hsl(var(--bronze))";
+              const isLastInRow = i === podiumOrder.length - 1;
               return (
                 <motion.div
                   key={a.id}
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1, duration: 0.4 }}
-                  className={`p-7 ${i < 2 ? "border-r border-line" : ""}`}
+                  className={`p-7 ${!isLastInRow ? "border-r border-line" : ""}`}
                   style={{
                     background:
                       place === 1
