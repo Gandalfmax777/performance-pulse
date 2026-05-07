@@ -1,6 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
 import {
   Trophy,
   Fire,
@@ -20,15 +19,10 @@ import RankingHighlights from "./RankingHighlights";
 
 type Period = "daily" | "weekly" | "monthly" | "semester";
 
-const PERIOD_OPTIONS: Array<{ value: Period; label: string }> = [
-  { value: "daily", label: "Diário" },
-  { value: "weekly", label: "Semanal" },
-  { value: "monthly", label: "Mensal" },
-  { value: "semester", label: "Semestral" },
-];
-
 interface DailyResultsProps {
   assessors: Assessor[];
+  /** Período atualmente selecionado nos tabs do header da view (controle único). */
+  period: Period;
 }
 
 /** Item enriquecido com dados visuais do assessor (avatar/level). */
@@ -44,9 +38,7 @@ interface RankedRow {
   isInactive: boolean;
 }
 
-const DailyResults = ({ assessors }: DailyResultsProps) => {
-  const [period, setPeriod] = useState<Period>("weekly");
-
+const DailyResults = ({ assessors, period }: DailyResultsProps) => {
   // Endpoints dedicados por período (antes era fallback degradado em
   // useOverviewReport). Ranking já vem ordenado pelo backend com zero-guard
   // — assessores inativos (0 pts E 0 dias ativos) caem pro fim.
@@ -98,35 +90,6 @@ const DailyResults = ({ assessors }: DailyResultsProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Period selector — Editorial V1 (eyebrow + segmented preto) */}
-      <div className="rounded-[14px] border border-line bg-card p-4 flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          <Trophy size={18} weight="fill" className="text-gold-deep" />
-          <div className="leading-tight">
-            <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3">
-              LIGA EQI
-            </p>
-            <p className="text-[14px] font-extrabold text-ink">Ranking Geral</p>
-          </div>
-        </div>
-        <div className="flex gap-1 p-[3px] bg-surface-2 rounded-[8px] border border-line ml-auto">
-          {PERIOD_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setPeriod(opt.value)}
-              className={`px-3 py-[5px] rounded-[5px] text-xs font-semibold transition-all ${
-                period === opt.value
-                  ? "bg-ink text-white"
-                  : "text-ink-2 hover:text-ink"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-        {activeQuery.isLoading && <Loader2 className="w-4 h-4 animate-spin text-ink-3" />}
-      </div>
-
       {/* Podium — Editorial V1 (header dark + 3-column cards com serif italic gigante) */}
       <div className="rounded-[14px] border border-line bg-card overflow-hidden">
         <div

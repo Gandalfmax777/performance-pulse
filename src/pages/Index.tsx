@@ -77,7 +77,7 @@ const VIEW_LABELS: Record<View, string> = {
 const VIEW_EYEBROWS: Partial<Record<View, string>> = {
   overview: undefined,
   daily: "VISÃO POR DIA",
-  results: "LIGA EQI · TEMPORADA",
+  results: undefined,
   kpis: "ANÁLISE CONSOLIDADA",
   squad: "ROUND ATIVO",
   tournament: "TORNEIO ATIVO",
@@ -306,7 +306,7 @@ const Index = () => {
 
           <Suspense fallback={<InlineLoader />}>
             {view === "daily" && <DayView assessors={assessors} />}
-            {view === "results" && <DailyResults assessors={assessors} />}
+            {view === "results" && <DailyResults assessors={assessors} period={overviewPeriod} />}
             {view === "kpis" && <KpiAnalytics assessors={assessors} />}
             {view === "squad" && <SquadBet assessors={assessors} />}
             {view === "tournament" && (
