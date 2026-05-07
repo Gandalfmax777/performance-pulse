@@ -38,7 +38,7 @@ const TvPodium = ({ assessors }: TvPodiumProps) => {
 
   return (
     <div
-      className="relative overflow-hidden text-white p-10 rounded-[14px] flex flex-col min-h-[600px]"
+      className="relative overflow-hidden text-white p-10 rounded-[14px] flex flex-col min-h-[760px]"
       style={{
         background: "linear-gradient(180deg, hsl(var(--ink)) 0%, hsl(var(--eqi-forest)) 100%)",
       }}
@@ -83,7 +83,10 @@ const TvPodium = ({ assessors }: TvPodiumProps) => {
         {[second, first, third].map((a, idx) => {
           const place = idx === 1 ? 1 : idx === 0 ? 2 : 3;
           const isFirst = place === 1;
-          const heights = { 1: "100%", 2: "78%", 3: "64%" } as const;
+          // Pódio escalonado mas suficiente pra todo conteúdo (badge pts +
+          // streak) caber em viewports notebook (1366×768). Antes: 100/78/64,
+          // que cortava o card 3º.
+          const heights = { 1: "100%", 2: "86%", 3: "76%" } as const;
           const accent =
             place === 1
               ? "hsl(var(--gold))"
@@ -101,7 +104,7 @@ const TvPodium = ({ assessors }: TvPodiumProps) => {
               key={a.id}
               className="relative rounded-t-[20px] flex flex-col justify-between p-4 lg:p-7 min-w-0"
               style={{
-                height: heights[place],
+                minHeight: heights[place],
                 color: "hsl(var(--ink))",
                 background:
                   place === 1
