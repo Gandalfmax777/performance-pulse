@@ -329,9 +329,9 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
       </div>
 
       {/* Hero strip Editorial V1 — 1 card por KPI ativo (Leads, Cadência, Ligações,
-          Reuniões Ag./Real., Touch Point, Ativação Conta, Indicações, Boletas).
-          Cada card: label + valor atual (mono grande) + meta + barra de % + variação
-          vs período anterior (quando compareEnabled). */}
+          Reuniões Ag./Real., Ativação Conta, Indicações). Cada card: label + valor
+          atual (mono grande) + meta + barra de % + variação vs período anterior
+          (quando compareEnabled). */}
       {overview && overview.byKpi.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-9 gap-3">
           {overview.byKpi.map((k) => {

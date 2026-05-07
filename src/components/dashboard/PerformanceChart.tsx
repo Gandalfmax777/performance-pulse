@@ -31,11 +31,12 @@ function todayYmd(): string {
 // Paleta determinística por KPI key pra manter cores consistentes entre renders.
 // Paleta categórica EQI — cores um pouco menos saturadas pra visual corporativo.
 const KPI_COLORS: Record<string, string> = {
-  ligacoes: "hsl(217, 91%, 50%)",   // chart-blue
-  reunioes: "hsl(262, 70%, 55%)",   // chart-purple
-  leads: "hsl(148, 70%, 30%)",      // primary EQI
-  cadencia: "hsl(38, 92%, 50%)",    // chart-orange
-  boletos: "hsl(340, 70%, 50%)",
+  ligacoes: "hsl(217, 91%, 50%)",        // chart-blue
+  reunioes: "hsl(262, 70%, 55%)",        // chart-purple
+  reunioes_realizadas: "hsl(290, 70%, 55%)",
+  leads: "hsl(148, 70%, 30%)",           // primary EQI
+  cadencia: "hsl(38, 92%, 50%)",         // chart-orange
+  ativacao_conta: "hsl(340, 70%, 50%)",
   indicacoes: "hsl(180, 60%, 40%)",
 };
 const FALLBACK_COLORS = [

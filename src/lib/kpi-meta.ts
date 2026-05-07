@@ -15,7 +15,6 @@ export const KPI_META = {
   ligacoes: { label: "Ligações", target: 30, unit: "" },
   reunioes: { label: "Reuniões Ag.", target: 3, unit: "" },
   indicacoes: { label: "Indicações", target: 5, unit: "" },
-  boletos: { label: "Boletas", target: 10, unit: "" },
 } as const;
 
 export type KpiKey = keyof typeof KPI_META;

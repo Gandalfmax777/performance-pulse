@@ -28,7 +28,6 @@ interface EditingState {
   name: string;
   level: "bronze" | "silver" | "gold";
   totalLeads: number;
-  totalClients: number;
   vacationUntil: string; // YYYY-MM-DD ou ""
 }
 
@@ -59,7 +58,6 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
       name: a.name,
       level: a.level,
       totalLeads: a.totalLeads ?? 0,
-      totalClients: a.totalClients ?? 0,
       vacationUntil: a.vacationUntil ?? "",
     });
   };
@@ -74,7 +72,6 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
           name: editing.name,
           level: editing.level.toUpperCase(),
           totalLeads: editing.totalLeads,
-          totalClients: editing.totalClients,
           vacationUntil: editing.vacationUntil ? editing.vacationUntil : null,
         },
       });
@@ -273,22 +270,17 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
                   </div>
                   <div className="flex gap-2 mt-1 flex-wrap">
                     <div className="flex items-center gap-1">
-                      <span className="text-[9px] text-muted-foreground">Leads:</span>
+                      <span
+                        className="text-[9px] text-muted-foreground"
+                        title="Lista de leads do assessor — denominador da Cadência"
+                      >
+                        Lista (leads):
+                      </span>
                       <input
                         type="number"
                         min={0}
                         value={editing.totalLeads}
                         onChange={(e) => setEditing({ ...editing, totalLeads: parseInt(e.target.value) || 0 })}
-                        className="w-14 px-1.5 py-0.5 rounded-md bg-muted/30 border border-border/30 text-[10px] font-mono text-foreground text-center focus:outline-none focus:border-primary/50"
-                      />
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-[9px] text-muted-foreground">Clientes:</span>
-                      <input
-                        type="number"
-                        min={0}
-                        value={editing.totalClients}
-                        onChange={(e) => setEditing({ ...editing, totalClients: parseInt(e.target.value) || 0 })}
                         className="w-14 px-1.5 py-0.5 rounded-md bg-muted/30 border border-border/30 text-[10px] font-mono text-foreground text-center focus:outline-none focus:border-primary/50"
                       />
                     </div>

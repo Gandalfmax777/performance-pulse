@@ -4,7 +4,6 @@ import {
   Phone,
   CalendarBlank,
   CheckCircle,
-  Hand,
   Sparkle,
   Gift,
   FileText,
@@ -22,9 +21,6 @@ const KPI_ICON: Record<string, PhosphorIcon> = {
   reunioes_ag: CalendarBlank,
   reunioes_real: CheckCircle,
   indicacoes: Gift,
-  boletas: FileText,
-  boletos: FileText,
-  touchpoint: Hand,
   ativacao: Sparkle,
   ativacao_conta: Sparkle,
 };

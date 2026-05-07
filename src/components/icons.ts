@@ -10,10 +10,8 @@ import {
   Cat,
   CheckCircle,
   Dog,
-  FileText,
   Flag,
   Gift,
-  Hand,
   HouseSimple,
   Lightning,
   Phone,
@@ -29,10 +27,8 @@ export const KPI_ICON: Record<string, PhosphorIcon> = {
   ligacoes: Phone,
   reunioes_ag: CalendarBlank,
   reunioes_real: CheckCircle,
-  touchpoint: Hand,
   ativacao: Sparkle,
   indicacoes: Gift,
-  boletas: FileText,
 };
 
 // Mapeamento "icones de squads" — antes eram emojis (🐺 🦅 🐯 🦊 ⚡ ⛳ 🏨).

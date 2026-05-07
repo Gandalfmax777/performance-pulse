@@ -14,7 +14,7 @@ interface SquadStanding {
   squad: ApiSquad;
   pct: number;
   points: number;
-  boletas: number;
+  reunioesReal: number;
   ativacoes: number;
 }
 
@@ -22,7 +22,7 @@ interface SquadStanding {
  * TV Squad — versus board dedicado pro Modo TV (artboard "TvSquad").
  * Diferente do SquadMainEventCard de dashboard: ocupa a tela inteira,
  * cards quadrados gigantes com nome do squad em Instrument Serif
- * italic, gauge gigante de %, stats grid (BOLETAS/ATIVAÇÕES/PONTOS),
+ * italic, gauge gigante de %, stats grid (REUNIÕES REAL./ATIVAÇÕES/PONTOS),
  * undercard com mini-cards no rodapé.
  */
 const TvSquadBoard = ({ assessors }: TvSquadBoardProps) => {
@@ -46,26 +46,23 @@ const TvSquadBoard = ({ assessors }: TvSquadBoardProps) => {
         let pctSum = 0;
         let pctCount = 0;
         let points = 0;
-        let boletas = 0;
+        let reunioesReal = 0;
         let ativacoes = 0;
         for (const m of s.members) {
           const r = perfById.get(m.assessorId);
-          const a = assessorById.get(m.assessorId);
           if (r) {
             pctSum += r.weeklyGoalPercent;
             pctCount += 1;
             points += r.points;
+            reunioesReal += Math.round((r.kpiTotals?.reunioes_realizadas ?? 0) as number);
+            ativacoes += Math.round((r.kpiTotals?.ativacao_conta ?? 0) as number);
           }
-          if (a) {
-            boletas += a.kpis.boletos ?? 0;
-          }
-          ativacoes += Math.round((r?.kpiTotals?.ativacao_conta ?? 0) as number);
         }
         return {
           squad: s,
           pct: pctCount > 0 ? Math.round(pctSum / pctCount) : 0,
           points,
-          boletas,
+          reunioesReal,
           ativacoes,
         };
       })
@@ -215,7 +212,7 @@ function SquadVersusCard({
   standing: SquadStanding;
   leading: boolean;
 }) {
-  const { squad, pct, points, boletas, ativacoes } = standing;
+  const { squad, pct, points, reunioesReal, ativacoes } = standing;
   return (
     <div
       className="rounded-[14px] p-6 flex flex-col gap-4 relative overflow-hidden"
@@ -305,8 +302,8 @@ function SquadVersusCard({
 
       <div className="grid grid-cols-3 border-t border-line pt-3">
         {[
-          { l: "BOLETAS", v: String(boletas) },
           { l: "ATIVAÇÕES", v: String(ativacoes) },
+          { l: "REUNIÕES REAL.", v: String(reunioesReal) },
           { l: "PONTOS", v: points.toLocaleString("pt-BR") },
         ].map((stat, i) => (
           <div

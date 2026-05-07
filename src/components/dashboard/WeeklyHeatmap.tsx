@@ -297,14 +297,13 @@ const WeeklyHeatmap = ({ assessors }: Props) => {
                     </p>
                   </div>
                 </div>
-                <div className="grid grid-cols-6 gap-2 mt-3">
+                <div className="grid grid-cols-5 gap-2 mt-3">
                   {[
                     { label: "Leads", value: selectedAssessor.kpis.leads },
                     { label: "Cadência", value: `${selectedAssessor.kpis.cadencia}%` },
                     { label: "Ligações", value: selectedAssessor.kpis.ligacoes },
                     { label: "Reuniões", value: selectedAssessor.kpis.reunioes },
                     { label: "Indicações", value: selectedAssessor.kpis.indicacoes },
-                    { label: "Boletos", value: selectedAssessor.kpis.boletos },
                   ].map((k) => (
                     <div key={k.label} className="bg-muted/15 rounded-lg p-2 text-center">
                       <p className="text-[9px] text-muted-foreground">{k.label}</p>

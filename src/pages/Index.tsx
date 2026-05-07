@@ -148,7 +148,7 @@ const Index = () => {
   }, []);
 
   // Title custom por view — geralmente vem de VIEW_LABELS, mas Torneio
-  // usa o nome do round atual ("Liga das Boletas") quando há torneio
+  // usa o nome do round atual (ex: "Liga das Ativações") quando há torneio
   // ativo, seguindo o artboard TournamentScreen.
   const titleFor = (v: View): string => {
     if (v === "tournament" && activeTournaments[0]) {
@@ -275,7 +275,7 @@ const Index = () => {
                           Cadência da Semana
                         </h3>
                         <p className="text-[11px] text-ink-3 mt-0.5">
-                          Boletas e ativações por dia
+                          Reuniões realizadas e ativações por dia
                         </p>
                       </div>
                     </div>
@@ -283,7 +283,7 @@ const Index = () => {
                     <div className="flex items-center gap-4 mt-3 text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3">
                       <span className="inline-flex items-center gap-1.5">
                         <span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(var(--eqi-green))" }} />
-                        Boletas
+                        Reuniões Real.
                       </span>
                       <span className="inline-flex items-center gap-1.5">
                         <span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(var(--gold))" }} />

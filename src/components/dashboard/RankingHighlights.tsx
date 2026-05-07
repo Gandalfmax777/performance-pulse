@@ -212,13 +212,13 @@ const RankingHighlights = ({ assessors, rankDeltas }: RankingHighlightsProps) =>
                   className="font-mono font-extrabold leading-none text-white"
                   style={{ fontSize: 24 }}
                 >
-                  {hallOfFame.kpis.boletos ?? 0}
+                  {hallOfFame.points}
                 </p>
                 <p
                   className="text-[8px] uppercase tracking-[0.12em] font-semibold mt-1"
                   style={{ color: "oklch(1 0 0 / 0.5)" }}
                 >
-                  BOLETAS
+                  PONTOS
                 </p>
               </div>
               <div>
