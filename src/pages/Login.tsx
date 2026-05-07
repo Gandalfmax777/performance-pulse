@@ -111,7 +111,7 @@ const Login = () => {
             <span style={{ color: "hsl(var(--gold))" }}>em ritmo</span> de meta.
           </h1>
           <p className="mt-5 text-base text-white/70 max-w-md leading-relaxed">
-            Hoje na mesa: boletas fechando, contas ativando e squads disputando ponto a ponto.
+            Hoje na mesa: reuniões acontecendo, contas ativando e squads disputando ponto a ponto.
             Faça login para acompanhar o movimento em tempo real.
           </p>
         </div>
@@ -119,8 +119,8 @@ const Login = () => {
         <div className="relative z-10 flex items-end gap-10">
           {[
             { v: "108%", l: "meta agregada" },
-            { v: "190", l: "boletas hoje" },
             { v: "42", l: "ativações" },
+            { v: "18", l: "reuniões hoje" },
           ].map((s) => (
             <div key={s.l}>
               <p className="font-mono tv-gigantic text-4xl text-white">{s.v}</p>

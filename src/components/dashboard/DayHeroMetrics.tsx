@@ -7,9 +7,12 @@ interface DayHeroMetricsProps {
 }
 
 /**
- * 3 hero cards do dia (artboard DailyDrilldown): BOLETAS DO DIA /
- * ATIVAÇÕES / REUNIÕES REALIZADAS — números mono 64px, label uppercase
- * acima e delta com "vs média" abaixo.
+ * 3 hero cards do dia (artboard DailyDrilldown): ATIVAÇÕES DO DIA /
+ * REUNIÕES REALIZADAS / REUNIÕES AGENDADAS — números mono 64px, label
+ * uppercase acima e delta com "vs média" abaixo.
+ *
+ * 2026-05-07: Boletas saiu do funil. O slot principal agora destaca
+ * Ativações de Conta (KPI mais valioso, 10 pts cada).
  */
 const DayHeroMetrics = ({ date }: DayHeroMetricsProps) => {
   const { data: dayReport } = useOverviewReport({ from: date, to: date });
@@ -18,24 +21,24 @@ const DayHeroMetrics = ({ date }: DayHeroMetricsProps) => {
     const find = (...keys: string[]) =>
       dayReport?.byKpi.find((k) => keys.includes(k.key));
 
-    const boletas = find("boletas", "boletos");
-    const ativacoes = find("ativacao", "ativacao_conta", "ativacoes");
-    const reunioes = find("reunioes_realizadas", "reunioes_real", "reunioes");
+    const ativacoes = find("ativacao_conta", "ativacao", "ativacoes");
+    const reunioesReal = find("reunioes_realizadas", "reunioes_real");
+    const reunioesAg = find("reunioes", "reunioes_ag");
 
     return [
       {
-        label: "BOLETAS DO DIA",
-        value: boletas ? Math.round(boletas.actual) : 0,
+        label: "ATIVAÇÕES DO DIA",
+        value: ativacoes ? Math.round(ativacoes.actual) : 0,
         color: "hsl(var(--eqi-green))",
       },
       {
-        label: "ATIVAÇÕES",
-        value: ativacoes ? Math.round(ativacoes.actual) : 0,
+        label: "REUNIÕES REALIZADAS",
+        value: reunioesReal ? Math.round(reunioesReal.actual) : 0,
         color: "hsl(var(--gold-deep))",
       },
       {
-        label: "REUNIÕES REALIZADAS",
-        value: reunioes ? Math.round(reunioes.actual) : 0,
+        label: "REUNIÕES AGENDADAS",
+        value: reunioesAg ? Math.round(reunioesAg.actual) : 0,
         color: "hsl(var(--ink))",
       },
     ];

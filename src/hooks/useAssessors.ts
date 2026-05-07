@@ -14,7 +14,6 @@ export interface ApiAssessor {
   level: "BRONZE" | "SILVER" | "GOLD";
   active: boolean;
   totalLeads: number;
-  totalClients: number;
   vacationUntil: string | null;
   hiredAt: string;
   createdAt: string;
@@ -50,11 +49,13 @@ function buildDailyActivityFlags(activeDays: string[]): boolean[] {
 function toLegacyAssessor(a: ApiAssessor, rollup: ApiRollup | undefined): Assessor {
   const kpis = {
     leads: rollup?.kpiTotals.leads ?? 0,
-    cadencia: rollup?.kpiTotals.cadencia ?? 0,
+    // Cadência exibida como % média (0-100) — vem de rollup.kpiPercents,
+    // não de kpiTotals (que seria a soma absoluta de rawValues e gerava
+    // o bug "196%" antes do fix de 2026-05-07).
+    cadencia: Math.round(rollup?.kpiPercents?.cadencia ?? 0),
     ligacoes: rollup?.kpiTotals.ligacoes ?? 0,
     reunioes: rollup?.kpiTotals.reunioes ?? 0,
     indicacoes: rollup?.kpiTotals.indicacoes ?? 0,
-    boletos: rollup?.kpiTotals.boletos ?? 0,
   };
   return {
     id: a.id,
@@ -66,7 +67,6 @@ function toLegacyAssessor(a: ApiAssessor, rollup: ApiRollup | undefined): Assess
     streak: rollup?.streak ?? 0,
     weeklyGoalPercent: rollup?.weeklyGoalPercent ?? 0,
     totalLeads: a.totalLeads,
-    totalClients: a.totalClients,
     vacationUntil: a.vacationUntil,
     kpis,
     dailyActivity: rollup

@@ -153,8 +153,9 @@ const SquadBet = ({ assessors }: Props) => {
           cadencia: +(members.reduce((s, m) => s + get(m.id, "cadencia"), 0) / n).toFixed(1),
           ligacoes: +(members.reduce((s, m) => s + get(m.id, "ligacoes"), 0) / n).toFixed(1),
           reunioes: +(members.reduce((s, m) => s + get(m.id, "reunioes"), 0) / n).toFixed(1),
+          reunioes_real: +(members.reduce((s, m) => s + get(m.id, "reunioes_realizadas"), 0) / n).toFixed(1),
           indicacoes: +(members.reduce((s, m) => s + get(m.id, "indicacoes"), 0) / n).toFixed(1),
-          boletos: +(members.reduce((s, m) => s + get(m.id, "boletos"), 0) / n).toFixed(1),
+          ativacao: +(members.reduce((s, m) => s + get(m.id, "ativacao_conta"), 0) / n).toFixed(1),
           totalPoints: members.reduce(
             (s, m) => s + (perfByAssessorId.get(m.id)?.points ?? 0),
             0,
@@ -224,9 +225,10 @@ const SquadBet = ({ assessors }: Props) => {
     { metric: "Leads", ...Object.fromEntries(rankedSquads.map((s) => [s.sq.id, s.stats.leads])) },
     { metric: "Cadência", ...Object.fromEntries(rankedSquads.map((s) => [s.sq.id, s.stats.cadencia])) },
     { metric: "Ligações", ...Object.fromEntries(rankedSquads.map((s) => [s.sq.id, s.stats.ligacoes])) },
-    { metric: "Reuniões", ...Object.fromEntries(rankedSquads.map((s) => [s.sq.id, s.stats.reunioes])) },
+    { metric: "Reuniões Ag.", ...Object.fromEntries(rankedSquads.map((s) => [s.sq.id, s.stats.reunioes])) },
+    { metric: "Reuniões Real.", ...Object.fromEntries(rankedSquads.map((s) => [s.sq.id, s.stats.reunioes_real])) },
+    { metric: "Ativações", ...Object.fromEntries(rankedSquads.map((s) => [s.sq.id, s.stats.ativacao])) },
     { metric: "Indicações", ...Object.fromEntries(rankedSquads.map((s) => [s.sq.id, s.stats.indicacoes])) },
-    { metric: "Boletos", ...Object.fromEntries(rankedSquads.map((s) => [s.sq.id, s.stats.boletos])) },
   ];
 
   // Domain + ticks explícitos pro radar. Max real dos dados + ~40% de padding,
@@ -519,9 +521,10 @@ const SquadBet = ({ assessors }: Props) => {
                             { label: "Leads", value: row.stats.leads },
                             { label: "Cadência", value: `${row.stats.cadencia}%` },
                             { label: "Ligações", value: row.stats.ligacoes },
-                            { label: "Reuniões", value: row.stats.reunioes },
+                            { label: "Reuniões Ag.", value: row.stats.reunioes },
+                            { label: "Reuniões Real.", value: row.stats.reunioes_real },
+                            { label: "Ativações", value: row.stats.ativacao },
                             { label: "Indicações", value: row.stats.indicacoes },
-                            { label: "Boletos", value: row.stats.boletos },
                           ].map((k) => (
                             <div key={k.label} className="bg-surface-2 rounded-[7px] p-2 text-center">
                               <p className="text-[10px] text-ink-3">{k.label}</p>

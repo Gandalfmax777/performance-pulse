@@ -15,7 +15,7 @@ interface Stage {
 
 /**
  * Funil de conversão Editorial V1 — barras horizontais empilhadas
- * mostrando a queda de Leads → Boletas. Cada estágio mostra a sua
+ * mostrando a queda de Leads → Ativações. Cada estágio mostra a sua
  * contribuição absoluta + % do total + taxa de conversão pro próximo.
  *
  * Segue o artboard "Funil de conversão" de KpisScreen, com a paleta

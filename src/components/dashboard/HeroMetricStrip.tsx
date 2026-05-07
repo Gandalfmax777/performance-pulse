@@ -53,22 +53,28 @@ const HeroMetricStrip = ({ from, to }: HeroMetricStripProps) => {
 
     const totalPoints = weekly?.rankings?.reduce((s, r) => s + (r.rollup.points || 0), 0) ?? null;
 
-    const boletas = overview?.byKpi?.find((k) => k.key === "boletas");
-    const boletasPrev = previousOverview?.byKpi?.find((k) => k.key === "boletas");
-    const boletasDelta =
-      boletas && boletasPrev && boletasPrev.actual > 0
-        ? Math.round(((boletas.actual - boletasPrev.actual) / boletasPrev.actual) * 100)
-        : null;
-
     const ativacao = overview?.byKpi?.find(
-      (k) => k.key === "ativacao" || k.key === "ativacoes" || k.key === "ativacao_conta",
+      (k) => k.key === "ativacao_conta" || k.key === "ativacao" || k.key === "ativacoes",
     );
     const ativacaoPrev = previousOverview?.byKpi?.find(
-      (k) => k.key === "ativacao" || k.key === "ativacoes" || k.key === "ativacao_conta",
+      (k) => k.key === "ativacao_conta" || k.key === "ativacao" || k.key === "ativacoes",
     );
     const ativacaoDelta =
       ativacao && ativacaoPrev && ativacaoPrev.actual > 0
         ? Math.round(((ativacao.actual - ativacaoPrev.actual) / ativacaoPrev.actual) * 100)
+        : null;
+
+    const reunioesReal = overview?.byKpi?.find(
+      (k) => k.key === "reunioes_realizadas" || k.key === "reunioes_real",
+    );
+    const reunioesRealPrev = previousOverview?.byKpi?.find(
+      (k) => k.key === "reunioes_realizadas" || k.key === "reunioes_real",
+    );
+    const reunioesRealDelta =
+      reunioesReal && reunioesRealPrev && reunioesRealPrev.actual > 0
+        ? Math.round(
+            ((reunioesReal.actual - reunioesRealPrev.actual) / reunioesRealPrev.actual) * 100,
+          )
         : null;
 
     return [
@@ -87,20 +93,20 @@ const HeroMetricStrip = ({ from, to }: HeroMetricStripProps) => {
         accent: "ink",
       },
       {
-        label: boletas?.label?.toUpperCase() ?? "BOLETAS",
-        value: boletas ? String(Math.round(boletas.actual)) : "—",
-        sub: boletas ? `meta ${boletas.target}` : "",
-        delta: boletasDelta,
-        accent: boletas && boletas.percent >= 100 ? "eqi" : "ink",
-      },
-      {
-        label: ativacao?.label?.toUpperCase() ?? "ATIVAÇÕES",
+        label: ativacao?.label?.toUpperCase() ?? "ATIVAÇÕES DE CONTA",
         value: ativacao ? String(Math.round(ativacao.actual)) : "—",
         sub: ativacao
           ? `meta ${ativacao.target}${ativacao.percent >= 100 ? " · acima" : ""}`
           : "",
         delta: ativacaoDelta,
-        accent: ativacao && ativacao.percent >= 100 ? "pos" : "ink",
+        accent: ativacao && ativacao.percent >= 100 ? "eqi" : "ink",
+      },
+      {
+        label: reunioesReal?.label?.toUpperCase() ?? "REUNIÕES REALIZADAS",
+        value: reunioesReal ? String(Math.round(reunioesReal.actual)) : "—",
+        sub: reunioesReal ? `meta ${reunioesReal.target}` : "",
+        delta: reunioesRealDelta,
+        accent: reunioesReal && reunioesReal.percent >= 100 ? "pos" : "ink",
       },
     ];
   }, [overview, previousOverview, weekly]);

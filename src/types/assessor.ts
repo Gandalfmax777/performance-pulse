@@ -23,19 +23,17 @@ export interface Assessor {
   level: "bronze" | "silver" | "gold";
   streak: number;
   weeklyGoalPercent: number;
-  /** Banco de leads do assessor (usado na cadência). */
+  /** Banco de leads do assessor (denominador da Cadência). */
   totalLeads?: number;
-  /** Banco de clientes do assessor (usado em touch point). */
-  totalClients?: number;
   /** Data de retorno de férias (YYYY-MM-DD). Null = não está de férias. */
   vacationUntil?: string | null;
   kpis: {
     leads: number;
+    /** Cadência em PERCENTUAL (0-100). Vem de rollup.kpiPercents.cadencia. */
     cadencia: number;
     ligacoes: number;
     reunioes: number;
     indicacoes: number;
-    boletos: number;
   };
   /** 5 booleans pra segunda..sexta (heatmap). */
   dailyActivity: boolean[];
