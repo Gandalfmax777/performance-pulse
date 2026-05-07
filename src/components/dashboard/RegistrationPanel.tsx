@@ -100,12 +100,6 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
       [assessorId]: { ...prev[assessorId], [kpiKey]: Math.max(0, value) },
     }));
   }
-  function setBaseValueLocal(assessorId: string, kpiKey: string, value: number) {
-    setLocalBaseValues((prev) => ({
-      ...prev,
-      [assessorId]: { ...prev[assessorId], [kpiKey]: Math.max(0, value) },
-    }));
-  }
 
   function commit(assessorId: string, kpiKey: string, value: number, baseValue?: number) {
     if (value < 0) return;
@@ -115,6 +109,8 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
     const kpiDef = kpisForDay.find((k) => k.key === kpiKey) ?? extraKpisForDay.find((k) => k.key === kpiKey);
     const target = kpiDef?.target ?? 0;
     const prevPercent = target > 0 ? Math.min(100, (prevVal / target) * 100) : 0;
+    // baseValue omitido = backend usa Assessor.totalLeads como fallback
+    // (mudança 2026-05-07: a "Lista" não é mais editada por dia).
     upsert.mutate({
       input: { assessorId, kpiKey, rawValue: value, baseValue, date: today },
       prevPercent,
@@ -262,10 +258,18 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                 (cronograma e outros). Definido inline pra capturar `a` do escopo. */}
             {(() => {
               type KpiType = typeof allKpis[number];
+              // Lista de leads do assessor — denominador da Cadência. Vem do
+              // banco (Assessor.totalLeads), editada no AssessorManager.
+              // Mudança 2026-05-07: deixou de ser input livre por dia.
+              const assessorListSize = a.totalLeads ?? 0;
               const renderKpiRow = (kpi: KpiType) => {
                 const val = getValue(a.id, kpi.key);
                 const isQOB = kpi.inputMode === "QUANTITY_OVER_BASE";
-                const baseVal = isQOB ? getBaseValue(a.id, kpi.key) : 0;
+                // Para QUANTITY_OVER_BASE: prioriza o baseValue persistido na
+                // entry (caso histórico ou override admin). Senão usa a lista
+                // do assessor — mesmo cálculo que o backend faz no upsert.
+                const persistedBase = isQOB ? getBaseValue(a.id, kpi.key) : 0;
+                const baseVal = isQOB ? (persistedBase || assessorListSize) : 0;
                 const pct = isQOB
                   ? baseVal > 0
                     ? Math.min(100, Math.round((val / baseVal) * 100))
@@ -286,23 +290,25 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                           min={0}
                           value={val}
                           onChange={(e) => setValueLocal(a.id, kpi.key, parseInt(e.target.value) || 0)}
-                          onBlur={() => commit(a.id, kpi.key, val, baseVal || undefined)}
+                          onBlur={() => commit(a.id, kpi.key, val)}
                           placeholder="Qtd"
                           className="w-12 h-7 rounded-md bg-muted/30 border border-line/30 text-center text-sm font-mono font-semibold text-ink focus:outline-none focus:border-eqi/50"
                         />
                         <span className="text-[10px] text-ink-3">/</span>
-                        <input
-                          type="number"
-                          min={1}
-                          value={baseVal || ""}
-                          onChange={(e) => setBaseValueLocal(a.id, kpi.key, parseInt(e.target.value) || 0)}
-                          onBlur={() => {
-                            const newBase = getBaseValue(a.id, kpi.key);
-                            if (newBase > 0) commit(a.id, kpi.key, val, newBase);
-                          }}
-                          placeholder="Lista"
-                          className="w-12 h-7 rounded-md bg-muted/30 border border-line/30 text-center text-sm font-mono font-semibold text-ink focus:outline-none focus:border-eqi/50"
-                        />
+                        <span
+                          className={`min-w-[32px] h-7 inline-flex items-center justify-center rounded-md border text-sm font-mono font-semibold px-2 ${
+                            assessorListSize > 0
+                              ? "bg-muted/20 border-line/20 text-ink-2"
+                              : "bg-destructive/10 border-destructive/30 text-destructive"
+                          }`}
+                          title={
+                            assessorListSize > 0
+                              ? `Lista do assessor: ${assessorListSize}. Edite em Configurações → Assessores.`
+                              : "Assessor sem lista cadastrada — defina em Configurações → Assessores."
+                          }
+                        >
+                          {assessorListSize}
+                        </span>
                         <span className="text-xs font-mono font-bold text-eqi min-w-[32px] text-right">
                           {pct}%
                         </span>

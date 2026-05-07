@@ -8,7 +8,14 @@ export interface ApiRollup {
   points: number;
   weeklyGoalPercent: number;
   streak: number;
+  /** Soma de rawValue por kpi.key. Use pra contagens absolutas (Leads, Ligações...). */
   kpiTotals: Record<string, number>;
+  /**
+   * Percentual médio (0-100) por kpi.key. Use pra exibir % de KPIs com modo
+   * QUANTITY_OVER_BASE/PERCENT (Cadência) — não faz sentido somar rawValue ali.
+   * Adicionado em 2026-05-07.
+   */
+  kpiPercents: Record<string, number>;
   activeDays: string[];
 }
 
