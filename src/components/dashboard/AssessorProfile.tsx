@@ -3,6 +3,8 @@ import { useModalDismiss } from "@/hooks/useModalDismiss";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { BadgeIcon } from "@/components/ui/BadgeIcon";
+import { LevelBadge } from "@/components/ui/LevelBadge";
+import { useLevelHistory } from "@/hooks/useLevelHistory";
 import {
   X,
   Printer,
@@ -84,6 +86,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
   const { data: insightData } = useInsight(assessor.id, "WEEK");
   const generateInsight = useGenerateInsight();
   const { data: prizes } = usePrizes({ assessorId: assessor.id });
+  const { data: levelHistory } = useLevelHistory(assessor.id);
 
   const barData = useMemo(() => {
     if (!report) return [];
@@ -521,6 +524,52 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
               {/* Histórico de análises IA deste assessor — collapsible */}
               <InsightHistoryPanel kind="assessor" assessorId={assessor.id} periodKind="WEEK" limit={20} />
             </div>
+
+            {/* Timeline de níveis (P3) */}
+            {levelHistory && levelHistory.length > 0 && (
+              <div className="p-4 rounded-[14px] bg-surface-2/50 border border-line">
+                <div className="flex items-center gap-2 mb-3">
+                  <ArrowsClockwise size={14} weight="bold" className="text-ink-3" />
+                  <h3 className="text-sm font-extrabold tracking-tight text-ink">
+                    Linha do Tempo de Níveis
+                  </h3>
+                  <span className="text-[10px] text-ink-3 font-mono ml-auto">
+                    {levelHistory.length} mudança{levelHistory.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                <ol className="space-y-2 relative pl-4 border-l-2 border-line">
+                  {levelHistory.map((entry) => {
+                    const wentUp =
+                      entry.previousLevel === null
+                        ? null
+                        : (entry.points >= 0 ? "up" : "down");
+                    return (
+                      <li key={entry.id} className="relative">
+                        <span className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-primary border-2 border-background" />
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <LevelBadge level={entry.level} size="sm" arrow={wentUp} />
+                          {entry.previousLevel && (
+                            <span className="text-[10px] text-ink-3">
+                              vindo de <LevelBadge level={entry.previousLevel} size="sm" />
+                            </span>
+                          )}
+                          <span className="text-[10px] font-mono text-ink-3 ml-auto">
+                            {format(new Date(entry.achievedAt), "dd/MM/yyyy")} ·{" "}
+                            <span className={entry.points >= 0 ? "text-eqi" : "text-destructive"}>
+                              {entry.points >= 0 ? "+" : ""}
+                              {Math.round(entry.points)} pts
+                            </span>
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+                <p className="text-[10px] text-ink-3 mt-3">
+                  Nível recalcula toda segunda 00:30 BRT com base nos pontos das últimas 4 semanas.
+                </p>
+              </div>
+            )}
 
             {/* Badges */}
             <div className="grid grid-cols-2 gap-4">
