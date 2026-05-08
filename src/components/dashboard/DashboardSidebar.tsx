@@ -10,6 +10,7 @@ import {
   Sword as Swords,
   Crown,
   Television as Tv,
+  Presentation,
   Sun,
   Moon,
   SpeakerHigh,
@@ -56,6 +57,7 @@ interface Props {
   view: DashboardView;
   onViewChange: (v: DashboardView) => void;
   onEnterTv: () => void;
+  onEnterPresentation: () => void;
   /** Mobile drawer state — controlado pelo Index via hamburger no Topbar. */
   mobileOpen: boolean;
   onMobileClose: () => void;
@@ -65,6 +67,7 @@ const DashboardSidebar = ({
   view,
   onViewChange,
   onEnterTv,
+  onEnterPresentation,
   mobileOpen,
   onMobileClose,
 }: Props) => {
@@ -188,6 +191,17 @@ const DashboardSidebar = ({
           >
             <Tv size={14} weight="regular" className="shrink-0" />
             {!collapsed && <span>Modo TV</span>}
+          </button>
+          <button
+            onClick={() => { onEnterPresentation(); onMobileClose(); }}
+            title={collapsed ? "Modo Apresentação" : undefined}
+            className={cn(
+              "w-full flex items-center gap-2.5 rounded-[7px] text-[13px] font-bold border bg-surface-2 text-ink-2 border-line hover:bg-surface transition-all mt-1",
+              collapsed ? "px-0 py-2 justify-center" : "px-2.5 py-2",
+            )}
+          >
+            <Presentation size={14} weight="regular" className="shrink-0" />
+            {!collapsed && <span>Apresentação</span>}
           </button>
           <button
             onClick={() => handleViewChange("team")}
