@@ -12,6 +12,7 @@ import {
   Sword as Swords,
   SpeakerHigh,
   Pulse,
+  Sliders,
   type Icon as PhosphorIcon,
 } from "@phosphor-icons/react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -25,6 +26,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { to: "/admin/goals",         label: "Metas & KPIs",  icon: Target },
+  { to: "/admin/scoring",       label: "Pontuação",     icon: Sliders },
   { to: "/admin/sounds",        label: "Sons dos KPIs", icon: SpeakerHigh },
   { to: "/admin/schedule",      label: "Cronograma",    icon: CalendarBlank },
   { to: "/admin/biweekly",      label: "Indique Day",   icon: Repeat },
