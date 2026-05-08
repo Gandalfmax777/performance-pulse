@@ -194,7 +194,7 @@ const AdminBetsConfig = () => {
                         <div className="flex gap-1">
                           {bet.participants.map((p) => (
                             <Badge key={p.squadId} variant="secondary" className="text-[10px]">
-                              {p.squadEmoji} {p.squadName}
+                              {p.squadName}
                             </Badge>
                           ))}
                         </div>
@@ -245,7 +245,7 @@ const AdminBetsConfig = () => {
                       </TableCell>
                       <TableCell className="font-mono text-sm">R$ {bet.value}</TableCell>
                       <TableCell className="text-sm">
-                        {bet.winnerSquad ? `${bet.winnerSquad.emoji} ${bet.winnerSquad.name}` : "—"}
+                        {bet.winnerSquad ? bet.winnerSquad.name : "—"}
                       </TableCell>
                       <TableCell className="text-xs text-ink-3">{criteriaLabel(bet.winnerCriteriaJson)}</TableCell>
                       <TableCell className="text-xs font-mono text-ink-3">{bet.endDate}</TableCell>

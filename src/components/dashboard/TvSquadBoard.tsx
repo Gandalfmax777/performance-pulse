@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Crown } from "@phosphor-icons/react";
 import { type Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
+import { SquadLogo } from "@/components/ui/SquadLogo";
 import { useSquads, type ApiSquad } from "@/hooks/useSquads";
 import { useBets } from "@/hooks/useBets";
 import { useWeeklyRanking } from "@/hooks/useRankings";
@@ -167,7 +168,7 @@ const TvSquadBoard = ({ assessors }: TvSquadBoardProps) => {
               key={s.squad.id}
               className="rounded-[14px] bg-card border border-line p-4 flex items-center gap-4"
             >
-              <div className="text-[36px] leading-none">{s.squad.emoji || "★"}</div>
+              <SquadLogo squad={s.squad} size={56} />
               <div className="flex-1 min-w-0">
                 <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-ink-3">
                   UNDERCARD
@@ -241,7 +242,7 @@ function SquadVersusCard({
       )}
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[44px] leading-none">{squad.emoji || "★"}</div>
+          <SquadLogo squad={squad} size={64} />
           <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mt-2.5">
             SQUAD
           </p>

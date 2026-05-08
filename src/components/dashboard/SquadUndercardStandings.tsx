@@ -8,6 +8,7 @@ import {
 import { useSquads, type ApiSquad } from "@/hooks/useSquads";
 import { useBets } from "@/hooks/useBets";
 import { useWeeklyRanking } from "@/hooks/useRankings";
+import { SquadLogo } from "@/components/ui/SquadLogo";
 
 interface Standing {
   squad: ApiSquad;
@@ -101,7 +102,10 @@ const SquadUndercardStandings = () => {
                         <span className="text-[12px] font-bold text-ink truncate">
                           {pa.squadName}
                         </span>
-                        <span className="text-base">{pa.squadEmoji || "★"}</span>
+                        <SquadLogo
+                          squad={{ id: pa.squadId, name: pa.squadName, logoUrl: pa.squadLogoUrl }}
+                          size={20}
+                        />
                         <span
                           className="font-mono text-[13px] font-extrabold"
                           style={{
@@ -131,7 +135,10 @@ const SquadUndercardStandings = () => {
                         >
                           {Math.round(bPct)}%
                         </span>
-                        <span className="text-base">{pb.squadEmoji || "★"}</span>
+                        <SquadLogo
+                          squad={{ id: pb.squadId, name: pb.squadName, logoUrl: pb.squadLogoUrl }}
+                          size={20}
+                        />
                         <span className="text-[12px] font-bold text-ink truncate">
                           {pb.squadName}
                         </span>
@@ -183,7 +190,7 @@ const SquadUndercardStandings = () => {
                 >
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <span className="text-[20px]">{s.squad.emoji || "★"}</span>
+                <SquadLogo squad={s.squad} size={24} />
                 <div className="min-w-0">
                   <p className="text-[13px] font-bold text-ink truncate">
                     Squad {s.squad.name}
