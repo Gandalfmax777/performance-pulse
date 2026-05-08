@@ -4,7 +4,7 @@ import { apiFetch } from "@/api/client";
 export interface ApiCofreBySquad {
   squadId: string;
   squadName: string;
-  squadEmoji: string;
+  squadLogoUrl: string | null;
   totalWon: number;
   winCount: number;
 }

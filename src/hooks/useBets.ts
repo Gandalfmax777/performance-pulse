@@ -10,7 +10,7 @@ export interface ApiBetParticipant {
   squadId: string;
   finalScore: number | null;
   squadName: string;
-  squadEmoji: string;
+  squadLogoUrl: string | null;
 }
 
 export interface ApiBet {
@@ -22,7 +22,7 @@ export interface ApiBet {
   endDate: string;
   status: "ACTIVE" | "FINISHED" | "CANCELED";
   winnerSquadId: string | null;
-  winnerSquad: { id: string; name: string; emoji: string } | null;
+  winnerSquad: { id: string; name: string; logoUrl: string | null } | null;
   winnerCriteriaJson: BetWinnerCriteria;
   createdById: string;
   createdAt: string;
