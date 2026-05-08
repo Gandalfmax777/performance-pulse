@@ -329,6 +329,14 @@ function ReviewDialog({
   const reviewMut = useReviewPenaltyProposal();
   const bulkMut = useBulkReviewPenaltyProposals();
 
+  // Guard: Radix Dialog mantém children montados mesmo com open=false (só
+  // esconde via CSS). Sem esse early-return, o JSX avalia state.proposals[0]
+  // antes de o admin clicar pra revisar e quebra com "Cannot read properties
+  // of undefined (reading 'assessorName')". Reportado por Felipe em prod.
+  if (!state.open || state.proposals.length === 0 || !state.action) {
+    return null;
+  }
+
   const isBulk = state.proposals.length > 1;
   const isApprove = state.action === "APPROVED";
   const totalPoints = state.proposals.reduce((s, p) => s + p.pointsProposed, 0);
