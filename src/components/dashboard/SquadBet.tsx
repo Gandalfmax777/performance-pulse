@@ -135,6 +135,10 @@ const SquadBet = ({ assessors }: Props) => {
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [expandedSquad, setExpandedSquad] = useState<string | null>(null);
   const uploadLogoMut = useUploadSquadLogo();
+  // Edit logo: input compartilhado, controlamos qual squad tá no fluxo
+  // pelo state `editingLogoSquadId` (set ao clicar no botão, lido no onChange).
+  const editLogoFileInputRef = useRef<HTMLInputElement>(null);
+  const [editingLogoSquadId, setEditingLogoSquadId] = useState<string | null>(null);
 
   // Nova bet form
   const [newBetValue, setNewBetValue] = useState(50);
@@ -235,6 +239,36 @@ const SquadBet = ({ assessors }: Props) => {
     deleteSquadMut.mutate(id);
   };
 
+  const triggerEditLogo = (squadId: string) => {
+    setEditingLogoSquadId(squadId);
+    editLogoFileInputRef.current?.click();
+  };
+
+  const handleEditLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const squadId = editingLogoSquadId;
+    if (!file || !squadId) {
+      setEditingLogoSquadId(null);
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Selecione uma imagem (PNG/JPG/WebP)");
+      setEditingLogoSquadId(null);
+      if (editLogoFileInputRef.current) editLogoFileInputRef.current.value = "";
+      return;
+    }
+    try {
+      const blob = await resizeImageToBlob(file);
+      await uploadLogoMut.mutateAsync({ squadId, blob });
+      toast.success("Logo atualizado");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha ao subir logo");
+    } finally {
+      setEditingLogoSquadId(null);
+      if (editLogoFileInputRef.current) editLogoFileInputRef.current.value = "";
+    }
+  };
+
   const startBet = () => {
     const criteria = CRITERIA_PRESETS[newBetCriteriaIdx]?.value;
     if (!criteria) return;
@@ -316,6 +350,16 @@ const SquadBet = ({ assessors }: Props) => {
 
   return (
     <div className="space-y-5">
+      {/* Input compartilhado pra "Trocar logo" de squads existentes — controlado
+          via state `editingLogoSquadId`. Fica fora do map pra evitar duplicação. */}
+      <input
+        ref={editLogoFileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleEditLogoChange}
+      />
+
       {/* Editorial V1 — Main Event hero card no topo (só renderiza se tiver bet ATIVA) */}
       <SquadMainEventCard assessors={assessors} />
 
@@ -603,12 +647,26 @@ const SquadBet = ({ assessors }: Props) => {
                             ))}
                           </div>
                         )}
-                        <button
-                          onClick={() => removeSquad(sq.id)}
-                          className="text-xs text-destructive/70 hover:text-destructive flex items-center gap-1 transition-colors"
-                        >
-                          <Trash size={11} weight="bold" /> Remover Squad
-                        </button>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => triggerEditLogo(sq.id)}
+                            disabled={uploadLogoMut.isPending && editingLogoSquadId === sq.id}
+                            className="text-xs text-ink-3 hover:text-ink flex items-center gap-1 transition-colors disabled:opacity-50"
+                          >
+                            {uploadLogoMut.isPending && editingLogoSquadId === sq.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Plus size={11} weight="bold" />
+                            )}{" "}
+                            {sq.logoUrl ? "Trocar logo" : "Subir logo"}
+                          </button>
+                          <button
+                            onClick={() => removeSquad(sq.id)}
+                            className="text-xs text-destructive/70 hover:text-destructive flex items-center gap-1 transition-colors"
+                          >
+                            <Trash size={11} weight="bold" /> Remover Squad
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
