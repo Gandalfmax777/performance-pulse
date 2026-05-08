@@ -1,0 +1,55 @@
+import {
+  Award,
+  Briefcase,
+  Crosshair,
+  Crown,
+  Fire,
+  Globe,
+  HandFist,
+  Handshake,
+  Lightning,
+  Target,
+  Trophy,
+  type Icon as PhosphorIcon,
+} from "@phosphor-icons/react";
+
+/**
+ * Mapeia o slug salvo em `Badge.icon` (ex: "Target", "Handshake") pro
+ * componente Phosphor correspondente. Substitui o emoji literal que era
+ * salvo antes de 2026-05-08 (vide `scripts/migrate-badge-icons.ts` no
+ * backend que converteu badges existentes em prod).
+ *
+ * Lista cobre os 10 slugs do seed atual + qualquer adição manual.
+ * Slug desconhecido → fallback `<Award>` (não quebra a UI).
+ */
+const BADGE_ICONS: Record<string, PhosphorIcon> = {
+  Target,
+  Handshake,
+  Globe,
+  Lightning,
+  Crown,
+  Fire,
+  Crosshair,
+  Briefcase,
+  Trophy,
+  HandFist,
+};
+
+interface BadgeIconProps {
+  slug: string;
+  /** Tamanho em pixels (default 14). */
+  size?: number;
+  /** Phosphor weight (default "fill" — cores das badges são cheias). */
+  weight?: "thin" | "light" | "regular" | "bold" | "fill" | "duotone";
+  className?: string;
+}
+
+export function BadgeIcon({
+  slug,
+  size = 14,
+  weight = "fill",
+  className,
+}: BadgeIconProps) {
+  const Icon = BADGE_ICONS[slug] ?? Award;
+  return <Icon size={size} weight={weight} className={className} />;
+}
