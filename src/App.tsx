@@ -18,6 +18,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Relatorio = lazy(() => import("./pages/Relatorio"));
 const RelatorioAssessor = lazy(() => import("./pages/RelatorioAssessor"));
 const TvPage = lazy(() => import("./pages/Tv"));
+const PresentationPage = lazy(() => import("./pages/Presentation"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const AdminGoals = lazy(() => import("./pages/admin/AdminGoals"));
 const AdminScoring = lazy(() => import("./pages/admin/AdminScoring"));
@@ -56,6 +57,17 @@ const App = () => (
                 apiFetch detecta /tv e não anexa token / não redireciona em 401.
                 Endpoints consumidos são públicos no backend (ver routes/*.ts). */}
             <Route path="/tv" element={<TvPage />} />
+
+            {/* Modo Apresentação — admin abre em nova janela pra usar em
+                reuniões/TV (auth required, controle por keyboard, fullscreen). */}
+            <Route
+              path="/presentation"
+              element={
+                <RequireAuth>
+                  <PresentationPage />
+                </RequireAuth>
+              }
+            />
 
             <Route
               path="/"

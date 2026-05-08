@@ -147,6 +147,10 @@ const Index = () => {
     window.open("/tv", "_blank", "noopener,noreferrer");
   }, []);
 
+  const openPresentation = useCallback(() => {
+    window.open("/presentation", "_blank", "noopener,noreferrer");
+  }, []);
+
   // Title custom por view — geralmente vem de VIEW_LABELS, mas Torneio
   // usa o nome do round atual (ex: "Liga das Ativações") quando há torneio
   // ativo, seguindo o artboard TournamentScreen.
@@ -241,6 +245,7 @@ const Index = () => {
         view={view}
         onViewChange={setView}
         onEnterTv={openTv}
+        onEnterPresentation={openPresentation}
         mobileOpen={mobileNavOpen}
         onMobileClose={() => setMobileNavOpen(false)}
       />
