@@ -6,6 +6,7 @@ import { useBets, useCreateBet, useFinishBet, type BetWinnerCriteria } from "@/h
 import { useCofreBalance } from "@/hooks/useCofre";
 import { useBadges, useBadgeUnlocks } from "@/hooks/useBadges";
 import { SquadLogo } from "@/components/ui/SquadLogo";
+import { BadgeIcon } from "@/components/ui/BadgeIcon";
 import { resizeImageToBlob } from "@/lib/imageResize";
 import {
   useDailyRanking,
@@ -639,10 +640,11 @@ const SquadBet = ({ assessors }: Props) => {
                             {earnedBadges.map((b) => (
                               <span
                                 key={b.id}
-                                className="text-xs bg-eqi/10 text-eqi px-2 py-1 rounded-[7px]"
+                                className="text-xs bg-eqi/10 text-eqi px-2 py-1 rounded-[7px] inline-flex items-center gap-1"
                                 title={b.description}
                               >
-                                {b.icon} {b.name}
+                                <BadgeIcon slug={b.icon} size={12} />
+                                {b.name}
                               </span>
                             ))}
                           </div>
@@ -961,7 +963,7 @@ const SquadBet = ({ assessors }: Props) => {
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-lg">{badge.icon}</span>
+                      <BadgeIcon slug={badge.icon} size={16} className="text-eqi" />
                       <span className="text-xs font-extrabold tracking-tight text-ink">{badge.name}</span>
                     </div>
                     <p className="text-[10px] text-ink-3">{badge.description}</p>

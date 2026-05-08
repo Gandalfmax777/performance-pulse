@@ -1,5 +1,7 @@
 import { useEffect } from "react";
+import { createElement } from "react";
 import { toast } from "sonner";
+import { Target } from "@phosphor-icons/react";
 import { getAuthToken } from "@/api/client";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001/api";
@@ -41,7 +43,10 @@ export function useSystemNotifications(enabled: boolean = true) {
     source.addEventListener("goal:hit", (e: MessageEvent) => {
       try {
         const payload = JSON.parse(e.data) as GoalHitPayload;
-        toast.success(`🎯 ${payload.assessorName} bateu meta!`, {
+        toast.success(`${payload.assessorName} bateu meta!`, {
+          // Sonner aceita ReactNode no `icon` — usa createElement pra evitar
+          // forçar arquivo .tsx neste hook.
+          icon: createElement(Target, { size: 18, weight: "fill" }),
           description: `${payload.kpiLabel} · ${payload.percent}% da meta`,
           duration: 6000,
         });

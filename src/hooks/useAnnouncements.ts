@@ -4,7 +4,6 @@ import { apiFetch } from "@/api/client";
 export interface ApiAnnouncement {
   id: string;
   message: string;
-  emoji: string | null;
   active: boolean;
   expiresAt: string | null;
   sortOrder: number;
@@ -16,7 +15,6 @@ export interface ApiAnnouncement {
 
 export interface UpsertAnnouncementInput {
   message: string;
-  emoji?: string | null;
   active?: boolean;
   expiresAt?: string | null;
   sortOrder?: number;

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { format, addDays, startOfWeek, nextWednesday, isWednesday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Loader2 } from "lucide-react";
-import { Repeat, CalendarBlank as CalendarIcon, PencilSimple as Pencil } from "@phosphor-icons/react";
+import { Repeat, CalendarBlank as CalendarIcon, PencilSimple as Pencil, Target } from "@phosphor-icons/react";
 import { useAllActivities, useUpdateActivity } from "@/hooks/useAdminActivities";
 import { isActivityActiveOn, type ActivityCadenceFields } from "@/lib/biweekly";
 import { Button } from "@/components/ui/button";
@@ -176,7 +176,7 @@ const AdminBiweekly = () => {
                             key={a.id}
                             className="flex items-center gap-1.5 text-xs text-eqi font-semibold"
                           >
-                            <span>🎯</span>
+                            <Target size={12} weight="bold" />
                             {a.name}
                           </div>
                         ))}

@@ -5,6 +5,7 @@ import { ChartBar, Fire } from "@phosphor-icons/react";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import { type Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
+import { BadgeIcon } from "@/components/ui/BadgeIcon";
 import { useActivities } from "@/hooks/useActivities";
 import { useBadges, useBadgeUnlocks } from "@/hooks/useBadges";
 import { useMetrics } from "@/hooks/useMetrics";
@@ -216,7 +217,7 @@ const WeeklyHeatmap = ({ assessors }: Props) => {
                             <div className="flex gap-0.5 mt-0.5">
                               {earned.map((b) => (
                                 <span key={b.id} className="text-[10px]" title={b.name}>
-                                  {b.icon}
+                                  <BadgeIcon slug={b.icon} size={10} />
                                 </span>
                               ))}
                             </div>
@@ -321,9 +322,10 @@ const WeeklyHeatmap = ({ assessors }: Props) => {
                       {earned.map((b) => (
                         <span
                           key={b.id}
-                          className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-lg border border-primary/20"
+                          className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-lg border border-primary/20 inline-flex items-center gap-1"
                         >
-                          {b.icon} {b.name}
+                          <BadgeIcon slug={b.icon} size={12} />
+                          {b.name}
                         </span>
                       ))}
                     </div>

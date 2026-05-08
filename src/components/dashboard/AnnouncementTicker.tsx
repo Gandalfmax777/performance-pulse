@@ -29,8 +29,7 @@ const AnnouncementTicker = (_props: AnnouncementTickerProps) => {
 
     // 1. Avisos manuais (banco)
     for (const a of manualAnnouncements ?? []) {
-      const prefix = a.emoji ? `${a.emoji} ` : "";
-      out.push(`${prefix}${a.message}`);
+      out.push(a.message);
     }
 
     // 2. Direcionamentos dos dias úteis da semana atual (só os com texto)
