@@ -126,3 +126,24 @@ export function useUpsertMetric() {
     },
   });
 }
+
+/**
+ * Apaga uma metric entry (admin only). Backend dispara badge re-eval +
+ * ranking SSE em background. Frontend invalida queries pra atualizar UI
+ * local imediatamente — não espera o SSE chegar.
+ *
+ * Usado em RegistrationPanel pra Felipe corrigir lançamentos de teste ou
+ * registros errados (08/05/2026).
+ */
+export function useDeleteMetric() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<null>(`/metrics/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["rankings"] });
+      queryClient.invalidateQueries({ queryKey: ["assessors"] });
+    },
+  });
+}

@@ -1,10 +1,12 @@
 import { useMemo, useState, useEffect } from "react";
-import { Minus, Plus, Loader2, MessageSquare, ChevronDown, ChevronRight } from "lucide-react";
+import { toast } from "sonner";
+import { Minus, Plus, Loader2, MessageSquare, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import { Sun, Moon, CalendarBlank, Target } from "@phosphor-icons/react";
 import type { Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
-import { useMetrics, useUpsertMetric } from "@/hooks/useMetrics";
+import { useMetrics, useUpsertMetric, useDeleteMetric } from "@/hooks/useMetrics";
 import { useKpis } from "@/hooks/useKpis";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { apiFetch } from "@/api/client";
 import { MEETING_NOTE_PREFIX, MEETING_AREA_PREFIX, type NoteType } from "@/lib/meetingBonus";
 
@@ -37,6 +39,8 @@ function todayString(): string {
 const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks }: RegistrationPanelProps) => {
   const { kpis: allKpis } = useKpis();
   const upsert = useUpsertMetric();
+  const deleteMetric = useDeleteMetric();
+  const { isAdmin } = useCurrentUser();
   const today = date ?? todayString();
   const { data: todayMetrics } = useMetrics({ from: today, to: today });
 
@@ -66,6 +70,38 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
     }
     return { raw: m, base: b };
   }, [todayMetrics]);
+
+  // Lookup { assessorId → { kpiKey → entryId } } pra suportar lixeira (admin).
+  // Felipe pediu (08/05/2026) poder apagar registros errados/de teste.
+  const entryIds = useMemo(() => {
+    const m: Record<string, Record<string, string>> = {};
+    for (const e of todayMetrics ?? []) {
+      m[e.assessorId] ??= {};
+      m[e.assessorId][e.kpiKey] = e.id;
+    }
+    return m;
+  }, [todayMetrics]);
+
+  function handleDelete(assessorId: string, kpiKey: string, kpiLabel: string) {
+    const id = entryIds[assessorId]?.[kpiKey];
+    if (!id) return;
+    if (!window.confirm(`Apagar lançamento de "${kpiLabel}" deste assessor? Irreversível.`)) {
+      return;
+    }
+    deleteMetric.mutate(id, {
+      onSuccess: () => {
+        // Limpa estado local pra refletir 0 imediatamente
+        setLocalValues((prev) => ({
+          ...prev,
+          [assessorId]: { ...prev[assessorId], [kpiKey]: 0 },
+        }));
+        toast.success("Lançamento apagado");
+      },
+      onError: (err) => {
+        toast.error(err instanceof Error ? err.message : "Erro ao apagar");
+      },
+    });
+  }
 
   // Estados locais (otimistas)
   const [localValues, setLocalValues] = useState<Record<string, Record<string, number>>>({});
@@ -364,6 +400,21 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                         style={{ width: `${Math.min(100, pct)}%` }}
                       />
                     </div>
+
+                    {/* Lixeira: só admin + só se já tem entry persistida.
+                        Apaga o registro inteiro do banco (não zero) — pra
+                        Felipe corrigir teste/erro sem deixar histórico. */}
+                    {isAdmin && entryIds[a.id]?.[kpi.key] && (
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(a.id, kpi.key, kpi.label)}
+                        disabled={deleteMetric.isPending}
+                        title="Apagar lançamento (admin)"
+                        className="w-7 h-7 rounded-md text-ink-3/60 hover:text-destructive hover:bg-destructive/10 flex items-center justify-center transition-all disabled:opacity-40"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )}
                   </div>
                 );
               };

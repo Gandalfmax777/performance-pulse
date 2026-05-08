@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Loader2 } from "lucide-react";
+import { Loader2, Pencil, Trash2 } from "lucide-react";
 import {
   Warning,
   Check,
@@ -37,6 +37,8 @@ import {
   usePenaltyProposals,
   useReviewPenaltyProposal,
   useBulkReviewPenaltyProposals,
+  useEditPenaltyProposal,
+  useDeletePenaltyProposal,
   type PenaltyProposal,
   type PenaltyStatus,
 } from "@/hooks/usePenaltyProposals";
@@ -68,6 +70,8 @@ const AdminPenalties = () => {
     action: "APPROVED" | "REJECTED" | null;
     proposals: PenaltyProposal[];
   }>({ open: false, action: null, proposals: [] });
+  const [editTarget, setEditTarget] = useState<PenaltyProposal | null>(null);
+  const deleteMut = useDeletePenaltyProposal();
 
   const list = proposals ?? [];
 
@@ -103,6 +107,19 @@ const AdminPenalties = () => {
   };
 
   const closeReview = () => setReviewDialog({ open: false, action: null, proposals: [] });
+
+  const handleDelete = (p: PenaltyProposal) => {
+    const dateLabel = format(new Date(p.date), "dd/MM/yyyy", { locale: ptBR });
+    const msg =
+      p.status === "APPROVED" || p.status === "AUTO_APPROVED"
+        ? `Apagar penalidade de ${p.assessorName} (${dateLabel}, −${p.pointsProposed} pts)?\n\nESTÁ APROVADA — apagar vai DEVOLVER os pontos no ranking. Irreversível.`
+        : `Apagar proposta de ${p.assessorName} (${dateLabel})? Irreversível.`;
+    if (!window.confirm(msg)) return;
+    deleteMut.mutate(p.id, {
+      onSuccess: () => toast.success("Proposta apagada"),
+      onError: (err) => toast.error(err instanceof Error ? err.message : "Erro ao apagar"),
+    });
+  };
 
   const totalPendingPoints = useMemo(
     () =>
@@ -270,26 +287,48 @@ const AdminPenalties = () => {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      {isPending && (
-                        <div className="inline-flex gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="Aprovar"
-                            onClick={() => openReview("APPROVED", p)}
-                          >
-                            <Check size={14} className="text-eqi" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="Rejeitar"
-                            onClick={() => openReview("REJECTED", p)}
-                          >
-                            <X size={14} className="text-destructive" />
-                          </Button>
-                        </div>
-                      )}
+                      <div className="inline-flex gap-1">
+                        {isPending && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Aprovar"
+                              onClick={() => openReview("APPROVED", p)}
+                            >
+                              <Check size={14} className="text-eqi" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Rejeitar"
+                              onClick={() => openReview("REJECTED", p)}
+                            >
+                              <X size={14} className="text-destructive" />
+                            </Button>
+                          </>
+                        )}
+                        {/* Edit + Delete em qualquer status — Felipe pediu
+                            (08/05/2026) poder corrigir/apagar registros que
+                            entraram errados ou de teste. */}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Editar"
+                          onClick={() => setEditTarget(p)}
+                        >
+                          <Pencil size={14} className="text-ink-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Apagar (irreversível)"
+                          disabled={deleteMut.isPending}
+                          onClick={() => handleDelete(p)}
+                        >
+                          <Trash2 size={14} className="text-destructive" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -304,6 +343,8 @@ const AdminPenalties = () => {
         onClose={closeReview}
         onConfirmed={() => setSelected(new Set())}
       />
+
+      <EditDialog target={editTarget} onClose={() => setEditTarget(null)} />
     </div>
   );
 };
@@ -433,6 +474,128 @@ function ReviewDialog({
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
             Confirmar {isApprove ? "aprovação" : "rejeição"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/**
+ * Dialog de edição: muda data, pontos e justificativa sem alterar status.
+ * Funciona em qualquer status — Felipe usa pra corrigir registros (data
+ * errada, pontos divergentes, justificativa que precisa atualizar).
+ *
+ * Mesmo guard do ReviewDialog: early-return quando target=null pra evitar
+ * o crash do Radix Dialog que mantém children montados.
+ */
+function EditDialog({
+  target,
+  onClose,
+}: {
+  target: PenaltyProposal | null;
+  onClose: () => void;
+}) {
+  const editMut = useEditPenaltyProposal();
+  const [date, setDate] = useState("");
+  const [points, setPoints] = useState("");
+  const [just, setJust] = useState("");
+  const [initialized, setInitialized] = useState(false);
+
+  // Inicializa form quando target abre. Reseta quando fecha.
+  if (target && !initialized) {
+    setDate(target.date);
+    setPoints(String(target.pointsProposed));
+    setJust(target.justification ?? "");
+    setInitialized(true);
+  }
+  if (!target && initialized) {
+    setInitialized(false);
+  }
+
+  if (!target) return null;
+
+  const handleSave = async () => {
+    const pointsNum = parseInt(points, 10);
+    if (Number.isNaN(pointsNum) || pointsNum < 1 || pointsNum > 100) {
+      toast.error("Pontos: número entre 1 e 100");
+      return;
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      toast.error("Data: formato YYYY-MM-DD");
+      return;
+    }
+    try {
+      await editMut.mutateAsync({
+        id: target.id,
+        date: date !== target.date ? date : undefined,
+        pointsProposed: pointsNum !== target.pointsProposed ? pointsNum : undefined,
+        justification: just !== (target.justification ?? "") ? (just || null) : undefined,
+      });
+      toast.success("Proposta atualizada");
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao salvar");
+    }
+  };
+
+  const isApproved = target.status === "APPROVED" || target.status === "AUTO_APPROVED";
+
+  return (
+    <Dialog open={target !== null} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Editar proposta</DialogTitle>
+          <DialogDescription>
+            {target.assessorName}
+            {isApproved && (
+              <span className="block mt-1 text-destructive font-semibold">
+                Já aprovada — mudar pontos/data afeta o ranking imediatamente.
+              </span>
+            )}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3">
+          <div>
+            <Label className="text-xs">Data</Label>
+            <Input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label className="text-xs">Pontos</Label>
+            <Input
+              type="number"
+              min={1}
+              max={100}
+              value={points}
+              onChange={(e) => setPoints(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label className="text-xs">Justificativa</Label>
+            <Input
+              value={just}
+              onChange={(e) => setJust(e.target.value)}
+              placeholder="Opcional. Ex: férias autorizadas, treinamento externo"
+              maxLength={500}
+              className="mt-1"
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={editMut.isPending}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSave} disabled={editMut.isPending}>
+            {editMut.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+            Salvar
           </Button>
         </DialogFooter>
       </DialogContent>
