@@ -15,9 +15,8 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Archivo', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
-        serif: ['Instrument Serif', 'Georgia', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -121,8 +120,6 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "shimmer": "shimmer 2s ease-in-out infinite",
-        "glow-pulse": "glow-pulse 2s ease-in-out infinite",
       },
     },
   },
