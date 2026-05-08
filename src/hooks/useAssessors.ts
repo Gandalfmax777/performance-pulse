@@ -2,16 +2,24 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/api/client";
 import { type Assessor } from "@/types/assessor";
 import { useWeeklyRanking, type ApiRollup } from "./useRankings";
+import type { LevelSlug } from "@/lib/levelMeta";
 
 /**
  * Shape vindo do backend (espelha o serializer de routes/assessors.ts).
+ *
+ * P3: `level` agora pode ser qualquer dos 13 valores (3 legacy + 10 novos
+ * vindos do levelEngine). `legacyLevel` é mapping pros 3 antigos pra
+ * componentes que ainda esperam BRONZE/SILVER/GOLD (AssessorAvatar etc.).
  */
 export interface ApiAssessor {
   id: string;
   name: string;
   initials: string;
   photoUrl: string | null;
-  level: "BRONZE" | "SILVER" | "GOLD";
+  /** Nível REAL — qualquer dos 13. Usar com LevelBadge / getLevelMeta. */
+  level: LevelSlug;
+  /** Mapeado pros 3 legacy — usar com componentes que esperam o enum antigo. */
+  legacyLevel: "BRONZE" | "SILVER" | "GOLD";
   active: boolean;
   totalLeads: number;
   vacationUntil: string | null;
@@ -63,7 +71,9 @@ function toLegacyAssessor(a: ApiAssessor, rollup: ApiRollup | undefined): Assess
     avatar: a.initials,
     photoUrl: a.photoUrl,
     points: rollup?.points ?? 0,
-    level: a.level.toLowerCase() as Assessor["level"],
+    // Usa legacyLevel pra interface Assessor antiga (espera bronze/silver/gold lowercase).
+    // Componentes novos (LevelBadge no perfil) leem `level` real direto do ApiAssessor.
+    level: a.legacyLevel.toLowerCase() as Assessor["level"],
     streak: rollup?.streak ?? 0,
     weeklyGoalPercent: rollup?.weeklyGoalPercent ?? 0,
     totalLeads: a.totalLeads,

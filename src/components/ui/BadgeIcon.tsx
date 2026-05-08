@@ -1,6 +1,7 @@
 import {
   Medal,
   Briefcase,
+  ChartLine,
   Crosshair,
   Crown,
   Fire,
@@ -8,6 +9,7 @@ import {
   HandFist,
   Handshake,
   Lightning,
+  ShieldCheck,
   Target,
   Trophy,
   type Icon as PhosphorIcon,
@@ -23,6 +25,8 @@ import {
  * Slug desconhecido → fallback `<Medal>` (não quebra a UI).
  */
 const BADGE_ICONS: Record<string, PhosphorIcon> = {
+  // Slugs herdados (badges antigas — soft-deleted em prod, mas BadgeUnlocks
+  // históricos ainda referenciam)
   Target,
   Handshake,
   Globe,
@@ -33,6 +37,10 @@ const BADGE_ICONS: Record<string, PhosphorIcon> = {
   Briefcase,
   Trophy,
   HandFist,
+  // Slugs novos (P3 — 2026-05-08)
+  Medal,
+  ChartLine,
+  ShieldCheck,
 };
 
 interface BadgeIconProps {
