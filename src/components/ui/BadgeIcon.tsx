@@ -1,5 +1,5 @@
 import {
-  Award,
+  Medal,
   Briefcase,
   Crosshair,
   Crown,
@@ -20,7 +20,7 @@ import {
  * backend que converteu badges existentes em prod).
  *
  * Lista cobre os 10 slugs do seed atual + qualquer adição manual.
- * Slug desconhecido → fallback `<Award>` (não quebra a UI).
+ * Slug desconhecido → fallback `<Medal>` (não quebra a UI).
  */
 const BADGE_ICONS: Record<string, PhosphorIcon> = {
   Target,
@@ -50,6 +50,6 @@ export function BadgeIcon({
   weight = "fill",
   className,
 }: BadgeIconProps) {
-  const Icon = BADGE_ICONS[slug] ?? Award;
+  const Icon = BADGE_ICONS[slug] ?? Medal;
   return <Icon size={size} weight={weight} className={className} />;
 }
