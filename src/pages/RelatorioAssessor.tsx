@@ -22,6 +22,7 @@ import { ArrowLeft, Printer, Loader2, Award, Flame, TrendingUp } from "lucide-re
 import Markdown from "react-markdown";
 import { useAssessorReport } from "@/hooks/useReports";
 import { useInsight, useGenerateInsight } from "@/hooks/useInsight";
+import { BadgeIcon } from "@/components/ui/BadgeIcon";
 import {
   isMeetingNote,
   isMeetingAreaNote,
@@ -295,8 +296,9 @@ const RelatorioAssessor = () => {
             <h2>Conquistas</h2>
             <div className="ra-badges">
               {report.badgeUnlocks.map((b) => (
-                <span key={b.id} className="ra-badge">
-                  {b.icon} {b.name}
+                <span key={b.id} className="ra-badge inline-flex items-center gap-1">
+                  <BadgeIcon slug={b.icon} size={14} />
+                  {b.name}
                 </span>
               ))}
             </div>

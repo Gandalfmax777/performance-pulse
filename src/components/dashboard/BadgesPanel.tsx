@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { type Assessor } from "@/types/assessor";
 import { useBadges, useBadgeUnlocks } from "@/hooks/useBadges";
+import { BadgeIcon } from "@/components/ui/BadgeIcon";
 
 interface BadgesPanelProps {
   // Mantido por retrocompat — Index.tsx ainda passa, mas não é usado
@@ -34,13 +35,13 @@ const BadgesPanel = (_: BadgesPanelProps) => {
               }`}
             >
               <div
-                className={`w-12 h-12 rounded-xl border flex items-center justify-center text-2xl transition-shadow ${
+                className={`w-12 h-12 rounded-xl border flex items-center justify-center transition-shadow ${
                   unlocked
-                    ? "bg-primary/10 border-primary/30 group-hover:glow-primary"
-                    : "bg-muted/40 border-border/30"
+                    ? "bg-primary/10 border-primary/30 group-hover:glow-primary text-primary"
+                    : "bg-muted/40 border-border/30 text-muted-foreground"
                 }`}
               >
-                {b.icon}
+                <BadgeIcon slug={b.icon} size={22} />
               </div>
               <span className="text-[10px] font-semibold text-foreground mt-1.5 leading-tight">
                 {b.name}

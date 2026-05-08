@@ -102,7 +102,6 @@ const AdminAnnouncements = () => {
                   </button>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      {a.emoji && <span className="text-lg">{a.emoji}</span>}
                       <p className={`text-sm ${a.active && !expired ? "text-ink" : "text-ink-3 line-through"}`}>
                         {a.message}
                       </p>
@@ -172,7 +171,6 @@ interface AnnouncementDialogProps {
   onClose: () => void;
   onSave: (input: {
     message: string;
-    emoji?: string | null;
     active: boolean;
     expiresAt?: string | null;
     sortOrder: number;
@@ -183,7 +181,6 @@ interface AnnouncementDialogProps {
 function AnnouncementDialog({ state, onClose, onSave, saving }: AnnouncementDialogProps) {
   const editing = state.editing;
   const [message, setMessage] = useState(editing?.message ?? "");
-  const [emoji, setEmoji] = useState(editing?.emoji ?? "");
   const [active, setActive] = useState(editing?.active ?? true);
   const [hasExpiration, setHasExpiration] = useState(Boolean(editing?.expiresAt));
   const [expiresAt, setExpiresAt] = useState(
@@ -194,7 +191,6 @@ function AnnouncementDialog({ state, onClose, onSave, saving }: AnnouncementDial
   // Reset on dialog open with new editing state
   const reset = () => {
     setMessage(editing?.message ?? "");
-    setEmoji(editing?.emoji ?? "");
     setActive(editing?.active ?? true);
     setHasExpiration(Boolean(editing?.expiresAt));
     setExpiresAt(editing?.expiresAt ? editing.expiresAt.slice(0, 16) : "");
@@ -215,7 +211,7 @@ function AnnouncementDialog({ state, onClose, onSave, saving }: AnnouncementDial
         <DialogHeader>
           <DialogTitle>{editing ? "Editar aviso" : "Novo aviso"}</DialogTitle>
           <DialogDescription>
-            Texto curto que rola no ticker. Use emoji opcional pra destacar.
+            Texto curto que rola no ticker.
           </DialogDescription>
         </DialogHeader>
 
@@ -232,26 +228,14 @@ function AnnouncementDialog({ state, onClose, onSave, saving }: AnnouncementDial
             />
             <p className="text-[10px] text-ink-3 mt-1">{message.length}/500</p>
           </div>
-          <div className="flex gap-2">
-            <div className="w-20">
-              <Label className="text-xs">Emoji</Label>
-              <Input
-                value={emoji}
-                onChange={(e) => setEmoji(e.target.value)}
-                maxLength={4}
-                placeholder="🎯"
-                className="mt-1 text-center text-lg"
-              />
-            </div>
-            <div className="flex-1">
-              <Label className="text-xs">Ordem (menor = primeiro)</Label>
-              <Input
-                type="number"
-                value={sortOrder}
-                onChange={(e) => setSortOrder(Number(e.target.value))}
-                className="mt-1 font-mono"
-              />
-            </div>
+          <div>
+            <Label className="text-xs">Ordem (menor = primeiro)</Label>
+            <Input
+              type="number"
+              value={sortOrder}
+              onChange={(e) => setSortOrder(Number(e.target.value))}
+              className="mt-1 font-mono"
+            />
           </div>
           <div className="flex items-center gap-2 pt-2 border-t border-line/30">
             <Checkbox
@@ -294,7 +278,6 @@ function AnnouncementDialog({ state, onClose, onSave, saving }: AnnouncementDial
             onClick={() =>
               onSave({
                 message: message.trim(),
-                emoji: emoji.trim() || null,
                 active,
                 expiresAt:
                   hasExpiration && expiresAt

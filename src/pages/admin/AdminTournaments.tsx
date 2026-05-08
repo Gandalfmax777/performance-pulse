@@ -40,7 +40,6 @@ const PAYOUT_PRESETS: Array<{ label: string; payout: Record<string, number> }> =
 interface TournamentTemplate {
   id: string;
   label: string;
-  emoji: string;
   defaultLabel: (now: Date) => string;
   scope: TournamentScope;
   goalKpiKey: string;
@@ -53,7 +52,6 @@ const TEMPLATES: TournamentTemplate[] = [
   {
     id: "ativacoes_semanal",
     label: "Corrida Semanal · Ativações",
-    emoji: "🎯",
     defaultLabel: (now) => `Corrida de Ativações · Semana ${format(now, "'S'ww/yyyy")}`,
     scope: "INDIVIDUAL",
     goalKpiKey: "ativacao_conta",
@@ -67,7 +65,6 @@ const TEMPLATES: TournamentTemplate[] = [
   {
     id: "ligacoes_sprint",
     label: "Sprint de Ligações · 3 dias",
-    emoji: "📞",
     defaultLabel: (now) => `Sprint de Ligações · ${format(now, "dd/MM")}`,
     scope: "INDIVIDUAL",
     goalKpiKey: "ligacoes",
@@ -81,7 +78,6 @@ const TEMPLATES: TournamentTemplate[] = [
   {
     id: "reunioes_semanal",
     label: "Corrida de Reuniões",
-    emoji: "🤝",
     defaultLabel: (now) => `Corrida de Reuniões · Semana ${format(now, "'S'ww/yyyy")}`,
     scope: "INDIVIDUAL",
     goalKpiKey: "reunioes",
@@ -95,7 +91,6 @@ const TEMPLATES: TournamentTemplate[] = [
   {
     id: "fechamento_mensal",
     label: "Race de Fechamento Mensal",
-    emoji: "🏆",
     defaultLabel: (now) => `Race Mensal · ${format(now, "MMMM", { locale: ptBR })}`,
     scope: "INDIVIDUAL",
     goalKpiKey: "ativacao_conta",
@@ -239,7 +234,6 @@ const AdminTournaments = () => {
               className="text-left p-3 rounded-[14px] border border-line bg-surface-2/50 hover:border-eqi/40 hover:bg-eqi/5 transition-all"
             >
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xl">{tpl.emoji}</span>
                 <span className="text-sm font-semibold text-ink truncate">{tpl.label}</span>
               </div>
               <p className="text-[11px] text-ink-3 leading-tight">{tpl.description}</p>
