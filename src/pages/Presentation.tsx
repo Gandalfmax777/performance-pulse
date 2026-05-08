@@ -12,6 +12,9 @@ import {
   Medal,
   CornersOut,
   CornersIn,
+  Handshake,
+  Lightning,
+  Users,
 } from "@phosphor-icons/react";
 import {
   useWeeklyRanking,
@@ -35,12 +38,16 @@ import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 const AUTO_ADVANCE_MS = 12_000;
-const SLIDES = ["ranking", "evolution", "achievements", "risk", "podium"] as const;
+// Cadência inserida entre Evolution e Achievements — Felipe (08/05/2026)
+// pediu pra ser o slide-âncora do fechamento de semana: mostra reuniões
+// agenda × realiza + ativação + cadência (volume) + total de leads.
+const SLIDES = ["ranking", "evolution", "cadence", "achievements", "risk", "podium"] as const;
 type SlideKey = typeof SLIDES[number];
 
 const SLIDE_TITLES: Record<SlideKey, string> = {
   ranking: "Ranking do Período",
   evolution: "Evolução de Desempenho",
+  cadence: "Cadência & Reuniões",
   achievements: "Conquistas",
   risk: "Alertas de Risco",
   podium: "Pódio",
@@ -199,6 +206,7 @@ const Presentation = () => {
       <main className="flex-1 overflow-y-auto p-8 max-w-[1400px] mx-auto w-full">
         {slide === "ranking" && <SlideRanking period={period} />}
         {slide === "evolution" && <SlideEvolution />}
+        {slide === "cadence" && <SlideCadence period={period} />}
         {slide === "achievements" && <SlideAchievements />}
         {slide === "risk" && <SlideRisk />}
         {slide === "podium" && <SlidePodium period={period} />}
@@ -377,6 +385,225 @@ function SlideEvolution() {
       </div>
     </div>
   );
+}
+
+/**
+ * Slide-âncora do fechamento de semana (Felipe, 08/05/2026).
+ *
+ * Mostra a história "agenda → realiza → ativa", reforçada pela cadência em
+ * volume (não só %) e o total de leads disponíveis no funil. Cada linha por
+ * assessor (top 8 por pontos do período) com:
+ *   - Reuniões: agendadas (kpi.reunioes) → realizadas (kpi.reunioes_realizadas)
+ *     com taxa de conversão calculada
+ *   - Ativações: kpi.ativacao_conta absoluto
+ *   - Cadência: kpiPercents.cadencia (média % de uso da lista) + volume real
+ *     (assessor.totalLeads)
+ *
+ * Footer: somatórios da equipe — pra Felipe abrir reunião dizendo "esta
+ * semana batemos X reuniões e Y ativações em N leads disponíveis".
+ */
+function SlideCadence({ period }: { period: Period }) {
+  const rankings = usePeriodRanking(period);
+  const { assessors } = useAssessors();
+
+  if (!rankings) {
+    return <div className="text-center text-ink-3 py-12">Carregando dados…</div>;
+  }
+  if (rankings.length === 0) {
+    return <div className="text-center text-ink-3 py-12">Sem dados pro período.</div>;
+  }
+
+  const assessorsById = new Map(assessors.map((a) => [a.id, a]));
+
+  // Top 8 por pontos pra caber bem no slide de TV/projetor.
+  const top = rankings.slice(0, 8);
+
+  // Totais da equipe inteira (não só top 8) — Felipe usa pra abrir reunião.
+  const totals = rankings.reduce(
+    (acc, r) => {
+      acc.reunioesAg += r.rollup.kpiTotals?.reunioes ?? 0;
+      acc.reunioesReal += r.rollup.kpiTotals?.reunioes_realizadas ?? 0;
+      acc.ativacoes += r.rollup.kpiTotals?.ativacao_conta ?? 0;
+      acc.leadsTotal += assessorsById.get(r.assessor.id)?.totalLeads ?? 0;
+      return acc;
+    },
+    { reunioesAg: 0, reunioesReal: 0, ativacoes: 0, leadsTotal: 0 },
+  );
+  const conversaoTime =
+    totals.reunioesAg > 0 ? Math.round((totals.reunioesReal / totals.reunioesAg) * 100) : 0;
+
+  return (
+    <div>
+      <h2 className="text-3xl font-extrabold tracking-tight text-ink mb-2 flex items-center gap-3">
+        <Handshake size={28} weight="bold" className="text-primary" />
+        Cadência & Reuniões · {PERIOD_LABEL[period]}
+      </h2>
+      <p className="text-sm text-ink-3 mb-5">
+        Reuniões agendadas → realizadas → ativações de conta. Cadência mostrada em
+        volume real (lista de leads cadastrada).
+      </p>
+
+      {/* KPIs da equipe inteira (header cards) */}
+      <div className="grid grid-cols-4 gap-3 mb-5">
+        <KpiCard
+          icon={<Handshake size={16} weight="bold" />}
+          label="Reuniões"
+          value={`${totals.reunioesReal}/${totals.reunioesAg}`}
+          sub={`${conversaoTime}% conversão`}
+          tone="primary"
+        />
+        <KpiCard
+          icon={<Lightning size={16} weight="bold" />}
+          label="Ativações"
+          value={totals.ativacoes.toString()}
+          sub="contas ativadas"
+          tone="eqi"
+        />
+        <KpiCard
+          icon={<Users size={16} weight="bold" />}
+          label="Leads na base"
+          value={totals.leadsTotal.toLocaleString("pt-BR")}
+          sub={`${rankings.length} assessores`}
+          tone="ink"
+        />
+        <KpiCard
+          icon={<ChartLineUp size={16} weight="bold" />}
+          label="Cadência média"
+          value={`${avgPercent(rankings, "cadencia")}%`}
+          sub="da lista trabalhada"
+          tone="gold"
+        />
+      </div>
+
+      {/* Tabela por assessor */}
+      <div className="rounded-xl border border-line bg-card overflow-hidden">
+        <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr] gap-3 px-4 py-2 border-b border-line bg-surface-2 text-[10px] uppercase tracking-wider text-ink-3 font-extrabold">
+          <span>Assessor</span>
+          <span className="text-center">Reuniões (real/ag)</span>
+          <span className="text-center">Ativações</span>
+          <span className="text-center">Cadência</span>
+          <span className="text-center">Leads na lista</span>
+        </div>
+        {top.map((r) => {
+          const reunAg = r.rollup.kpiTotals?.reunioes ?? 0;
+          const reunReal = r.rollup.kpiTotals?.reunioes_realizadas ?? 0;
+          const conv = reunAg > 0 ? Math.round((reunReal / reunAg) * 100) : 0;
+          const ativ = r.rollup.kpiTotals?.ativacao_conta ?? 0;
+          const cad = Math.round(r.rollup.kpiPercents?.cadencia ?? 0);
+          const lista = assessorsById.get(r.assessor.id)?.totalLeads ?? 0;
+          return (
+            <div
+              key={r.assessor.id}
+              className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr] gap-3 px-4 py-3 border-b border-line/50 last:border-b-0 items-center"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <AssessorAvatar
+                  initials={r.assessor.initials}
+                  photoUrl={r.assessor.photoUrl}
+                  size={32}
+                />
+                <span className="text-sm font-bold text-ink truncate">{r.assessor.name}</span>
+              </div>
+              <div className="text-center">
+                <span className="font-mono font-extrabold text-base text-ink">
+                  {reunReal}
+                  <span className="text-ink-3 font-bold">/{reunAg}</span>
+                </span>
+                <p
+                  className={`text-[10px] font-bold ${
+                    conv >= 70 ? "text-eqi" : conv >= 40 ? "text-chart-orange" : "text-destructive"
+                  }`}
+                >
+                  {reunAg > 0 ? `${conv}%` : "—"}
+                </p>
+              </div>
+              <div className="text-center">
+                <span
+                  className={`font-mono font-extrabold text-lg ${
+                    ativ >= 3 ? "text-eqi" : ativ >= 1 ? "text-ink" : "text-ink-3"
+                  }`}
+                >
+                  {ativ}
+                </span>
+              </div>
+              <div className="text-center">
+                <span
+                  className={`font-mono font-extrabold text-base ${
+                    cad >= 70 ? "text-eqi" : cad >= 50 ? "text-chart-orange" : "text-destructive"
+                  }`}
+                >
+                  {cad}%
+                </span>
+                <div className="mt-1 h-1 bg-muted rounded-full overflow-hidden mx-auto max-w-[80px]">
+                  <div
+                    className={`h-full ${
+                      cad >= 70 ? "bg-eqi" : cad >= 50 ? "bg-chart-orange" : "bg-destructive"
+                    }`}
+                    style={{ width: `${Math.min(100, cad)}%` }}
+                  />
+                </div>
+              </div>
+              <div className="text-center">
+                <span className="font-mono font-bold text-base text-ink-2">
+                  {lista.toLocaleString("pt-BR")}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {rankings.length > top.length && (
+        <p className="mt-3 text-xs text-ink-3 text-center font-mono">
+          Mostrando top {top.length} de {rankings.length} assessores · totais consideram todos.
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** Helper card pra header do slide de cadência. */
+function KpiCard({
+  icon,
+  label,
+  value,
+  sub,
+  tone,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  sub: string;
+  tone: "primary" | "eqi" | "ink" | "gold";
+}) {
+  const toneClass: Record<typeof tone, string> = {
+    primary: "border-primary/30 bg-primary/5 text-primary",
+    eqi: "border-eqi/30 bg-eqi/5 text-eqi",
+    ink: "border-line bg-surface-2 text-ink",
+    gold: "border-gold/30 bg-gold/5 text-gold-deep",
+  };
+  return (
+    <div className={`rounded-xl border p-4 ${toneClass[tone]}`}>
+      <div className="flex items-center gap-2 mb-2 opacity-80">
+        {icon}
+        <span className="text-[10px] uppercase tracking-wider font-extrabold">{label}</span>
+      </div>
+      <p className="text-3xl font-mono font-extrabold leading-none">{value}</p>
+      <p className="text-[10px] mt-1 opacity-70 font-semibold">{sub}</p>
+    </div>
+  );
+}
+
+/** Média de um kpiPercents.{key} considerando só assessores com valor > 0. */
+function avgPercent(
+  rankings: NonNullable<ReturnType<typeof usePeriodRanking>>,
+  key: string,
+): number {
+  const vals = rankings
+    .map((r) => r.rollup.kpiPercents?.[key] ?? 0)
+    .filter((v) => v > 0);
+  if (vals.length === 0) return 0;
+  return Math.round(vals.reduce((s, v) => s + v, 0) / vals.length);
 }
 
 function SlideAchievements() {
