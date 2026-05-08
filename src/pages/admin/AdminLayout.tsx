@@ -13,10 +13,12 @@ import {
   SpeakerHigh,
   Pulse,
   Sliders,
+  Warning,
   type Icon as PhosphorIcon,
 } from "@phosphor-icons/react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { clearAuthToken } from "@/api/client";
+import { usePenaltyProposalsCount } from "@/hooks/usePenaltyProposals";
 
 interface NavItem {
   to: string;
@@ -24,9 +26,15 @@ interface NavItem {
   icon: PhosphorIcon;
 }
 
-const NAV_ITEMS: NavItem[] = [
+interface NavItemDef extends NavItem {
+  /** Slug pra ler o badge dinâmico (penalty count etc.). Opcional. */
+  badge?: "penalty";
+}
+
+const NAV_ITEMS: NavItemDef[] = [
   { to: "/admin/goals",         label: "Metas & KPIs",  icon: Target },
   { to: "/admin/scoring",       label: "Pontuação",     icon: Sliders },
+  { to: "/admin/penalties",     label: "Penalidades",   icon: Warning, badge: "penalty" },
   { to: "/admin/sounds",        label: "Sons dos KPIs", icon: SpeakerHigh },
   { to: "/admin/schedule",      label: "Cronograma",    icon: CalendarBlank },
   { to: "/admin/biweekly",      label: "Indique Day",   icon: Repeat },
@@ -39,6 +47,10 @@ const NAV_ITEMS: NavItem[] = [
 const AdminLayout = () => {
   const navigate = useNavigate();
   const { user } = useCurrentUser();
+  const { data: penaltyCount } = usePenaltyProposalsCount();
+  const pendingBadges: Record<string, number> = {
+    penalty: penaltyCount?.pending ?? 0,
+  };
 
   const handleLogout = () => {
     clearAuthToken();
@@ -85,6 +97,7 @@ const AdminLayout = () => {
           </p>
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
+            const badgeCount = item.badge ? pendingBadges[item.badge] ?? 0 : 0;
             return (
               <NavLink
                 key={item.to}
@@ -100,7 +113,18 @@ const AdminLayout = () => {
                 {({ isActive }) => (
                   <>
                     <Icon size={14} weight={isActive ? "bold" : "regular"} className="shrink-0" />
-                    {item.label}
+                    <span className="flex-1">{item.label}</span>
+                    {badgeCount > 0 && (
+                      <span
+                        className={`text-[10px] font-extrabold font-mono px-1.5 rounded-full min-w-[18px] text-center ${
+                          isActive
+                            ? "bg-white/20 text-white"
+                            : "bg-destructive/15 text-destructive"
+                        }`}
+                      >
+                        {badgeCount}
+                      </span>
+                    )}
                   </>
                 )}
               </NavLink>

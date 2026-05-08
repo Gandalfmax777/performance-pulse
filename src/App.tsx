@@ -21,6 +21,7 @@ const TvPage = lazy(() => import("./pages/Tv"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const AdminGoals = lazy(() => import("./pages/admin/AdminGoals"));
 const AdminScoring = lazy(() => import("./pages/admin/AdminScoring"));
+const AdminPenalties = lazy(() => import("./pages/admin/AdminPenalties"));
 const AdminSounds = lazy(() => import("./pages/admin/AdminSounds"));
 const AdminSchedule = lazy(() => import("./pages/admin/AdminSchedule"));
 const AdminBiweekly = lazy(() => import("./pages/admin/AdminBiweekly"));
@@ -97,6 +98,7 @@ const App = () => (
               <Route index element={<Navigate to="goals" replace />} />
               <Route path="goals" element={<AdminGoals />} />
               <Route path="scoring" element={<AdminScoring />} />
+              <Route path="penalties" element={<AdminPenalties />} />
               <Route path="sounds" element={<AdminSounds />} />
               <Route path="schedule" element={<AdminSchedule />} />
               <Route path="biweekly" element={<AdminBiweekly />} />
