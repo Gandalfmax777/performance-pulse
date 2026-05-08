@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Crown, Trophy } from "@phosphor-icons/react";
 import { type Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
+import { SquadLogo } from "@/components/ui/SquadLogo";
 import { useSquads, type ApiSquad } from "@/hooks/useSquads";
 import { useBets } from "@/hooks/useBets";
 import { useWeeklyRanking } from "@/hooks/useRankings";
@@ -212,9 +213,7 @@ function SquadSide({
           side === "right" ? "flex-row-reverse" : ""
         }`}
       >
-        <span className="text-[36px] leading-none" aria-hidden>
-          {squad.emoji || "★"}
-        </span>
+        <SquadLogo squad={squad} size={48} />
         <div className={side === "right" ? "text-right" : "text-left"}>
           <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-ink-3">
             SQUAD

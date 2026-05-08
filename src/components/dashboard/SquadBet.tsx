@@ -1,9 +1,12 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { type Assessor } from "@/types/assessor";
-import { useSquads, useCreateSquad, useDeleteSquad, type ApiSquad } from "@/hooks/useSquads";
+import { useSquads, useCreateSquad, useDeleteSquad, useUploadSquadLogo, type ApiSquad } from "@/hooks/useSquads";
 import { useBets, useCreateBet, useFinishBet, type BetWinnerCriteria } from "@/hooks/useBets";
 import { useCofreBalance } from "@/hooks/useCofre";
 import { useBadges, useBadgeUnlocks } from "@/hooks/useBadges";
+import { SquadLogo } from "@/components/ui/SquadLogo";
+import { resizeImageToBlob } from "@/lib/imageResize";
 import {
   useDailyRanking,
   useWeeklyRanking,
@@ -55,8 +58,6 @@ const RADAR_COLORS = [
   "hsl(210, 70%, 55%)",
   "hsl(270, 60%, 62%)",
 ];
-
-const EMOJI_OPTIONS = ["🔥", "🐺", "🦅", "🦁", "🐉", "⚡", "🎯", "🚀", "💎", "🏆"];
 
 /**
  * Critérios de vitória suportados pelo backend (Fase 6: 3 kinds).
@@ -128,9 +129,12 @@ const SquadBet = ({ assessors }: Props) => {
 
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
-  const [newEmoji, setNewEmoji] = useState("🔥");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [expandedSquad, setExpandedSquad] = useState<string | null>(null);
+  const uploadLogoMut = useUploadSquadLogo();
 
   // Nova bet form
   const [newBetValue, setNewBetValue] = useState(50);
@@ -175,23 +179,52 @@ const SquadBet = ({ assessors }: Props) => {
     [squads],
   );
 
+  const resetCreateForm = () => {
+    setNewName("");
+    setLogoFile(null);
+    setLogoPreview(null);
+    setSelectedMembers([]);
+    setShowCreate(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Selecione uma imagem (PNG/JPG/WebP)");
+      return;
+    }
+    setLogoFile(file);
+    const url = URL.createObjectURL(file);
+    setLogoPreview(url);
+  };
+
   const createSquad = () => {
     if (!newName.trim() || selectedMembers.length === 0) return;
     const randomHsl = `hsl(${Math.floor(Math.random() * 360)}, 70%, 50%)`;
     createSquadMut.mutate(
       {
         name: newName.trim(),
-        emoji: newEmoji,
         color: randomHsl,
         leaderId: selectedMembers[0],
         memberIds: selectedMembers,
       },
       {
-        onSuccess: () => {
-          setNewName("");
-          setNewEmoji("🔥");
-          setSelectedMembers([]);
-          setShowCreate(false);
+        onSuccess: async (createdSquad) => {
+          // Se admin escolheu logo, faz upload em sequência. Falha do upload
+          // não bloqueia criação — squad existe, admin pode tentar de novo.
+          if (logoFile) {
+            try {
+              const blob = await resizeImageToBlob(logoFile);
+              await uploadLogoMut.mutateAsync({ squadId: createdSquad.id, blob });
+            } catch (err) {
+              toast.error(
+                err instanceof Error ? err.message : "Falha ao subir logo",
+              );
+            }
+          }
+          resetCreateForm();
         },
       },
     );
@@ -250,7 +283,7 @@ const SquadBet = ({ assessors }: Props) => {
   );
 
   const barData = rankedSquads.map((s) => ({
-    name: `${s.sq.emoji} ${s.sq.name}`,
+    name: s.sq.name,
     "Meta %": s.stats.avgGoal,
     Pontos: s.stats.totalPoints,
   }));
@@ -307,16 +340,37 @@ const SquadBet = ({ assessors }: Props) => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="text-xs text-ink-3 mb-1 block">Emoji</label>
-              <select
-                value={newEmoji}
-                onChange={(e) => setNewEmoji(e.target.value)}
-                className="w-full bg-surface-2 border border-line rounded-[7px] px-3 py-2 text-ink text-lg"
-              >
-                {EMOJI_OPTIONS.map((e) => (
-                  <option key={e} value={e}>{e}</option>
-                ))}
-              </select>
+              <label className="text-xs text-ink-3 mb-1 block">Logo (opcional)</label>
+              <div className="flex items-center gap-3">
+                {logoPreview ? (
+                  <img
+                    src={logoPreview}
+                    alt="preview"
+                    className="w-14 h-14 rounded-md object-cover border border-line/40"
+                  />
+                ) : (
+                  <div className="w-14 h-14 rounded-md bg-surface-2 border border-line/40 flex items-center justify-center text-ink-3 text-[10px] uppercase">
+                    sem logo
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoSelect}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-3 py-1.5 rounded-[7px] bg-surface-2 border border-line text-ink text-xs font-semibold hover:bg-surface-2/70 transition-colors"
+                >
+                  {logoFile ? "Trocar" : "Escolher"}
+                </button>
+              </div>
+              <p className="text-[10px] text-ink-3/70 mt-1.5">
+                Mín 256×256, até 10 MB
+              </p>
             </div>
             <div className="col-span-2">
               <label className="text-xs text-ink-3 mb-1 block">Nome da Squad</label>
@@ -468,15 +522,19 @@ const SquadBet = ({ assessors }: Props) => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-10 h-10 rounded-[10px] flex items-center justify-center text-xl ${
+                            className={`w-10 h-10 rounded-[10px] flex items-center justify-center ${
                               isFirst ? "bg-gold/20" : "bg-surface-2"
                             }`}
                           >
-                            {isFirst ? <Crown size={18} weight="fill" className="text-gold-deep" /> : <span className="text-lg">{sq.emoji}</span>}
+                            {isFirst ? (
+                              <Crown size={18} weight="fill" className="text-gold-deep" />
+                            ) : (
+                              <SquadLogo squad={sq} size={32} />
+                            )}
                           </div>
                           <div>
                             <p className="text-sm font-extrabold tracking-tight text-ink flex items-center gap-2">
-                              {sq.emoji} {sq.name}
+                              {sq.name}
                               {isFirst && (
                                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-gold/20 text-gold-deep font-bold">
                                   LÍDER
@@ -602,12 +660,7 @@ const SquadBet = ({ assessors }: Props) => {
                       strokeWidth={2}
                     />
                   ))}
-                  <Legend
-                    formatter={(value) => {
-                      const sq = rankedSquads.find((s) => s.sq.name === value);
-                      return `${sq?.sq.emoji || ""} ${value}`;
-                    }}
-                  />
+                  <Legend formatter={(value) => `${value}`} />
                   <Tooltip
                     contentStyle={{
                       background: "hsl(var(--card))",
@@ -682,7 +735,7 @@ const SquadBet = ({ assessors }: Props) => {
                     />
                     <div className="relative z-10 flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="text-xl">{sq.emoji}</span>
+                        <SquadLogo squad={sq} size={28} />
                         <div>
                           <span className="text-xs font-extrabold tracking-tight text-ink">{sq.name}</span>
                           <p className="text-[10px] text-ink-3">
@@ -812,8 +865,13 @@ const SquadBet = ({ assessors }: Props) => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs text-ink">
-                      {bet.winnerSquad ? `${bet.winnerSquad.emoji} ${bet.winnerSquad.name}` : "—"}
+                    <span className="text-xs text-ink inline-flex items-center gap-1.5 justify-end">
+                      {bet.winnerSquad ? (
+                        <>
+                          <SquadLogo squad={bet.winnerSquad} size={14} />
+                          {bet.winnerSquad.name}
+                        </>
+                      ) : "—"}
                     </span>
                     <p className="text-xs font-bold font-mono text-gold-deep">R$ {bet.value}</p>
                   </div>
@@ -854,9 +912,10 @@ const SquadBet = ({ assessors }: Props) => {
                         {earnedSquads.map((sq) => (
                           <span
                             key={sq.id}
-                            className="text-[10px] bg-eqi/10 text-eqi px-1.5 py-0.5 rounded"
+                            className="text-[10px] bg-eqi/10 text-eqi px-1.5 py-0.5 rounded inline-flex items-center gap-1"
                           >
-                            {sq.emoji} {sq.name}
+                            <SquadLogo squad={sq} size={10} />
+                            {sq.name}
                           </span>
                         ))}
                       </div>
