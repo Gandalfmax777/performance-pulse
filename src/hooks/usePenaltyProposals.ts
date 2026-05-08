@@ -88,3 +88,49 @@ export function useBulkReviewPenaltyProposals() {
     },
   });
 }
+
+/**
+ * Edita campos da proposta sem mudar status. Caso típico: corrigir data
+ * errada de uma penalidade que Felipe aprovou por engano, ou ajustar
+ * pontos de uma justificativa por férias (08/05/2026).
+ */
+interface EditInput {
+  id: string;
+  date?: string; // YYYY-MM-DD
+  pointsProposed?: number;
+  justification?: string | null;
+}
+
+export function useEditPenaltyProposal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...body }: EditInput) =>
+      apiFetch<PenaltyProposal>(`/admin/penalty-proposals/${id}/edit`, {
+        method: "PATCH",
+        body,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: COUNT_KEY });
+      queryClient.invalidateQueries({ queryKey: ["rankings"] });
+    },
+  });
+}
+
+/**
+ * Hard-delete da proposta (qualquer status). Irreversível — UI deve
+ * confirmar antes. Backend emite SSE só se a proposta era APPROVED/AUTO_APPROVED
+ * (ranking precisa atualizar nesse caso).
+ */
+export function useDeletePenaltyProposal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<null>(`/admin/penalty-proposals/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: COUNT_KEY });
+      queryClient.invalidateQueries({ queryKey: ["rankings"] });
+    },
+  });
+}
