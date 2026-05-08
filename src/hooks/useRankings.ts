@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/api/client";
+import type { LevelSlug } from "@/lib/levelMeta";
 
 /**
  * Shapes vindos do backend (espelha routes/rankings.ts).
@@ -25,7 +26,12 @@ export interface ApiRankingEntry {
     name: string;
     initials: string;
     photoUrl: string | null;
-    level: "BRONZE" | "SILVER" | "GOLD";
+    /**
+     * Nível REAL — pode ser qualquer dos 13 valores (3 legacy + 10 da P3).
+     * Componentes legados que esperam só 3 devem usar `toLegacyLevel(level)`
+     * de @/lib/levelMeta. Componentes novos (LevelBadge) usam direto.
+     */
+    level: LevelSlug;
   };
   rollup: ApiRollup;
 }
