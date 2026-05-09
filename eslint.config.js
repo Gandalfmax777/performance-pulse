@@ -45,7 +45,6 @@ export default tseslint.config(
       "src/components/dashboard/ActivationHighlight.tsx",
       "src/components/dashboard/AssessorManager.tsx",
       "src/components/dashboard/AssessorProfile.tsx",
-      "src/components/dashboard/DayView.tsx",
       "src/components/dashboard/DirectionComplianceTable.tsx",
       "src/components/dashboard/DirectionEditModal.tsx",
       "src/components/dashboard/InsightHistoryPanel.tsx",
