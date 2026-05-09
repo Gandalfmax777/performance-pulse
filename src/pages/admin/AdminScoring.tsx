@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import {
+  CircleNotch,
   Sliders,
   Plus,
   Trash,
@@ -86,7 +86,7 @@ const AdminScoring = () => {
   if (cfgLoading || bonusLoading || !config) {
     return (
       <div className="p-8 flex items-center justify-center text-ink-3">
-        <Loader2 className="w-5 h-5 animate-spin mr-2" /> Carregando…
+        <CircleNotch size={20} className="animate-spin mr-2" /> Carregando…
       </div>
     );
   }
@@ -308,7 +308,7 @@ function BonusDialog({ state, onClose }: { state: BonusDialogState; onClose: () 
             Cancelar
           </Button>
           <Button onClick={handleSave} disabled={saving || !label || !notePrefix || (!editing && !slug)}>
-            {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+            {saving && <CircleNotch size={16} className="animate-spin mr-2" />}
             {editing ? "Salvar" : "Criar"}
           </Button>
         </DialogFooter>
@@ -406,7 +406,7 @@ function PenaltySection({ config }: { config: ReturnType<typeof useScoringConfig
       </div>
       <div className="flex justify-end pt-2 border-t border-line/30">
         <Button onClick={handleSave} disabled={updateMut.isPending}>
-          {updateMut.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+          {updateMut.isPending && <CircleNotch size={16} className="animate-spin mr-2" />}
           Salvar
         </Button>
       </div>
@@ -485,7 +485,7 @@ function TieBreakSection({ config }: { config: ReturnType<typeof useScoringConfi
       </ul>
       <div className="flex justify-end pt-2 border-t border-line/30">
         <Button onClick={handleSave} disabled={updateMut.isPending}>
-          {updateMut.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+          {updateMut.isPending && <CircleNotch size={16} className="animate-spin mr-2" />}
           Salvar
         </Button>
       </div>
@@ -560,7 +560,7 @@ function LevelThresholdsSection({ config }: { config: ReturnType<typeof useScori
 
       <div className="flex justify-end pt-2 border-t border-line/30">
         <Button onClick={handleSave} disabled={updateMut.isPending}>
-          {updateMut.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+          {updateMut.isPending && <CircleNotch size={16} className="animate-spin mr-2" />}
           Salvar
         </Button>
       </div>

@@ -1,7 +1,14 @@
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
-import { Target, PencilSimple, ClockCounterClockwise as History, Plus } from "@phosphor-icons/react";
+import {
+  CaretDown,
+  CaretUp,
+  CircleNotch,
+  Target,
+  PencilSimple,
+  ClockCounterClockwise as History,
+  Plus,
+} from "@phosphor-icons/react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useQueryClient } from "@tanstack/react-query";
@@ -92,7 +99,7 @@ const AdminGoals = () => {
       <div className="rounded-[14px] overflow-hidden border border-line bg-card">
         {isLoading ? (
           <div className="p-10 flex items-center justify-center">
-            <Loader2 className="w-6 h-6 text-eqi animate-spin" />
+            <CircleNotch size={24} className="text-eqi animate-spin" />
           </div>
         ) : (
           <Table>
@@ -125,9 +132,9 @@ const AdminGoals = () => {
                             title="Ver histórico"
                           >
                             {expanded ? (
-                              <ChevronUp className="w-3.5 h-3.5" />
+                              <CaretUp size={14} weight="bold" />
                             ) : (
-                              <ChevronDown className="w-3.5 h-3.5" />
+                              <CaretDown size={14} weight="bold" />
                             )}
                           </button>
                           <span className="font-semibold text-sm text-ink">{kpi.label}</span>
@@ -497,7 +504,7 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
             Cancelar
           </Button>
           <Button onClick={handleSave} disabled={saving}>
-            {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+            {saving && <CircleNotch size={16} className="animate-spin mr-2" />}
             Salvar alterações
           </Button>
         </DialogFooter>
@@ -818,7 +825,7 @@ function CreateKpiDialog({ open, onClose, onSuccess }: CreateKpiDialogProps) {
             Cancelar
           </Button>
           <Button onClick={handleSave} disabled={saving || !key.trim() || !label.trim()}>
-            {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+            {saving && <CircleNotch size={16} className="animate-spin mr-2" />}
             Criar KPI
           </Button>
         </DialogFooter>
