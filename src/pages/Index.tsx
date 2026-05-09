@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import DashboardSidebar, { type DashboardView } from "@/components/dashboard/DashboardSidebar";
+import { type DashboardView } from "@/components/dashboard/DashboardSidebar";
 import DashboardTopbar from "@/components/dashboard/DashboardTopbar";
+import { AppShellLayout } from "@/components/layouts/AppShellLayout";
 import Leaderboard from "@/components/dashboard/Leaderboard";
 import HeroMetricStrip from "@/components/dashboard/HeroMetricStrip";
 import WeeklyCadenceChart from "@/components/dashboard/WeeklyCadenceChart";
@@ -136,7 +137,6 @@ const Index = () => {
   // Profile modal aberto a partir do TeamScreen — clicar em um card de
   // assessor abre o AssessorProfile com os dados dele.
   const [selectedProfile, setSelectedProfile] = useState<Parameters<typeof AssessorProfile>[0]["assessor"] | null>(null);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const overviewRange = rangeForPeriod(overviewPeriod);
 
   const [presentationOpen, setPresentationOpen] = useState(false);
@@ -239,28 +239,22 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex relative">
-      <div className="fixed inset-0 pointer-events-none bg-mesh" />
-
-      <DashboardSidebar
-        view={view}
+    <>
+      <AppShellLayout
+        sidebarView={view}
         onEnterTv={openTv}
         onEnterPresentation={openPresentation}
-        mobileOpen={mobileNavOpen}
-        onMobileClose={() => setMobileNavOpen(false)}
-      />
-
-      <main className="flex-1 min-w-0 flex flex-col overflow-x-hidden">
-        <DashboardTopbar
-          eyebrow={VIEW_EYEBROWS[view]}
-          title={titleFor(view)}
-          subtitle={subtitleFor(view)}
-          actions={topActionsByView(view)}
-          onMenuClick={() => setMobileNavOpen(true)}
-        />
-
-        <div className="flex-1 p-7 space-y-5">
-          {view === "overview" && (
+        renderTopbar={({ openMobileNav }) => (
+          <DashboardTopbar
+            eyebrow={VIEW_EYEBROWS[view]}
+            title={titleFor(view)}
+            subtitle={subtitleFor(view)}
+            actions={topActionsByView(view)}
+            onMenuClick={openMobileNav}
+          />
+        )}
+      >
+        {view === "overview" && (
             <>
               <AnnouncementTicker assessors={assessors} />
 
@@ -319,17 +313,17 @@ const Index = () => {
             )}
           </Suspense>
 
-          {/* Profile modal — abre quando o user clica num card de assessor no TeamScreen */}
-          {selectedProfile && (
-            <Suspense fallback={null}>
-              <AssessorProfile
-                assessor={selectedProfile}
-                onClose={() => setSelectedProfile(null)}
-              />
-            </Suspense>
-          )}
-        </div>
-      </main>
+      </AppShellLayout>
+
+      {/* Modais top-level — irmãos do shell porque usam portais. */}
+      {selectedProfile && (
+        <Suspense fallback={null}>
+          <AssessorProfile
+            assessor={selectedProfile}
+            onClose={() => setSelectedProfile(null)}
+          />
+        </Suspense>
+      )}
 
       {showManager && (
         <Suspense fallback={null}>
@@ -352,7 +346,7 @@ const Index = () => {
       )}
 
       <TournamentFinishedOverlay event={finishedEvent} onDismiss={dismissFinished} />
-    </div>
+    </>
   );
 };
 
