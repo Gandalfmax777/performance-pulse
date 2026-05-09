@@ -34,7 +34,7 @@ const TvTournamentBoard = () => {
 
   if (!tournament) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-[480px] rounded-[14px] border border-line bg-card">
+      <div className="flex-1 flex items-center justify-center min-h-[480px] border border-line bg-card">
         <p className="text-ink-3">Sem torneio ativo no momento.</p>
       </div>
     );
@@ -58,53 +58,29 @@ const TvTournamentBoard = () => {
 
   return (
     <div className="grid gap-5 grid-cols-1 lg:grid-cols-[1fr_1.4fr] min-h-[600px]">
-      {/* Trophy poster */}
+      {/* Trophy poster — editorial: branco sólido, sem decorações stadium */}
       <div
-        className="rounded-[14px] p-8 relative overflow-hidden flex flex-col justify-between"
+        className="p-8 relative overflow-hidden flex flex-col justify-between bg-white border border-line"
         style={{
-          background:
-            "linear-gradient(160deg, oklch(0.96 0.08 90) 0%, oklch(0.93 0.12 80) 100%)",
+          borderTop: "3px solid hsl(var(--gold))",
         }}
       >
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            top: -60,
-            right: -60,
-            width: 240,
-            height: 240,
-            borderRadius: "50%",
-            background: "oklch(0.55 0.2 50 / 0.2)",
-          }}
-        />
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            bottom: -100,
-            left: -50,
-            width: 280,
-            height: 280,
-            borderRadius: "50%",
-            background: "oklch(0.85 0.15 80 / 0.4)",
-          }}
-        />
-
         <div className="relative">
           <p
-            className="text-[11px] uppercase tracking-[0.18em] font-semibold"
+            className="text-[11px] uppercase tracking-[0.22em] font-mono font-semibold mb-3"
             style={{ color: "hsl(var(--gold-deep))" }}
           >
             TORNEIO ATIVO · {format(parseISO(tournament.startDate), "MMM yyyy").toUpperCase()}
           </p>
           <h2
-            className="font-display italic font-bold leading-none tracking-[-0.03em] mt-3 text-ink"
-            style={{ fontSize: 56 }}
+            className="font-display font-extrabold leading-[0.92] tracking-[-0.04em] text-ink"
+            style={{ fontSize: 64 }}
           >
             {tournament.roundLabel}
           </h2>
           <p
-            className="font-display italic mt-2 text-ink-2 font-normal"
-            style={{ fontSize: 18 }}
+            className="mt-3 text-ink-2 font-medium"
+            style={{ fontSize: 16 }}
           >
             Quem fechar mais {kpiLabel.toLowerCase()} até{" "}
             {format(parseISO(tournament.endDate), "dd/MM")} leva.
@@ -113,32 +89,28 @@ const TvTournamentBoard = () => {
 
         <div className="relative flex justify-center items-center flex-1 py-5">
           <Trophy
-            size={220}
+            size={200}
             weight="fill"
-            style={{
-              color: "hsl(var(--gold-deep))",
-              filter: "drop-shadow(0 12px 24px oklch(0.4 0.1 70 / 0.3))",
-            }}
+            style={{ color: "hsl(var(--gold))" }}
           />
         </div>
 
-        <div className="relative grid grid-cols-2 gap-3">
+        <div className="relative grid grid-cols-2 gap-px bg-line">
           <div
-            className="rounded-[14px] p-4"
-            style={{ background: "oklch(1 0 0 / 0.6)", backdropFilter: "blur(10px)" }}
+            className="p-4 bg-white"
           >
-            <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-ink-3">
+            <p className="text-[10px] uppercase tracking-[0.16em] font-mono font-semibold text-ink-3">
               PRÊMIO
             </p>
             <p
-              className="font-display italic font-bold leading-tight mt-1 text-ink"
-              style={{ fontSize: 22 }}
+              className="font-display font-extrabold leading-tight mt-2 text-ink num"
+              style={{ fontSize: 24 }}
             >
               R$ {tournament.totalPrizePool.toLocaleString("pt-BR")}
             </p>
           </div>
           <div
-            className="rounded-[14px] p-4 text-white"
+            className="p-4 text-white"
             style={{ background: "hsl(var(--ink))" }}
           >
             <p
@@ -160,12 +132,12 @@ const TvTournamentBoard = () => {
       </div>
 
       {/* Boletômetro */}
-      <div className="rounded-[14px] bg-card border border-line p-6 flex flex-col">
+      <div className="bg-card border border-line p-6 flex flex-col">
         <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
           <div>
             <h3
-              className="font-display italic font-bold tracking-[-0.02em]"
-              style={{ fontSize: 28 }}
+              className="font-display font-extrabold tracking-[-0.03em]"
+              style={{ fontSize: 32 }}
             >
               Boletômetro
             </h3>
@@ -212,13 +184,13 @@ const TvTournamentBoard = () => {
                   style={{ gridTemplateColumns: "50px 44px 1fr 120px" }}
                 >
                   <p
-                    className="font-display italic font-bold leading-none tracking-[-0.04em]"
+                    className="font-display font-extrabold leading-none tracking-[-0.05em] num"
                     style={{
-                      fontSize: 44,
+                      fontSize: 48,
                       color: accent,
                     }}
                   >
-                    {i + 1}
+                    {String(i + 1).padStart(2, "0")}
                   </p>
                   {p.assessorId ? (
                     <AssessorAvatar

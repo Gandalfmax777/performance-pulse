@@ -38,40 +38,24 @@ const TvPodium = ({ assessors }: TvPodiumProps) => {
 
   return (
     <div
-      className="relative overflow-hidden text-white p-10 rounded-[14px] flex flex-col min-h-[760px]"
+      className="relative overflow-hidden text-white p-10 flex flex-col min-h-[760px] border border-white/10"
       style={{
         background: "linear-gradient(180deg, hsl(var(--ink)) 0%, hsl(var(--eqi-forest)) 100%)",
       }}
     >
-      {/* Spotlight dourado */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          top: -100,
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: 600,
-          height: 400,
-          borderRadius: "50%",
-          background: "radial-gradient(ellipse, hsl(var(--gold)) 0%, transparent 60%)",
-          opacity: 0.25,
-        }}
-      />
-
+      {/* Sem spotlight stadium — design pede editorial financeiro sóbrio */}
       <div className="relative text-center mb-8">
         <p
-          className="text-[11px] uppercase tracking-[0.25em] font-semibold"
+          className="text-[11px] uppercase tracking-[0.22em] font-mono font-semibold mb-3"
           style={{ color: "hsl(var(--gold))" }}
         >
           HALL DA FAMA
         </p>
         <h1
-          className="font-display italic font-bold leading-none tracking-[-0.03em] mt-2"
-          style={{
-            fontSize: "min(10vw, 80px)",
-          }}
+          className="font-display font-extrabold leading-[0.92] tracking-[-0.04em]"
+          style={{ fontSize: "min(11vw, 112px)" }}
         >
-          Os <span style={{ color: "hsl(var(--gold))" }}>três</span> que mexeram a mesa.
+          Os três que mexeram a mesa.
         </h1>
       </div>
 
@@ -101,43 +85,38 @@ const TvPodium = ({ assessors }: TvPodiumProps) => {
           return (
             <div
               key={a.id}
-              className="relative rounded-t-[20px] flex flex-col justify-between p-4 lg:p-7 min-w-0"
+              className="relative flex flex-col justify-between p-4 lg:p-7 min-w-0"
               style={{
                 minHeight: heights[place],
                 color: "hsl(var(--ink))",
-                background:
-                  place === 1
-                    ? "linear-gradient(180deg, oklch(0.95 0.08 90) 0%, white 100%)"
-                    : "white",
-                boxShadow:
-                  place === 1
-                    ? "0 -20px 80px hsl(var(--gold) / 0.4)"
-                    : "0 -10px 40px oklch(0 0 0 / 0.3)",
-                border: place === 1 ? `2px solid ${accent}` : "none",
+                // Editorial: branco sólido, sem gradient/box-shadow stadium.
+                // Border-top accent na cor da medalha sinaliza posição
+                // sem decoração extra.
+                background: "white",
+                borderTop: `3px solid ${accent}`,
               }}
             >
               {isFirst && (
                 <Crown
-                  size={56}
+                  size={48}
                   weight="fill"
                   className="absolute"
                   style={{
                     color: "hsl(var(--gold-deep))",
-                    top: -28,
+                    top: -24,
                     left: "50%",
                     transform: "translateX(-50%)",
-                    filter: "drop-shadow(0 4px 12px hsl(var(--gold) / 0.5))",
                   }}
                 />
               )}
               <p
-                className="font-display italic font-bold leading-none tracking-[-0.05em]"
+                className="font-display font-extrabold leading-none tracking-[-0.05em] num"
                 style={{
-                        fontSize: isFirst ? "clamp(72px, 8vw, 120px)" : "clamp(52px, 5.5vw, 88px)",
+                  fontSize: isFirst ? "clamp(80px, 9vw, 132px)" : "clamp(56px, 6vw, 96px)",
                   color: accentText,
                 }}
               >
-                {place}º
+                {String(place).padStart(2, "0")}
               </p>
               <div className="flex flex-col items-center text-center gap-3">
                 <AssessorAvatar

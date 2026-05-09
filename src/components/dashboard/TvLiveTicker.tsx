@@ -114,18 +114,18 @@ const TvLiveTicker = ({ assessors }: TvLiveTickerProps) => {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-30 h-9 overflow-hidden text-white border-t border-white/10"
+      className="fixed bottom-0 left-0 right-0 z-30 h-11 overflow-hidden text-white border-t border-white/10"
       style={{ background: "hsl(var(--ink))" }}
     >
       <div className="flex items-center h-full whitespace-nowrap animate-marquee">
         {doubled.map((it, i) => (
           <span
             key={i}
-            className="inline-flex items-center gap-2 px-6 text-xs font-semibold tracking-wide"
+            className="inline-flex items-center gap-2.5 px-8 text-[13px] font-mono font-semibold tracking-[0.04em]"
           >
             {it.icon}
             <span>{it.text}</span>
-            <span className="text-white/30 ml-2">·</span>
+            <span className="text-white/25 ml-3">·</span>
           </span>
         ))}
       </div>

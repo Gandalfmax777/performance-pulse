@@ -86,31 +86,24 @@ const TvSquadBoard = ({ assessors }: TvSquadBoardProps) => {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Marquee */}
+      {/* Marquee editorial — sem padrão hashas, sem italic. Grid forte. */}
       <div
-        className="rounded-[14px] text-white p-6 flex items-center justify-between gap-4 relative overflow-hidden flex-wrap"
+        className="text-white p-7 flex items-center justify-between gap-4 flex-wrap border border-white/10"
         style={{ background: "hsl(var(--ink))" }}
       >
-        <div
-          className="absolute inset-0 opacity-[0.06] pointer-events-none"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(45deg, white 0 12px, transparent 12px 24px)",
-          }}
-        />
-        <div className="relative">
+        <div>
           <p
-            className="text-[10px] uppercase tracking-[0.2em] font-semibold"
+            className="text-[10px] uppercase tracking-[0.22em] font-mono font-semibold mb-3"
             style={{ color: "hsl(var(--gold))" }}
           >
             EVENTO PRINCIPAL{activeBet ? ` · ${activeBet.roundLabel.toUpperCase()}` : ""}
           </p>
           <h2
-            className="font-display italic font-bold mt-1 leading-tight tracking-[-0.02em]"
-            style={{ fontSize: 40 }}
+            className="font-display font-extrabold leading-[0.95] tracking-[-0.04em]"
+            style={{ fontSize: 56 }}
           >
             {a.squad.name}{" "}
-            <span style={{ color: "hsl(var(--gold))" }}>vs</span> {b.squad.name}
+            <span className="text-white/40">vs</span> {b.squad.name}
           </h2>
         </div>
         <div className="relative flex items-center gap-5">
@@ -138,8 +131,8 @@ const TvSquadBoard = ({ assessors }: TvSquadBoardProps) => {
         <SquadVersusCard standing={a} leading />
         <div className="hidden sm:flex flex-col items-center justify-center min-w-[140px] gap-3">
           <p
-            className="font-display italic font-bold leading-none tracking-[-0.04em] text-ink-3"
-            style={{ fontSize: 56 }}
+            className="font-display font-extrabold leading-none tracking-[-0.04em] text-ink-3 num"
+            style={{ fontSize: 64 }}
           >
             vs
           </p>
@@ -166,15 +159,15 @@ const TvSquadBoard = ({ assessors }: TvSquadBoardProps) => {
           {undercard.slice(0, 4).map((s) => (
             <div
               key={s.squad.id}
-              className="rounded-[14px] bg-card border border-line p-4 flex items-center gap-4"
+              className="bg-card border border-line p-4 flex items-center gap-4"
             >
               <SquadLogo squad={s.squad} size={56} />
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-ink-3">
+                <p className="text-[9px] uppercase tracking-[0.16em] font-mono font-semibold text-ink-3">
                   UNDERCARD
                 </p>
                 <p
-                  className="font-display italic font-bold tracking-[-0.02em] truncate"
+                  className="font-display font-bold tracking-[-0.02em] truncate"
                   style={{ fontSize: 22 }}
                 >
                   {s.squad.name}
@@ -216,12 +209,16 @@ function SquadVersusCard({
   const { squad, pct, points, reunioesReal, ativacoes } = standing;
   return (
     <div
-      className="rounded-[14px] p-6 flex flex-col gap-4 relative overflow-hidden"
+      className="p-6 flex flex-col gap-4 relative overflow-hidden bg-white"
       style={{
-        background: leading
-          ? "linear-gradient(180deg, oklch(0.96 0.06 152) 0%, white 60%)"
-          : "white",
-        border: leading ? "1px solid hsl(var(--eqi-green))" : "1px solid hsl(var(--line))",
+        // Editorial: branco sólido + border-top accent quando leading
+        // (sem gradient verde claro stadium).
+        borderTop: leading
+          ? "3px solid hsl(var(--eqi-green))"
+          : "1px solid hsl(var(--line))",
+        borderRight: "1px solid hsl(var(--line))",
+        borderBottom: "1px solid hsl(var(--line))",
+        borderLeft: "1px solid hsl(var(--line))",
       }}
     >
       {leading && (
@@ -247,8 +244,8 @@ function SquadVersusCard({
             SQUAD
           </p>
           <p
-            className="font-display italic font-bold leading-none tracking-[-0.03em]"
-            style={{ fontSize: 44 }}
+            className="font-display font-extrabold leading-[0.95] tracking-[-0.04em]"
+            style={{ fontSize: 48 }}
           >
             {squad.name}
           </p>

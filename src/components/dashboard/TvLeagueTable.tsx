@@ -29,65 +29,69 @@ const TvLeagueTable = ({ assessors }: TvLeagueTableProps) => {
 
   return (
     <div className="grid gap-5 grid-rows-[auto_1fr]">
-      {/* Headline */}
+      {/* Headline editorial — sem italic, display gigante alinhado com brief
+          "120-156px display gigante, lots of negative space" do Modo-TV.html. */}
       <div className="flex justify-between items-end gap-4 flex-wrap">
         <div>
           <p
-            className="text-[11px] uppercase tracking-[0.18em] font-semibold text-ink-3"
-            style={{ letterSpacing: "0.18em" }}
+            className="text-[11px] uppercase tracking-[0.22em] font-mono font-semibold text-ink-3 mb-3"
           >
             RODADA SEMANAL
           </p>
           <h2
-            className="font-display italic font-bold leading-none tracking-[-0.03em]"
-            style={{ fontSize: "min(8vw, 64px)" }}
+            className="font-display font-extrabold leading-[0.92] tracking-[-0.04em]"
+            style={{ fontSize: "min(10vw, 96px)" }}
           >
-            A tabela <span style={{ color: "hsl(var(--gold-deep))" }}>mexeu</span>.
+            A tabela mexeu.
           </h2>
           <p
-            className="font-display italic text-ink-2 mt-2 font-normal"
-            style={{ fontSize: 18 }}
+            className="text-ink-3 mt-3 font-medium"
+            style={{ fontSize: 16 }}
           >
-            {assessors.length} assessores. Uma única coluna que importa.
+            {assessors.length} assessores · uma coluna que importa
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-px bg-line">
           <div
-            className="rounded-[14px] text-white p-4"
-            style={{ background: "hsl(var(--ink))", minWidth: 130 }}
+            className="text-white p-5 min-w-[140px] border-l border-t border-b border-line"
+            style={{ background: "hsl(var(--ink))" }}
           >
-            <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/50">
+            <p className="text-[9px] uppercase tracking-[0.16em] font-mono font-semibold text-white/50">
               SOBE
             </p>
             <p
-              className="font-mono font-extrabold leading-none mt-1"
-              style={{ fontSize: 32, color: "hsl(var(--success))" }}
+              className="font-mono font-extrabold leading-none mt-2 num"
+              style={{ fontSize: 36, color: "hsl(var(--success))" }}
             >
-              <ArrowUp size={22} weight="bold" className="inline align-middle mr-1" />
+              <ArrowUp size={24} weight="bold" className="inline align-middle mr-1" />
               {upCount}
             </p>
-            <p className="font-mono text-[10px] text-white/55 mt-1">posições</p>
+            <p className="font-mono text-[10px] text-white/50 mt-2 uppercase tracking-[0.12em]">
+              posições
+            </p>
           </div>
           <div
-            className="rounded-[14px] text-white p-4"
-            style={{ background: "hsl(var(--ink))", minWidth: 130 }}
+            className="text-white p-5 min-w-[140px] border-r border-t border-b border-line"
+            style={{ background: "hsl(var(--ink))" }}
           >
-            <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/50">
+            <p className="text-[9px] uppercase tracking-[0.16em] font-mono font-semibold text-white/50">
               DESCE
             </p>
             <p
-              className="font-mono font-extrabold leading-none mt-1"
-              style={{ fontSize: 32, color: "hsl(var(--destructive))" }}
+              className="font-mono font-extrabold leading-none mt-2 num"
+              style={{ fontSize: 36, color: "hsl(var(--destructive))" }}
             >
-              <ArrowDown size={22} weight="bold" className="inline align-middle mr-1" />
+              <ArrowDown size={24} weight="bold" className="inline align-middle mr-1" />
               {downCount}
             </p>
-            <p className="font-mono text-[10px] text-white/55 mt-1">posições</p>
+            <p className="font-mono text-[10px] text-white/50 mt-2 uppercase tracking-[0.12em]">
+              posições
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="rounded-[14px] bg-card border border-line overflow-hidden">
+      <div className="bg-card border border-line overflow-hidden">
         {/* Header */}
         <div
           className="grid items-center gap-3 px-6 py-3 text-white"
@@ -148,7 +152,7 @@ const TvLeagueTable = ({ assessors }: TvLeagueTableProps) => {
                 }}
               >
                 <span
-                  className="font-display italic font-bold leading-none tracking-[-0.03em] flex items-center"
+                  className="font-display font-extrabold leading-none tracking-[-0.03em] flex items-center num"
                   style={{
                     fontSize: 32,
                     color: top3 ? "hsl(var(--ink))" : "hsl(var(--ink-3))",
@@ -158,7 +162,7 @@ const TvLeagueTable = ({ assessors }: TvLeagueTableProps) => {
                   {i === 0 ? (
                     <Crown size={28} weight="fill" className="text-gold-deep" />
                   ) : (
-                    i + 1
+                    String(i + 1).padStart(2, "0")
                   )}
                 </span>
                 <AssessorAvatar
