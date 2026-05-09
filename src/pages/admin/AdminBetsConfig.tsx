@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { CircleNotch, Trophy, Plus, XCircle } from "@phosphor-icons/react";
+import { CircleNotch, Plus, XCircle } from "@phosphor-icons/react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useBets, useCreateBet, useCancelBet, type BetWinnerCriteria } from "@/hooks/useBets";
@@ -91,18 +91,7 @@ const AdminBetsConfig = () => {
 
   return (
     <div className="space-y-5">
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
-          ADMINISTRAÇÃO
-        </p>
-        <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-          <Trophy size={20} weight="bold" className="text-eqi" />
-          Configurar Apostas
-        </h1>
-        <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
-          Crie apostas entre squads, escolha o critério de vitória e acompanhe o histórico.
-        </p>
-      </div>
+      {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar. */}
 
       {/* Create form */}
       <div className="rounded-[14px] p-5 border border-line bg-card space-y-4">

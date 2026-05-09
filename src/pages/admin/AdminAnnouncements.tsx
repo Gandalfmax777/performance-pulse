@@ -2,7 +2,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import {
   CircleNotch,
-  Megaphone,
   Plus,
   PencilSimple,
   Trash,
@@ -66,21 +65,13 @@ const AdminAnnouncements = () => {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
-            ADMINISTRAÇÃO
-          </p>
-          <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-            <Megaphone size={20} weight="bold" className="text-eqi" />
-            Avisos
-          </h1>
-          <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
-            Mensagens manuais que aparecem no ticker do topo da Visão Geral. Aparecem
-            ANTES das mensagens auto-geradas (líder, streaks, etc).
-          </p>
-        </div>
-        <Button onClick={() => setDialog({ open: true, editing: null })} className="gap-2 bg-ink hover:bg-ink/90 text-white">
+      {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar.
+          Aqui só renderizamos a action bar com o CTA primário. */}
+      <div className="flex justify-end">
+        <Button
+          onClick={() => setDialog({ open: true, editing: null })}
+          className="gap-2 bg-ink hover:bg-ink/90 text-white"
+        >
           <Plus size={14} weight="bold" /> Novo Aviso
         </Button>
       </div>

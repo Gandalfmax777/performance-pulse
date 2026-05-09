@@ -2,7 +2,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import {
   CircleNotch,
-  Sword as Swords,
   Plus,
   Flag,
   XCircle,
@@ -206,18 +205,7 @@ const AdminTournaments = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
-          ADMINISTRAÇÃO
-        </p>
-        <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-          <Swords size={20} weight="bold" className="text-primary" />
-          Torneios
-        </h1>
-        <p className="text-[12px] text-ink-3 mt-1.5">
-          Corridas time-boxed com prêmio progressivo · top N ganham do cofre
-        </p>
-      </div>
+      {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar. */}
 
       {/* Templates quick-create — 1 clique preenche o form abaixo */}
       <div className="rounded-[14px] border border-line bg-card p-5 space-y-3">

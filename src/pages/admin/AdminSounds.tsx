@@ -42,21 +42,7 @@ export default function AdminSounds() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
-          ADMINISTRAÇÃO
-        </p>
-        <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-          <Volume2 size={20} weight="fill" className="text-eqi" />
-          Sons dos KPIs
-        </h1>
-        <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
-          Carregue um arquivo MP3/WAV (até 2MB) por KPI. Quando marcado como{" "}
-          <strong className="text-ink">broadcast</strong>, o som toca em todos
-          dispositivos conectados (TV + dashboards abertos) assim que alguém registra o evento.
-        </p>
-      </div>
+      {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar. */}
 
       {/* Lista */}
       <div className="rounded-[14px] border border-line bg-card divide-y divide-line">

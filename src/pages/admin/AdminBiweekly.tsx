@@ -59,20 +59,7 @@ const AdminBiweekly = () => {
 
   return (
     <div className="space-y-5">
-      {/* Page header */}
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
-          ADMINISTRAÇÃO
-        </p>
-        <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-          <Repeat size={20} weight="bold" className="text-eqi" />
-          Indique Day (quartas alternadas)
-        </h1>
-        <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
-          O Indique Day roda a cada 15 dias. Cada activity BIWEEKLY tem uma âncora —
-          todas as quartas que estão a N*14 dias da âncora são ativadas.
-        </p>
-      </div>
+      {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar. */}
 
       {isLoading ? (
         <div className="rounded-[14px] border border-line bg-card p-10 flex items-center justify-center">

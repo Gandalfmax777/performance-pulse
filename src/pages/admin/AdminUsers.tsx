@@ -114,19 +114,8 @@ const AdminUsers = () => {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
-            ADMINISTRAÇÃO
-          </p>
-          <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-            <Users size={20} weight="bold" className="text-eqi" />
-            Usuários
-          </h1>
-          <p className="text-[12px] text-ink-3 mt-1.5">
-            Gerencie os gestores que têm acesso ao sistema.
-          </p>
-        </div>
+      {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar. */}
+      <div className="flex justify-end">
         <Button onClick={openCreate} className="gap-1.5 bg-ink hover:bg-ink/90 text-white">
           <Plus size={14} weight="bold" /> Novo usuário
         </Button>

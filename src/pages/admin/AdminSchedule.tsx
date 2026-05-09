@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   CircleNotch,
-  CalendarBlank as Calendar,
   Plus,
   PencilSimple as Pencil,
   Trash as Trash2,
@@ -180,19 +179,7 @@ const AdminSchedule = () => {
 
   return (
     <div className="space-y-5">
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
-          ADMINISTRAÇÃO
-        </p>
-        <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-          <Calendar size={20} weight="bold" className="text-eqi" />
-          Cronograma Semanal
-        </h1>
-        <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
-          Edite atividades, horários e KPIs vinculados. Activities desativadas
-          não aparecem no cronograma do dashboard.
-        </p>
-      </div>
+      {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar. */}
 
       {isLoading ? (
         <div className="rounded-[14px] border border-line bg-card p-10 flex items-center justify-center">

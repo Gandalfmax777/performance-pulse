@@ -75,22 +75,12 @@ const AdminGoals = () => {
 
   return (
     <div className="space-y-5">
-      {/* Page header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
-            ADMINISTRAÇÃO
-          </p>
-          <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-            <Target size={20} weight="bold" className="text-eqi" />
-            Metas & KPIs
-          </h1>
-          <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
-            Edite as definições dos KPIs e suas metas ativas. Mudança retroativa
-            recalcula os históricos.
-          </p>
-        </div>
-        <Button onClick={() => setCreateOpen(true)} className="gap-2 bg-ink hover:bg-ink/90 text-white">
+      {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar. */}
+      <div className="flex justify-end">
+        <Button
+          onClick={() => setCreateOpen(true)}
+          className="gap-2 bg-ink hover:bg-ink/90 text-white"
+        >
           <Plus size={14} weight="bold" /> Novo KPI
         </Button>
       </div>
