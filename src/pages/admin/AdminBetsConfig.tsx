@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-import { Trophy, Plus, XCircle } from "@phosphor-icons/react";
+import { CircleNotch, Trophy, Plus, XCircle } from "@phosphor-icons/react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useBets, useCreateBet, useCancelBet, type BetWinnerCriteria } from "@/hooks/useBets";
@@ -143,7 +142,7 @@ const AdminBetsConfig = () => {
           </div>
         </div>
         <Button onClick={handleCreate} disabled={createBet.isPending} className="gap-1.5">
-          {createBet.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+          {createBet.isPending && <CircleNotch size={16} className="animate-spin" />}
           Iniciar aposta
         </Button>
       </div>
@@ -163,7 +162,7 @@ const AdminBetsConfig = () => {
           <div className="rounded-[14px] overflow-hidden border border-line bg-card">
             {isLoading ? (
               <div className="p-10 flex items-center justify-center">
-                <Loader2 className="w-6 h-6 text-eqi animate-spin" />
+                <CircleNotch size={24} className="text-eqi animate-spin" />
               </div>
             ) : activeBets.length === 0 ? (
               <p className="text-sm text-ink-3 text-center py-10">Nenhuma aposta ativa.</p>

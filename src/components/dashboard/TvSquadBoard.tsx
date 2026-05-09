@@ -106,8 +106,8 @@ const TvSquadBoard = ({ assessors }: TvSquadBoardProps) => {
             EVENTO PRINCIPAL{activeBet ? ` · ${activeBet.roundLabel.toUpperCase()}` : ""}
           </p>
           <h2
-            className="font-serif italic font-bold mt-1 leading-tight tracking-[-0.02em]"
-            style={{ fontFamily: "'Instrument Serif', serif", fontSize: 40 }}
+            className="font-display italic font-bold mt-1 leading-tight tracking-[-0.02em]"
+            style={{ fontSize: 40 }}
           >
             {a.squad.name}{" "}
             <span style={{ color: "hsl(var(--gold))" }}>vs</span> {b.squad.name}
@@ -138,8 +138,8 @@ const TvSquadBoard = ({ assessors }: TvSquadBoardProps) => {
         <SquadVersusCard standing={a} leading />
         <div className="hidden sm:flex flex-col items-center justify-center min-w-[140px] gap-3">
           <p
-            className="font-serif italic font-bold leading-none tracking-[-0.04em] text-ink-3"
-            style={{ fontFamily: "'Instrument Serif', serif", fontSize: 56 }}
+            className="font-display italic font-bold leading-none tracking-[-0.04em] text-ink-3"
+            style={{ fontSize: 56 }}
           >
             vs
           </p>
@@ -174,8 +174,8 @@ const TvSquadBoard = ({ assessors }: TvSquadBoardProps) => {
                   UNDERCARD
                 </p>
                 <p
-                  className="font-serif italic font-bold tracking-[-0.02em] truncate"
-                  style={{ fontFamily: "'Instrument Serif', serif", fontSize: 22 }}
+                  className="font-display italic font-bold tracking-[-0.02em] truncate"
+                  style={{ fontSize: 22 }}
                 >
                   {s.squad.name}
                 </p>
@@ -247,8 +247,8 @@ function SquadVersusCard({
             SQUAD
           </p>
           <p
-            className="font-serif italic font-bold leading-none tracking-[-0.03em]"
-            style={{ fontFamily: "'Instrument Serif', serif", fontSize: 44 }}
+            className="font-display italic font-bold leading-none tracking-[-0.03em]"
+            style={{ fontSize: 44 }}
           >
             {squad.name}
           </p>

@@ -39,17 +39,14 @@ const TvLeagueTable = ({ assessors }: TvLeagueTableProps) => {
             RODADA SEMANAL
           </p>
           <h2
-            className="font-serif italic font-bold leading-none tracking-[-0.03em]"
-            style={{
-              fontFamily: "'Instrument Serif', serif",
-              fontSize: "min(8vw, 64px)",
-            }}
+            className="font-display italic font-bold leading-none tracking-[-0.03em]"
+            style={{ fontSize: "min(8vw, 64px)" }}
           >
             A tabela <span style={{ color: "hsl(var(--gold-deep))" }}>mexeu</span>.
           </h2>
           <p
-            className="font-serif italic text-ink-2 mt-2 font-normal"
-            style={{ fontFamily: "'Instrument Serif', serif", fontSize: 18 }}
+            className="font-display italic text-ink-2 mt-2 font-normal"
+            style={{ fontSize: 18 }}
           >
             {assessors.length} assessores. Uma única coluna que importa.
           </p>
@@ -151,9 +148,8 @@ const TvLeagueTable = ({ assessors }: TvLeagueTableProps) => {
                 }}
               >
                 <span
-                  className="font-serif italic font-bold leading-none tracking-[-0.03em] flex items-center"
+                  className="font-display italic font-bold leading-none tracking-[-0.03em] flex items-center"
                   style={{
-                    fontFamily: "'Instrument Serif', serif",
                     fontSize: 32,
                     color: top3 ? "hsl(var(--ink))" : "hsl(var(--ink-3))",
                     height: 42,

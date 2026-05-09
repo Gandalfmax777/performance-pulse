@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
 import { useModalDismiss } from "@/hooks/useModalDismiss";
 import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
 import { BadgeIcon } from "@/components/ui/BadgeIcon";
 import { LevelBadge } from "@/components/ui/LevelBadge";
 import { useLevelHistory } from "@/hooks/useLevelHistory";
 import {
+  CircleNotch,
   X,
   Printer,
   Trophy,
@@ -196,7 +196,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
 
         {isLoading && (
           <div className="flex items-center justify-center py-10">
-            <Loader2 className="w-8 h-8 text-ink-3 animate-spin" />
+            <CircleNotch size={32} className="text-ink-3 animate-spin" />
           </div>
         )}
 
@@ -489,7 +489,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                   className="flex items-center gap-1.5 px-2.5 py-1 rounded-[7px] text-xs font-medium text-white bg-ink hover:bg-ink/90 transition-all disabled:opacity-50"
                 >
                   {generateInsight.isPending ? (
-                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <CircleNotch size={12} className="animate-spin" />
                   ) : (
                     <ArrowsClockwise size={11} weight="bold" />
                   )}
@@ -498,7 +498,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
               </div>
               {generateInsight.isPending ? (
                 <div className="flex items-center gap-2 text-xs text-ink-3 py-4">
-                  <Loader2 className="w-4 h-4 animate-spin text-ink-3" />
+                  <CircleNotch size={16} className="animate-spin text-ink-3" />
                   Analisando desempenho com IA…
                 </div>
               ) : insightData ? (

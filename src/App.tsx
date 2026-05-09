@@ -15,6 +15,12 @@ import FullScreenLoader from "@/components/ui/FullScreenLoader";
 const Index = lazy(() => import("./pages/Index"));
 const Login = lazy(() => import("./pages/Login"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const PorDia = lazy(() => import("./pages/PorDia"));
+const Ranking = lazy(() => import("./pages/Ranking"));
+const Kpis = lazy(() => import("./pages/Kpis"));
+const SquadBet = lazy(() => import("./pages/SquadBet"));
+const Torneio = lazy(() => import("./pages/Torneio"));
+const Assessores = lazy(() => import("./pages/Assessores"));
 const Relatorio = lazy(() => import("./pages/Relatorio"));
 const RelatorioAssessor = lazy(() => import("./pages/RelatorioAssessor"));
 const TvPage = lazy(() => import("./pages/Tv"));
@@ -74,6 +80,60 @@ const App = () => (
               element={
                 <RequireAuth>
                   <Index />
+                </RequireAuth>
+              }
+            />
+
+            {/* Rotas placeholder do redesign — redirecionam para o conteúdo
+                legacy do Index (?view=...) até cada PR de tela substituir
+                pela página real. Ver redesign plan §7.
+                Sequência: redesign-por-dia, redesign-ranking, redesign-kpis,
+                redesign-squad-bet, redesign-torneio, redesign-assessores. */}
+            <Route
+              path="/por-dia"
+              element={
+                <RequireAuth>
+                  <PorDia />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/ranking"
+              element={
+                <RequireAuth>
+                  <Ranking />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/kpis"
+              element={
+                <RequireAuth>
+                  <Kpis />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/squad-bet"
+              element={
+                <RequireAuth>
+                  <SquadBet />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/torneio"
+              element={
+                <RequireAuth>
+                  <Torneio />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/assessores"
+              element={
+                <RequireAuth>
+                  <Assessores />
                 </RequireAuth>
               }
             />

@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { X, CheckCircle2, XCircle, TrendingUp } from "lucide-react";
-import { ChartBar, Fire } from "@phosphor-icons/react";
+import {
+  X,
+  CheckCircle,
+  XCircle,
+  TrendUp,
+  ChartBar,
+  Fire,
+} from "@phosphor-icons/react";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import { type Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
@@ -173,7 +179,7 @@ const WeeklyHeatmap = ({ assessors }: Props) => {
                 }}
                 className="p-2 rounded-lg bg-muted/30 hover:bg-muted/50 text-foreground transition-all"
               >
-                <X className="w-4 h-4" />
+                <X size={16} />
               </button>
             </div>
 
@@ -239,9 +245,9 @@ const WeeklyHeatmap = ({ assessors }: Props) => {
                           } ${isSelected ? "ring-1 ring-primary/30" : ""}`}
                         >
                           {done ? (
-                            <CheckCircle2 className="w-4 h-4" />
+                            <CheckCircle size={16} weight="bold" />
                           ) : di < new Date().getDay() - 1 ? (
-                            <XCircle className="w-4 h-4" />
+                            <XCircle size={16} />
                           ) : (
                             "—"
                           )}
@@ -264,7 +270,7 @@ const WeeklyHeatmap = ({ assessors }: Props) => {
             {selectedAssessor && (
               <div className="border-t border-border/30 pt-5 animate-fade-in">
                 <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-primary" />
+                  <TrendUp size={16} className="text-primary" />
                   Detalhes: {selectedAssessor.name}
                 </h3>
                 <div className="grid grid-cols-4 gap-3">

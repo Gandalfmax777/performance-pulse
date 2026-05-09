@@ -66,9 +66,8 @@ const TvPodium = ({ assessors }: TvPodiumProps) => {
           HALL DA FAMA
         </p>
         <h1
-          className="font-serif italic font-bold leading-none tracking-[-0.03em] mt-2"
+          className="font-display italic font-bold leading-none tracking-[-0.03em] mt-2"
           style={{
-            fontFamily: "'Instrument Serif', serif",
             fontSize: "min(10vw, 80px)",
           }}
         >
@@ -132,10 +131,9 @@ const TvPodium = ({ assessors }: TvPodiumProps) => {
                 />
               )}
               <p
-                className="font-serif italic font-bold leading-none tracking-[-0.05em]"
+                className="font-display italic font-bold leading-none tracking-[-0.05em]"
                 style={{
-                  fontFamily: "'Instrument Serif', serif",
-                  fontSize: isFirst ? "clamp(72px, 8vw, 120px)" : "clamp(52px, 5.5vw, 88px)",
+                        fontSize: isFirst ? "clamp(72px, 8vw, 120px)" : "clamp(52px, 5.5vw, 88px)",
                   color: accentText,
                 }}
               >

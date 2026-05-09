@@ -2,15 +2,15 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Target,
-  Loader2,
+  CircleNotch,
   ArrowUp,
   ArrowDown,
   Minus,
   Check,
   Clock,
   X as XIcon,
-  AlertTriangle,
-} from "lucide-react";
+  Warning,
+} from "@phosphor-icons/react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 const STATUS_META: Record<DirectionStatus, { label: string; icon: typeof Check; cls: string }> = {
   PENDING:  { label: "Pendente",  icon: Clock,          cls: "bg-muted/30 text-muted-foreground" },
   ACHIEVED: { label: "Cumprido",  icon: Check,          cls: "bg-success/15 text-success" },
-  PARTIAL:  { label: "Parcial",   icon: AlertTriangle,  cls: "bg-chart-orange/15 text-chart-orange" },
+  PARTIAL:  { label: "Parcial",   icon: Warning,        cls: "bg-chart-orange/15 text-chart-orange" },
   MISSED:   { label: "Falhou",    icon: XIcon,          cls: "bg-destructive/15 text-destructive" },
 };
 
@@ -62,7 +62,7 @@ const DirectionComplianceTable = ({ period, limit = 10 }: Props) => {
   return (
     <div className="card-glass rounded-xl p-5">
       <div className="flex items-center gap-2 mb-4">
-        <Target className="w-4 h-4 text-primary" />
+        <Target size={16} className="text-primary" />
         <h3 className="text-sm font-bold text-foreground">Cumprimento de Foco</h3>
         <span className="text-[10px] text-muted-foreground">
           Compara KPIs alvo com mesmo intervalo anterior
@@ -71,7 +71,7 @@ const DirectionComplianceTable = ({ period, limit = 10 }: Props) => {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-8 text-xs text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+          <CircleNotch size={16} className="animate-spin mr-2" />
           Carregando…
         </div>
       ) : directions.length === 0 ? (
@@ -110,7 +110,7 @@ const DirectionComplianceTable = ({ period, limit = 10 }: Props) => {
                     <p className="text-sm text-foreground line-clamp-2">{d.text}</p>
                   </div>
                   <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${STATUS_META[d.status].cls}`}>
-                    <StatusIcon className="w-3 h-3" />
+                    <StatusIcon size={12} weight="bold" />
                     {STATUS_META[d.status].label}
                   </span>
                 </div>
@@ -151,7 +151,7 @@ const DirectionComplianceTable = ({ period, limit = 10 }: Props) => {
                               </td>
                               <td className={`px-2 py-1.5 text-right font-mono font-bold ${color}`}>
                                 <span className="inline-flex items-center gap-1">
-                                  <Icon className="w-3 h-3" />
+                                  <Icon size={12} weight="bold" />
                                   {pct === null
                                     ? c.realized > 0 ? "novo!" : "—"
                                     : `${pct >= 0 ? "+" : ""}${pct.toFixed(0)}%`}

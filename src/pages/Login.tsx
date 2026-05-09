@@ -4,9 +4,8 @@ import { apiFetch, ApiError, setAuthToken } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Pulse,
   ArrowRight,
-  Television as Tv,
+  Television,
   CircleNotch,
 } from "@phosphor-icons/react";
 
@@ -19,6 +18,8 @@ interface LoginResponse {
     role: string;
   };
 }
+
+const KEYWORDS = ["Inteligente", "Obstinada", "Inovadora", "Dinâmica"];
 
 const Login = () => {
   const navigate = useNavigate();
@@ -52,205 +53,227 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-background">
-      {/* ─── Left: Branding Panel (editorial hero) ─────────────────────── */}
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div
-        className="hidden lg:flex relative overflow-hidden flex-col justify-between p-14 text-white"
-        style={{
-          background:
-            "linear-gradient(160deg, hsl(var(--ink)) 0%, hsl(var(--eqi-forest)) 100%)",
-        }}
+        className="w-full max-w-[1080px] grid lg:grid-cols-2 bg-surface border border-line rounded-2xl overflow-hidden"
+        style={{ boxShadow: "0 10px 40px hsl(240 12% 16% / 0.08)" }}
       >
+        {/* ─── Left: editorial brand panel ─────────────────────────────── */}
         <div
-          className="absolute pointer-events-none"
+          className="relative hidden lg:flex flex-col justify-between p-14 text-white overflow-hidden min-h-[600px]"
           style={{
-            top: 60,
-            right: -40,
-            width: 320,
-            height: 320,
-            borderRadius: "50%",
             background:
-              "radial-gradient(circle, hsl(var(--gold) / 0.18) 0%, transparent 70%)",
+              "linear-gradient(155deg, hsl(var(--eqi-forest)) 0%, hsl(220 27% 5%) 95%)",
           }}
-        />
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            bottom: -60,
-            left: -60,
-            width: 240,
-            height: 240,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, hsl(var(--eqi-mint) / 0.25) 0%, transparent 70%)",
-          }}
-        />
+        >
+          {/* Atmospheric accent — gold blob */}
+          <div
+            aria-hidden
+            className="absolute pointer-events-none"
+            style={{
+              top: -120,
+              right: -120,
+              width: 380,
+              height: 380,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, hsl(var(--eqi-mint) / 0.22) 0%, transparent 65%)",
+            }}
+          />
 
-        <div className="flex items-center gap-3 relative z-10">
-          <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-            <Pulse weight="bold" size={18} className="text-primary-foreground" />
+          {/* Brand */}
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-8">
+              <div
+                className="w-14 h-14 rounded-xl flex items-center justify-center font-display"
+                style={{
+                  background: "hsl(var(--eqi-mint))",
+                  color: "hsl(var(--eqi-forest))",
+                  fontSize: 22,
+                  fontWeight: 800,
+                  letterSpacing: "-0.04em",
+                }}
+                aria-hidden
+              >
+                E
+              </div>
+              <div className="leading-tight">
+                <p className="font-display text-lg font-extrabold tracking-tight leading-none">
+                  Performance Pulse
+                </p>
+                <p className="num text-[9px] uppercase tracking-[0.22em] text-white/55 mt-1">
+                  EQI · Mesa de Performance
+                </p>
+              </div>
+            </div>
+
+            <p
+              className="num text-[10px] uppercase tracking-[0.22em] mb-4"
+              style={{ color: "hsl(var(--eqi-mint))" }}
+            >
+              Mesa de performance · v3.2
+            </p>
+            <h1 className="font-display text-5xl xl:text-[48px] font-extrabold tracking-[-0.04em] leading-[1.02] m-0">
+              A meta não é um número.
+              <br />
+              É um <span style={{ color: "hsl(var(--eqi-mint))" }}>ritmo.</span>
+            </h1>
+            <p className="mt-4 text-sm leading-relaxed text-white/65 max-w-[380px]">
+              Acompanhe seu time em tempo real — KPIs, ranking, torneios e Squad
+              Bet. Bata meta com leitura clara e disciplina diária.
+            </p>
           </div>
-          <div className="leading-tight">
-            <p className="font-extrabold text-base tracking-tight">Performance Pulse</p>
-            <p className="text-[9px] uppercase tracking-[0.16em] text-white/50 font-semibold mt-0.5">
-              EQI · Mesa de Vendas
+
+          {/* Footer: keywords + copyright */}
+          <div className="relative z-10">
+            <div className="flex flex-wrap gap-2 mb-6">
+              {KEYWORDS.map((k) => (
+                <span
+                  key={k}
+                  className="num text-[10px] uppercase tracking-[0.2em] px-2.5 py-1 rounded-full"
+                  style={{
+                    color: "rgba(255,255,255,0.7)",
+                    border: "1px solid rgba(255,255,255,0.18)",
+                  }}
+                >
+                  {k}
+                </span>
+              ))}
+            </div>
+            <p className="num text-[11px] uppercase tracking-[0.16em] text-white/40">
+              © 2026 Performance Pulse
             </p>
           </div>
         </div>
 
-        <div className="relative z-10 max-w-xl">
-          <p
-            className="text-[11px] uppercase tracking-[0.18em] font-semibold mb-4"
-            style={{ color: "hsl(var(--gold))" }}
-          >
-            Em destaque · Esta semana
-          </p>
-          <h1 className="font-display font-extrabold text-5xl xl:text-6xl tracking-tight leading-[1.05]">
-            A mesa toda
-            <br />
-            <span style={{ color: "hsl(var(--gold))" }}>em ritmo</span> de meta.
-          </h1>
-          <p className="mt-5 text-base text-white/70 max-w-md leading-relaxed">
-            Hoje na mesa: reuniões acontecendo, contas ativando e squads disputando ponto a ponto.
-            Faça login para acompanhar o movimento em tempo real.
-          </p>
-        </div>
-
-        <div className="relative z-10 flex items-end gap-10">
-          {[
-            { v: "108%", l: "meta agregada" },
-            { v: "42", l: "ativações" },
-            { v: "18", l: "reuniões hoje" },
-          ].map((s) => (
-            <div key={s.l}>
-              <p className="font-mono tv-gigantic text-4xl text-white">{s.v}</p>
-              <p className="text-[9px] uppercase tracking-[0.16em] text-white/40 font-semibold mt-2">
-                {s.l}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ─── Right: Login Form ────────────────────────────────────────── */}
-      <div className="flex items-center justify-center p-8 lg:p-14">
-        <div className="w-full max-w-sm">
-          {/* Mobile logo */}
-          <div className="flex items-center gap-2.5 mb-10 lg:hidden">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-              <Pulse weight="bold" size={18} className="text-primary-foreground" />
-            </div>
-            <span className="font-extrabold text-ink text-sm tracking-tight">
-              Performance Pulse
-            </span>
-          </div>
-
-          <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-2">
-            Entrar na mesa
-          </p>
-          <h2 className="font-extrabold text-ink text-3xl tracking-tight leading-tight">
-            Bem-vindo de volta
-          </h2>
-          <p className="text-ink-3 text-[13px] mt-2 mb-8">
-            Entre com seu e-mail corporativo para acessar o painel da sua mesa.
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <label
-                htmlFor="email"
-                className="text-[11px] font-semibold text-ink-2"
+        {/* ─── Right: login form ──────────────────────────────────────── */}
+        <div className="flex items-center p-8 lg:p-14">
+          <div className="w-full max-w-sm mx-auto">
+            {/* Mobile brand mark */}
+            <div className="flex items-center gap-3 mb-10 lg:hidden">
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center font-display"
+                style={{
+                  background: "hsl(var(--eqi-forest))",
+                  color: "hsl(var(--eqi-mint))",
+                  fontSize: 16,
+                  fontWeight: 800,
+                  letterSpacing: "-0.04em",
+                }}
+                aria-hidden
               >
-                E-mail
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu@eqi.com.br"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-                className="h-11 rounded-[8px] border-line bg-surface text-ink"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="password"
-                  className="text-[11px] font-semibold text-ink-2"
-                >
-                  Senha
-                </label>
-                <a
-                  href="#"
-                  className="text-[11px] font-semibold text-primary hover:underline"
-                >
-                  Esqueci
-                </a>
+                E
               </div>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-                className="h-11 rounded-[8px] border-line bg-surface text-ink"
-              />
+              <span className="font-display text-base font-extrabold tracking-tight text-ink">
+                Performance Pulse
+              </span>
             </div>
 
-            {error && (
-              <p className="text-sm text-destructive" role="alert">
-                {error}
-              </p>
-            )}
+            <p className="eyebrow mb-2">Acesse sua conta</p>
+            <h2 className="title-xl mb-1.5">Bem-vindo de volta.</h2>
+            <p className="text-sm text-ink-3 m-0 mb-7">
+              Entre com seu e-mail corporativo para acessar o dashboard.
+            </p>
 
-            <Button
-              type="submit"
-              className="w-full h-11 rounded-[10px] font-bold text-sm bg-ink text-white hover:bg-ink/90 transition-colors gap-2"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <CircleNotch size={16} className="animate-spin" weight="bold" />
-                  Entrando…
-                </>
-              ) : (
-                <>
-                  Entrar no painel
-                  <ArrowRight size={14} weight="bold" />
-                </>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="email"
+                  className="text-xs font-semibold text-ink-2"
+                >
+                  E-mail
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="voce@empresa.com.br"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={loading}
+                  className="h-11"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-baseline justify-between">
+                  <label
+                    htmlFor="password"
+                    className="text-xs font-semibold text-ink-2"
+                  >
+                    Senha
+                  </label>
+                  <a
+                    href="#"
+                    className="text-[11px] font-semibold text-primary hover:underline"
+                  >
+                    Esqueci a senha
+                  </a>
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••••"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  className="h-11"
+                />
+              </div>
+
+              {error && (
+                <p className="text-sm text-destructive" role="alert">
+                  {error}
+                </p>
               )}
-            </Button>
-          </form>
 
-          <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px bg-line" />
-            <span className="text-[10px] uppercase tracking-[0.16em] font-semibold text-ink-3">
-              ou
-            </span>
-            <div className="flex-1 h-px bg-line" />
+              <Button
+                type="submit"
+                className="w-full h-11 mt-2 font-semibold gap-2"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <CircleNotch
+                      size={16}
+                      className="animate-spin"
+                      weight="bold"
+                    />
+                    Entrando…
+                  </>
+                ) : (
+                  <>
+                    Entrar
+                    <ArrowRight size={14} weight="bold" />
+                  </>
+                )}
+              </Button>
+            </form>
+
+            <div className="flex items-center gap-3 my-6">
+              <div className="flex-1 h-px bg-line" />
+              <span className="num text-[10px] uppercase tracking-[0.18em] font-semibold text-ink-3">
+                ou
+              </span>
+              <div className="flex-1 h-px bg-line" />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => navigate("/tv")}
+              className="w-full h-11 rounded-[10px] flex items-center justify-center gap-2 text-sm font-semibold border border-line bg-surface text-ink hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors disabled:opacity-50"
+            >
+              <Television size={15} weight="bold" />
+              Entrar como Modo TV
+            </button>
+
+            <p className="mt-7 pt-5 border-t border-line text-xs text-ink-3 leading-relaxed">
+              Não tem conta? Fale com o administrador da sua mesa para receber o
+              convite.
+            </p>
           </div>
-
-          <button
-            type="button"
-            onClick={() => navigate("/tv")}
-            className="w-full h-11 rounded-[10px] flex items-center justify-center gap-2 text-[13px] font-semibold border border-line bg-surface text-ink hover:bg-surface-2 transition-colors"
-          >
-            <Tv size={15} />
-            Entrar como Modo TV
-          </button>
-
-          <p className="text-center text-[11px] text-ink-3 mt-7">
-            Problemas para acessar?{" "}
-            <a href="#" className="text-primary font-semibold hover:underline">
-              Falar com suporte
-            </a>
-          </p>
         </div>
       </div>
     </div>

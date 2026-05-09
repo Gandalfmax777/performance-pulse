@@ -15,7 +15,7 @@ import {
   useSemesterRanking,
   type ApiRankingEntry,
 } from "@/hooks/useRankings";
-import { Loader2 } from "lucide-react";
+import { CircleNotch } from "@phosphor-icons/react";
 import {
   Trophy,
   Users,
@@ -344,7 +344,7 @@ const SquadBet = ({ assessors }: Props) => {
   if (squadsLoading) {
     return (
       <div className="rounded-[14px] border border-line bg-card p-8 text-center">
-        <Loader2 className="w-8 h-8 text-ink-3 mx-auto animate-spin" />
+        <CircleNotch size={32} className="text-ink-3 mx-auto animate-spin" />
       </div>
     );
   }
@@ -463,7 +463,7 @@ const SquadBet = ({ assessors }: Props) => {
             disabled={!newName.trim() || selectedMembers.length === 0 || createSquadMut.isPending}
             className="px-5 py-2 rounded-[7px] bg-ink text-white text-sm font-semibold hover:bg-ink/90 disabled:bg-surface-2 disabled:text-ink-3 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
           >
-            {createSquadMut.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+            {createSquadMut.isPending && <CircleNotch size={16} className="animate-spin" />}
             Criar Squad
           </button>
         </div>
@@ -498,7 +498,7 @@ const SquadBet = ({ assessors }: Props) => {
               disabled={finishBetMut.isPending}
               className="px-4 py-2 rounded-[7px] bg-ink text-white text-xs font-bold hover:bg-ink/90 transition-colors flex items-center gap-2 disabled:opacity-50"
             >
-              {finishBetMut.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
+              {finishBetMut.isPending && <CircleNotch size={12} className="animate-spin" />}
               Encerrar Rodada
             </button>
           </div>
@@ -656,7 +656,7 @@ const SquadBet = ({ assessors }: Props) => {
                             className="text-xs text-ink-3 hover:text-ink flex items-center gap-1 transition-colors disabled:opacity-50"
                           >
                             {uploadLogoMut.isPending && editingLogoSquadId === sq.id ? (
-                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <CircleNotch size={12} className="animate-spin" />
                             ) : (
                               <Plus size={11} weight="bold" />
                             )}{" "}
@@ -885,7 +885,7 @@ const SquadBet = ({ assessors }: Props) => {
                   disabled={createBetMut.isPending || squads.length === 0}
                   className="w-full px-4 py-2 rounded-[7px] bg-ink text-white text-sm font-bold hover:bg-ink/90 disabled:bg-surface-2 disabled:text-ink-3 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                 >
-                  {createBetMut.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {createBetMut.isPending && <CircleNotch size={16} className="animate-spin" />}
                   Iniciar Aposta
                 </button>
               </div>

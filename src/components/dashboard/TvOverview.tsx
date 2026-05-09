@@ -76,8 +76,7 @@ const TvOverview = ({ assessors, from, to }: TvOverviewProps) => {
               <Crown size={13} weight="fill" /> LIDERANÇA
             </span>
             <p
-              className="font-serif italic text-base text-white/55 mt-5 font-medium"
-              style={{ fontFamily: "'Instrument Serif', serif" }}
+              className="font-display italic text-base text-white/55 mt-5 font-medium"
             >
               Hoje a mesa olha para…
             </p>
@@ -89,16 +88,15 @@ const TvOverview = ({ assessors, from, to }: TvOverviewProps) => {
 
         <div className="relative">
           <h2
-            className="font-serif font-bold tracking-[-0.04em] leading-[0.95]"
-            style={{ fontFamily: "'Instrument Serif', serif", fontSize: "min(11vw, 88px)" }}
+            className="font-display font-extrabold tracking-[-0.04em] leading-[0.95]"
+            style={{ fontSize: "min(11vw, 88px)" }}
           >
             {firstName}
           </h2>
           {lastName && (
             <p
-              className="font-serif italic text-white/55 leading-none font-normal"
+              className="font-display italic text-white/55 leading-none font-normal"
               style={{
-                fontFamily: "'Instrument Serif', serif",
                 fontSize: "min(7vw, 56px)",
                 letterSpacing: "-0.03em",
               }}
@@ -167,7 +165,7 @@ const TvOverview = ({ assessors, from, to }: TvOverviewProps) => {
           className="flex items-center justify-between px-5 py-4 text-white"
           style={{ background: "hsl(var(--ink))", borderBottom: "2px solid hsl(var(--ink))" }}
         >
-          <p className="font-serif italic font-bold text-lg" style={{ fontFamily: "'Instrument Serif', serif" }}>
+          <p className="font-display italic font-bold text-lg">
             O placar
           </p>
           <p className="font-mono text-[10px] font-bold tracking-[0.15em]" style={{ color: "hsl(var(--gold))" }}>

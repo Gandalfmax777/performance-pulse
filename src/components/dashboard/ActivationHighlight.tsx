@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, Bell } from "lucide-react";
+import { Sparkle, Bell } from "@phosphor-icons/react";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import { useOverviewReport, useActivityFeed } from "@/hooks/useReports";
 import { useAssessors } from "@/hooks/useAssessors";
@@ -66,7 +66,7 @@ const ActivationHighlight = ({ from, to }: ActivationHighlightProps) => {
       <div className="flex items-center justify-between mb-3 relative z-10">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-gold/15 flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-gold" />
+            <Sparkle size={20} weight="fill" className="text-gold" />
           </div>
           <div>
             <p className="text-xs text-muted-foreground leading-none mb-1">Destaque da semana</p>
@@ -110,11 +110,11 @@ const ActivationHighlight = ({ from, to }: ActivationHighlightProps) => {
               {format(new Date(lastActivation.timestamp), "dd/MM HH:mm")}
             </p>
           </div>
-          <Bell className="w-4 h-4 text-gold animate-pulse" />
+          <Bell size={16} weight="fill" className="text-gold animate-pulse" />
         </div>
       ) : (
         <div className="flex items-center gap-2 relative z-10 pt-2 border-t border-border/30">
-          <Bell className="w-4 h-4 text-muted-foreground/60" />
+          <Bell size={16} className="text-muted-foreground/60" />
           <p className="text-xs text-muted-foreground italic">
             Nenhuma ativação ainda — vamos tocar o sino!
           </p>
@@ -123,7 +123,7 @@ const ActivationHighlight = ({ from, to }: ActivationHighlightProps) => {
 
       {/* Decorative sparkle bg */}
       <div className="absolute -right-6 -top-6 opacity-10 pointer-events-none">
-        <Sparkles className="w-32 h-32 text-gold" />
+        <Sparkle size={128} weight="fill" className="text-gold" />
       </div>
     </motion.div>
   );

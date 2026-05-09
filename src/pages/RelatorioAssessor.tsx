@@ -18,7 +18,14 @@ import {
   parseISO,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ArrowLeft, Printer, Loader2, Award, Flame, TrendingUp } from "lucide-react";
+import {
+  ArrowLeft,
+  Printer,
+  CircleNotch,
+  Medal,
+  Fire,
+  TrendUp,
+} from "@phosphor-icons/react";
 import Markdown from "react-markdown";
 import { useAssessorReport } from "@/hooks/useReports";
 import { useInsight, useGenerateInsight } from "@/hooks/useInsight";
@@ -106,7 +113,7 @@ const RelatorioAssessor = () => {
   if (isLoading || !report) {
     return (
       <div className="ra-loading">
-        <Loader2 className="w-6 h-6 animate-spin" />
+        <CircleNotch size={24} className="animate-spin" />
         <span>Carregando relatório...</span>
       </div>
     );
@@ -119,13 +126,13 @@ const RelatorioAssessor = () => {
       {/* Toolbar (escondida em print) */}
       <div className="relatorio-toolbar no-print">
         <button onClick={() => navigate(-1)} className="rt-btn">
-          <ArrowLeft className="w-4 h-4" /> Voltar
+          <ArrowLeft size={16} weight="bold" /> Voltar
         </button>
         <span className="rt-title">
           {a.name} • {range.label}
         </span>
         <button onClick={() => window.print()} className="rt-btn rt-btn-primary">
-          <Printer className="w-4 h-4" /> Imprimir / Salvar PDF
+          <Printer size={16} weight="bold" /> Imprimir / Salvar PDF
         </button>
       </div>
 
@@ -153,28 +160,28 @@ const RelatorioAssessor = () => {
         {/* Sumário */}
         <section className="ra-summary">
           <div className="ra-summary-item">
-            <TrendingUp className="ra-summary-icon" />
+            <TrendUp className="ra-summary-icon" weight="bold" />
             <div>
               <span className="r-label">Pontos</span>
               <span className="r-value">{report.rollup.points}</span>
             </div>
           </div>
           <div className="ra-summary-item">
-            <Award className="ra-summary-icon" />
+            <Medal className="ra-summary-icon" weight="bold" />
             <div>
               <span className="r-label">% Meta</span>
               <span className="r-value">{report.rollup.weeklyGoalPercent}%</span>
             </div>
           </div>
           <div className="ra-summary-item">
-            <Flame className="ra-summary-icon" />
+            <Fire className="ra-summary-icon" weight="fill" />
             <div>
               <span className="r-label">Streak</span>
               <span className="r-value">{report.rollup.streak} dias</span>
             </div>
           </div>
           <div className="ra-summary-item">
-            <Award className="ra-summary-icon" />
+            <Medal className="ra-summary-icon" weight="bold" />
             <div>
               <span className="r-label">Badges</span>
               <span className="r-value">{report.badgeUnlocks.length}</span>
@@ -310,7 +317,7 @@ const RelatorioAssessor = () => {
           <h2>Análise Individual (IA)</h2>
           {generateInsight.isPending && !insight ? (
             <p className="r-loading">
-              <Loader2 className="w-4 h-4 inline animate-spin" /> Analisando…
+              <CircleNotch size={16} className="inline animate-spin" /> Analisando…
             </p>
           ) : insight ? (
             <div className="r-markdown">

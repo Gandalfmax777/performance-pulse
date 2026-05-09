@@ -1,6 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
-import { Play, Pause, RotateCcw, Coffee, Pencil, Check } from "lucide-react";
+import {
+  Play,
+  Pause,
+  ArrowCounterClockwise as RotateCcw,
+  Coffee,
+  Pencil,
+  Check,
+} from "@phosphor-icons/react";
 
 const STORAGE_KEY = "pomodoro-state-v1";
 const DEFAULT_WORK_MIN = 45;
@@ -197,7 +204,7 @@ const PomodoroTimer = () => {
     <div className="card-glass rounded-xl p-5 flex flex-col items-center">
       {/* Header */}
       <div className="flex items-center gap-2 mb-4 self-start w-full">
-        <Play className="w-4 h-4 text-primary" />
+        <Play size={16} weight="fill" className="text-primary" />
         <h2 className="text-sm font-display font-bold text-foreground">Pomodoro</h2>
         <span className="ml-auto text-xs text-muted-foreground font-mono">{cycles} ciclos</span>
       </div>
@@ -218,7 +225,7 @@ const PomodoroTimer = () => {
             />
             <span className="text-xs text-muted-foreground">min</span>
             <button onClick={confirmEdit} className="w-6 h-6 rounded-full bg-success/20 text-success flex items-center justify-center">
-              <Check className="w-3 h-3" />
+              <Check size={12} weight="bold" />
             </button>
           </>
         ) : (
@@ -226,7 +233,7 @@ const PomodoroTimer = () => {
             onClick={() => { setEditValue(String(workMin)); setEditing(true); }}
             className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-all"
           >
-            <Pencil className="w-3 h-3" />
+            <Pencil size={12} />
             <span className="font-mono">{workMin}min trabalho</span>
           </button>
         )}
@@ -264,13 +271,13 @@ const PomodoroTimer = () => {
               : "bg-primary/20 text-primary hover:bg-primary/30"
           }`}
         >
-          {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+          {isRunning ? <Pause size={16} weight="fill" /> : <Play size={16} weight="fill" className="ml-0.5" />}
         </button>
         <button
           onClick={resetWork}
           className="w-10 h-10 rounded-full bg-muted/50 text-muted-foreground hover:bg-muted flex items-center justify-center transition-all"
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw size={16} />
         </button>
       </div>
 
@@ -279,7 +286,7 @@ const PomodoroTimer = () => {
 
       {/* Break Timer (fixed 15 min) */}
       <div className="flex items-center gap-2 mb-2">
-        <Coffee className="w-3.5 h-3.5 text-chart-orange" />
+        <Coffee size={14} className="text-chart-orange" />
         <span className="text-xs font-semibold text-muted-foreground">Pausa – 15min</span>
       </div>
 
@@ -312,13 +319,13 @@ const PomodoroTimer = () => {
               : "bg-muted/40 text-muted-foreground hover:bg-muted/60"
           }`}
         >
-          {breakRunning ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 ml-0.5" />}
+          {breakRunning ? <Pause size={12} weight="fill" /> : <Play size={12} weight="fill" className="ml-0.5" />}
         </button>
         <button
           onClick={resetBreak}
           className="w-8 h-8 rounded-full bg-muted/40 text-muted-foreground hover:bg-muted/50 flex items-center justify-center transition-all"
         >
-          <RotateCcw className="w-3 h-3" />
+          <RotateCcw size={12} />
         </button>
       </div>
     </div>

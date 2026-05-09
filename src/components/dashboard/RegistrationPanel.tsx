@@ -1,7 +1,18 @@
 import { useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Minus, Plus, Loader2, MessageSquare, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
-import { Sun, Moon, CalendarBlank, Target } from "@phosphor-icons/react";
+import {
+  Minus,
+  Plus,
+  CircleNotch,
+  ChatCircle as MessageSquare,
+  CaretDown,
+  CaretRight,
+  Trash,
+  Sun,
+  Moon,
+  CalendarBlank,
+  Target,
+} from "@phosphor-icons/react";
 import type { Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { useMetrics, useUpsertMetric, useDeleteMetric } from "@/hooks/useMetrics";
@@ -158,7 +169,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
       <div className="flex items-center gap-2 mb-2">
         <Target size={14} weight="bold" className="text-eqi-green" />
         <h2 className="text-sm font-extrabold tracking-tight text-ink">Registrar Resultados</h2>
-        {upsert.isPending && <Loader2 className="w-3 h-3 animate-spin text-ink-3" />}
+        {upsert.isPending && <CircleNotch size={12} className="animate-spin text-ink-3" />}
       </div>
       {blocks && (blocks.morning.length > 0 || blocks.afternoon.length > 0) && (
         <div className="flex gap-2 mb-3 text-[9px] text-ink-3">
@@ -200,7 +211,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                     : "bg-muted/30 text-ink-3 hover:text-ink hover:bg-muted/50"
                 }`}
               >
-                <MessageSquare className="w-3.5 h-3.5" />
+                <MessageSquare size={14} />
               </button>
             </div>
 
@@ -359,7 +370,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                           }}
                           className="w-7 h-7 rounded-md bg-muted/40 hover:bg-muted/60 flex items-center justify-center text-ink-3 hover:text-ink transition-all"
                         >
-                          <Minus className="w-3 h-3" />
+                          <Minus size={12} weight="bold" />
                         </button>
 
                         <input
@@ -380,7 +391,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                           }}
                           className="w-7 h-7 rounded-md bg-muted/40 hover:bg-muted/60 flex items-center justify-center text-ink-3 hover:text-ink transition-all"
                         >
-                          <Plus className="w-3 h-3" />
+                          <Plus size={12} weight="bold" />
                         </button>
                       </div>
                     )}
@@ -412,7 +423,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                         title="Apagar lançamento (admin)"
                         className="w-7 h-7 rounded-md text-ink-3/60 hover:text-destructive hover:bg-destructive/10 flex items-center justify-center transition-all disabled:opacity-40"
                       >
-                        <Trash2 className="w-3 h-3" />
+                        <Trash size={12} />
                       </button>
                     )}
                   </div>
@@ -445,9 +456,9 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                         aria-expanded={Boolean(extraOpen[a.id])}
                       >
                         {extraOpen[a.id] ? (
-                          <ChevronDown className="w-3 h-3" />
+                          <CaretDown size={12} />
                         ) : (
-                          <ChevronRight className="w-3 h-3" />
+                          <CaretRight size={12} />
                         )}
                         <span>⊕ Outros KPIs</span>
                         <span className="ml-auto text-ink-3/60 font-normal normal-case tracking-normal">
