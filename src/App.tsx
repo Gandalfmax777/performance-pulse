@@ -19,6 +19,7 @@ const PorDia = lazy(() => import("./pages/PorDia"));
 const Ranking = lazy(() => import("./pages/Ranking"));
 const Kpis = lazy(() => import("./pages/Kpis"));
 const SquadBet = lazy(() => import("./pages/SquadBet"));
+const Torneio = lazy(() => import("./pages/Torneio"));
 const Relatorio = lazy(() => import("./pages/Relatorio"));
 const RelatorioAssessor = lazy(() => import("./pages/RelatorioAssessor"));
 const TvPage = lazy(() => import("./pages/Tv"));
@@ -123,7 +124,7 @@ const App = () => (
               path="/torneio"
               element={
                 <RequireAuth>
-                  <Navigate to="/?view=tournament" replace />
+                  <Torneio />
                 </RequireAuth>
               }
             />
