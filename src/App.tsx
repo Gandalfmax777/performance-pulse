@@ -16,6 +16,7 @@ const Index = lazy(() => import("./pages/Index"));
 const Login = lazy(() => import("./pages/Login"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PorDia = lazy(() => import("./pages/PorDia"));
+const Ranking = lazy(() => import("./pages/Ranking"));
 const Relatorio = lazy(() => import("./pages/Relatorio"));
 const RelatorioAssessor = lazy(() => import("./pages/RelatorioAssessor"));
 const TvPage = lazy(() => import("./pages/Tv"));
@@ -96,7 +97,7 @@ const App = () => (
               path="/ranking"
               element={
                 <RequireAuth>
-                  <Navigate to="/?view=results" replace />
+                  <Ranking />
                 </RequireAuth>
               }
             />
