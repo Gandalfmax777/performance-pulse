@@ -2,8 +2,10 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Loader2, Pencil, Trash2 } from "lucide-react";
 import {
+  CircleNotch,
+  Pencil,
+  Trash,
   Warning,
   Check,
   X,
@@ -194,7 +196,7 @@ const AdminPenalties = () => {
       {/* Tabela */}
       {isLoading ? (
         <div className="p-8 flex items-center justify-center text-ink-3">
-          <Loader2 className="w-5 h-5 animate-spin mr-2" /> Carregando…
+          <CircleNotch size={20} className="animate-spin mr-2" /> Carregando…
         </div>
       ) : list.length === 0 ? (
         <div className="p-12 rounded-[14px] border border-dashed border-line text-center text-ink-3">
@@ -326,7 +328,7 @@ const AdminPenalties = () => {
                           disabled={deleteMut.isPending}
                           onClick={() => handleDelete(p)}
                         >
-                          <Trash2 size={14} className="text-destructive" />
+                          <Trash size={14} className="text-destructive" />
                         </Button>
                       </div>
                     </TableCell>
@@ -472,7 +474,7 @@ function ReviewDialog({
             disabled={saving}
             variant={isApprove ? "default" : "destructive"}
           >
-            {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+            {saving && <CircleNotch size={16} className="animate-spin mr-2" />}
             Confirmar {isApprove ? "aprovação" : "rejeição"}
           </Button>
         </DialogFooter>
@@ -594,7 +596,7 @@ function EditDialog({
             Cancelar
           </Button>
           <Button onClick={handleSave} disabled={editMut.isPending}>
-            {editMut.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+            {editMut.isPending && <CircleNotch size={16} className="animate-spin mr-2" />}
             Salvar
           </Button>
         </DialogFooter>
