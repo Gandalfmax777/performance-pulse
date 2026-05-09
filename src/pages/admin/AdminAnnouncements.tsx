@@ -63,6 +63,13 @@ const AdminAnnouncements = () => {
     }
   };
 
+  // Preview live: sample message digitada na composer (sample só pra não
+  // ficar vazio no init). Quando o usuário abre o dialog, preview reflete
+  // o que ele tá digitando lá.
+  const [previewMsg, setPreviewMsg] = useState(
+    "🏆 Liga das Ativações termina sexta — top 3 leva R$ 1.400 em prêmios.",
+  );
+
   return (
     <div className="space-y-5">
       {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar.
@@ -74,6 +81,61 @@ const AdminAnnouncements = () => {
         >
           <Plus size={14} weight="bold" /> Novo Aviso
         </Button>
+      </div>
+
+      {/* Composer 2-col: form esquerda + preview TV ticker direita
+          (alinha com design/Admin-Announcements.html) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="rounded-[var(--radius)] border border-line bg-card p-5 space-y-4">
+          <div>
+            <h3 className="text-[13px] font-bold text-ink mb-1">
+              Compor aviso
+            </h3>
+            <p className="text-[11px] text-ink-3">
+              Digite a mensagem e veja como vai ficar no ticker da TV ao lado.
+              Pra publicar, clique em "Novo Aviso" no topo.
+            </p>
+          </div>
+          <div>
+            <Label className="text-xs">Mensagem</Label>
+            <textarea
+              value={previewMsg}
+              onChange={(e) => setPreviewMsg(e.target.value)}
+              rows={4}
+              className="mt-1.5 w-full text-[13px] rounded-[8px] border border-line bg-card px-3 py-2 focus:outline-none focus:border-primary/50"
+              placeholder="🏆 Liga das Ativações termina sexta — top 3 leva R$ 1.400…"
+            />
+            <p className="text-[10px] text-ink-3 mt-1.5">
+              {previewMsg.length} caracteres · use emojis pra dar peso visual
+              (🏆 📞 🔥 ⚡ 💰)
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-[var(--radius)] border border-line bg-card p-5 flex flex-col">
+          <div className="mb-4">
+            <h3 className="text-[13px] font-bold text-ink mb-1">
+              Preview · TV ticker
+            </h3>
+            <p className="text-[11px] text-ink-3">
+              Ao vivo no Modo TV. Texto rola da direita pra esquerda em loop.
+            </p>
+          </div>
+          <div
+            className="flex-1 flex items-center overflow-hidden border border-white/10 min-h-[80px]"
+            style={{ background: "hsl(var(--ink))" }}
+          >
+            <div className="flex items-center whitespace-nowrap animate-marquee text-white px-6">
+              <span className="inline-flex items-center gap-2.5 text-[13px] font-mono font-semibold tracking-[0.04em]">
+                {previewMsg || "Sua mensagem aparece aqui…"}
+                <span className="text-white/25 ml-3">·</span>
+              </span>
+            </div>
+          </div>
+          <p className="text-[10px] text-ink-3 mt-3 font-mono uppercase tracking-[0.12em]">
+            Visualização aproximada · TV usa fonte 13px mono
+          </p>
+        </div>
       </div>
 
       <div className="rounded-[14px] overflow-hidden border border-line bg-card">
