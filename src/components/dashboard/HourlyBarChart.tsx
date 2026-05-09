@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { format, parseISO } from "date-fns";
 import { useMetrics } from "@/hooks/useMetrics";
 import { SectionCard } from "@/components/shared";
 import { cn } from "@/lib/utils";
@@ -7,6 +8,20 @@ interface HourlyBarChartProps {
   /** Data alvo (YYYY-MM-DD). */
   date: string;
 }
+
+const LiveBadge = () => (
+  <span
+    className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-[10px] font-mono font-bold tracking-[0.12em] uppercase"
+    style={{
+      background: "color-mix(in oklab, hsl(var(--primary)) 12%, transparent)",
+      borderColor: "color-mix(in oklab, hsl(var(--primary)) 25%, transparent)",
+      color: "hsl(var(--primary))",
+    }}
+  >
+    <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" aria-hidden />
+    AO VIVO
+  </span>
+);
 
 /** Hours rendered (08h–18h, 11 colunas). */
 const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
@@ -47,14 +62,18 @@ const HourlyBarChart = ({ date }: HourlyBarChartProps) => {
     hourlyData[0],
   );
 
+  const isToday = date === format(new Date(), "yyyy-MM-dd");
+  const dateLabel = format(parseISO(date), "dd/MM");
+
   return (
     <SectionCard
-      title="Distribuição de pontos · hora a hora"
+      title={`Distribuição horária · ${dateLabel}`}
       subtitle={
         totalPoints > 0
-          ? `Pico às ${String(peakHour.hour).padStart(2, "0")}h · ${peakHour.points} pts`
-          : "Sem pontos registrados ainda"
+          ? `Pontos contabilizados por hora · pico às ${String(peakHour.hour).padStart(2, "0")}h (${peakHour.points} pts)`
+          : "Sem pontos registrados ainda · prime time 09–11 e 14–16 destacados"
       }
+      headerActions={isToday ? <LiveBadge /> : undefined}
     >
       <div className="flex items-end gap-2 h-[160px]">
         {hourlyData.map(({ hour, points }) => {

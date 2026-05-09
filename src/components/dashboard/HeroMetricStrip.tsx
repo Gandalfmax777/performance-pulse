@@ -5,6 +5,7 @@ import { KpiTile, StatDelta } from "@/components/shared";
 import { useOverviewReport } from "@/hooks/useReports";
 import { useWeeklyRanking } from "@/hooks/useRankings";
 
+
 interface HeroMetricStripProps {
   from: string;
   to: string;
@@ -42,7 +43,17 @@ const HeroMetricStrip = ({ from, to }: HeroMetricStripProps) => {
     () => weekly?.rankings?.reduce((s, r) => s + (r.rollup.points || 0), 0) ?? 0,
     [weekly],
   );
-  const totalPointsPrev = 0; // backend não fornece pontos da semana anterior aqui
+  // Total de pontos do período anterior — soma allPerformers.points do
+  // overview anterior. allPerformers é o array completo (todos os AAIs)
+  // do range, com pontos compostos calculados pelo backend.
+  const totalPointsPrev = useMemo(
+    () =>
+      previousOverview?.allPerformers?.reduce(
+        (s, p) => s + (p.points || 0),
+        0,
+      ) ?? 0,
+    [previousOverview],
+  );
   const totalPointsDelta = computeDeltaPct(totalPoints, totalPointsPrev);
 
   const aggPct = overview?.byKpi?.length
@@ -73,7 +84,9 @@ const HeroMetricStrip = ({ from, to }: HeroMetricStripProps) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {/* 1. Total de pontos · time */}
+      {/* 1. Total de pontos · time — barra reflete % de cumprimento agregado
+          (mesmo do card 2), porque "% de pontos vs meta de pontos" não existe
+          como agregado no backend. */}
       <KpiTile
         accent
         size="lg"
@@ -90,9 +103,9 @@ const HeroMetricStrip = ({ from, to }: HeroMetricStripProps) => {
         sub={
           totalPointsPrev > 0
             ? `vs ${totalPointsPrev.toLocaleString("pt-BR")} no período anterior`
-            : "Sem comparação anterior disponível"
+            : "Sem dados do período anterior"
         }
-        progress={Math.min(100, Math.round((totalPoints / Math.max(1, totalPoints + 100)) * 100))}
+        progress={Math.min(100, aggPct)}
       />
 
       {/* 2. Meta atingida · média */}

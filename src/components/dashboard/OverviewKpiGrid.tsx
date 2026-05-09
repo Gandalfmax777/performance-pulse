@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eyebrow, SectionCard } from "@/components/shared";
+import { differenceInDays, format, parseISO, subDays } from "date-fns";
+import { Eyebrow, SectionCard, StatDelta } from "@/components/shared";
 import { cn } from "@/lib/utils";
 import { useOverviewReport } from "@/hooks/useReports";
 
@@ -23,6 +25,25 @@ export const OverviewKpiGrid = ({ from, to }: OverviewKpiGridProps) => {
   const navigate = useNavigate();
   const { data, isLoading } = useOverviewReport({ from, to });
 
+  // Range anterior pra delta vs período passado (mesmo intervalo, shifted back)
+  const previousRange = useMemo(() => {
+    const days = differenceInDays(parseISO(to), parseISO(from)) + 1;
+    return {
+      from: format(subDays(parseISO(from), days), "yyyy-MM-dd"),
+      to: format(subDays(parseISO(to), days), "yyyy-MM-dd"),
+    };
+  }, [from, to]);
+
+  const { data: previousData } = useOverviewReport(previousRange);
+
+  const prevByKey = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const k of previousData?.byKpi ?? []) {
+      map.set(k.key, k.actual);
+    }
+    return map;
+  }, [previousData]);
+
   // Pega só KPIs ativos com target > 0; ordena por % desc para destacar
   // performance no topo. Mostra os 6 primeiros (grid 2 linhas × 3 cols).
   const kpis = (data?.byKpi ?? [])
@@ -30,23 +51,19 @@ export const OverviewKpiGrid = ({ from, to }: OverviewKpiGridProps) => {
     .slice(0, 6);
 
   const headerActions = (
-    <>
-      <span className="text-[11px] text-ink-3 font-medium">
-        Real vs. meta · variação contra o período anterior
-      </span>
-      <button
-        type="button"
-        onClick={() => navigate("/kpis")}
-        className="text-[12px] font-semibold text-ink-2 hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-[6px] px-2 py-1 ml-2"
-      >
-        Ver detalhes →
-      </button>
-    </>
+    <button
+      type="button"
+      onClick={() => navigate("/kpis")}
+      className="text-[12px] font-semibold text-ink-3 hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-[6px] px-2 py-1"
+    >
+      Ver detalhes →
+    </button>
   );
 
   return (
     <SectionCard
       title="KPIs do período"
+      subtitle="Real vs. meta · variação contra o período anterior"
       headerActions={headerActions}
       bodyless
     >
@@ -79,9 +96,19 @@ export const OverviewKpiGrid = ({ from, to }: OverviewKpiGridProps) => {
                 : "bg-destructive";
             const valueText = formatValue(k.actual, k.unit);
             const targetText = formatValue(k.target, k.unit);
-            // Delta vs período anterior — shape do byKpi não traz prev,
-            // então omitimos quando ausente. Backend traz `series` que
-            // permitiria calcular, mas é otimização futura.
+            const pctColor =
+              status === "success"
+                ? "text-[hsl(var(--success))]"
+                : status === "warning"
+                ? "text-[hsl(var(--warning))]"
+                : "text-destructive";
+
+            // Delta vs período anterior (mesmo intervalo shifted back).
+            // null = sem dado anterior ou comparação inválida (prev=0).
+            const prev = prevByKey.get(k.key) ?? 0;
+            const deltaPct =
+              prev > 0 ? Math.round(((k.actual - prev) / prev) * 100) : null;
+
             return (
               <div
                 key={k.kpiId}
@@ -90,34 +117,20 @@ export const OverviewKpiGrid = ({ from, to }: OverviewKpiGridProps) => {
                 <div>
                   <Eyebrow className="mb-2">{k.label}</Eyebrow>
                   <div className="flex items-end justify-between gap-2 mb-2">
-                    <span
-                      className={cn(
-                        "num font-display font-extrabold text-[30px] leading-none tracking-[-0.03em] text-ink",
-                      )}
-                    >
+                    <span className="num font-display font-extrabold text-[30px] leading-none tracking-[-0.03em] text-ink">
                       {valueText}
                     </span>
-                    {/* StatDelta opcional — só quando o backend fornecer
-                        comparação com período anterior. Por ora omitimos. */}
-                    <span className="text-[11px] font-mono font-medium text-ink-3">
-                      {pct}%
-                    </span>
+                    {deltaPct !== null && (
+                      <StatDelta direction={deltaPct >= 0 ? "up" : "down"}>
+                        {deltaPct >= 0 ? "+" : ""}
+                        {deltaPct}%
+                      </StatDelta>
+                    )}
                   </div>
                   <p className="text-[11px] text-ink-3">
                     Meta {targetText} ·{" "}
-                    <span
-                      className={cn(
-                        "font-medium",
-                        status === "success" && "text-[hsl(var(--success))]",
-                        status === "warning" && "text-[hsl(var(--warning))]",
-                        status === "danger" && "text-destructive",
-                      )}
-                    >
-                      {status === "success"
-                        ? "ok"
-                        : status === "warning"
-                        ? "atenção"
-                        : "abaixo"}
+                    <span className={cn("font-semibold num", pctColor)}>
+                      {pct}%
                     </span>
                   </p>
                 </div>

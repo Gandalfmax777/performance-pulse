@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Crown, Fire } from "@phosphor-icons/react";
+import { Fire } from "@phosphor-icons/react";
 import { type Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { Eyebrow } from "@/components/shared";
@@ -43,11 +43,9 @@ export const RankingPodiumCard = ({
   index,
 }: RankingPodiumCardProps) => {
   const isFirst = rank === 1;
-  const accentColor = isFirst
-    ? "hsl(var(--primary))"
-    : rank === 2
-    ? "hsl(var(--silver))"
-    : "hsl(var(--bronze))";
+  // Design Ranking.html: 1º em accent, 2º/3º em ink-4 (não silver/bronze).
+  // Mantém o destaque hierárquico via tamanho/border, não cor.
+  const accentColor = isFirst ? "hsl(var(--primary))" : "hsl(var(--ink-4))";
   const goalColor =
     weeklyGoalPercent >= 100
       ? "text-[hsl(var(--success))]"
@@ -136,15 +134,6 @@ export const RankingPodiumCard = ({
           >
             <Fire size={11} weight="fill" /> Streak {streak} dia{streak > 1 ? "s" : ""}
           </span>
-        )}
-
-        {isFirst && (
-          <Crown
-            size={24}
-            weight="fill"
-            className="absolute top-3 left-3 opacity-20"
-            style={{ color: accentColor }}
-          />
         )}
       </div>
     </motion.div>

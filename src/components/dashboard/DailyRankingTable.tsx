@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Fire } from "@phosphor-icons/react";
+import { format } from "date-fns";
 import { type Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { SectionCard } from "@/components/shared";
@@ -11,6 +12,20 @@ interface DailyRankingTableProps {
   date: string;
   assessors: Assessor[];
 }
+
+const LiveBadge = () => (
+  <span
+    className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-[10px] font-mono font-bold tracking-[0.12em] uppercase"
+    style={{
+      background: "color-mix(in oklab, hsl(var(--primary)) 12%, transparent)",
+      borderColor: "color-mix(in oklab, hsl(var(--primary)) 25%, transparent)",
+      color: "hsl(var(--primary))",
+    }}
+  >
+    <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" aria-hidden />
+    AO VIVO
+  </span>
+);
 
 const DEFAULT_KPI_COLUMNS: Array<{ key: string; label: string }> = [
   { key: "ligacoes", label: "Ligações" },
@@ -55,10 +70,17 @@ const DailyRankingTable = ({ date, assessors }: DailyRankingTableProps) => {
     });
   }, [dailyRanking, assessors, kpisByAssessor]);
 
+  const isToday = date === format(new Date(), "yyyy-MM-dd");
+
   return (
     <SectionCard
       title="Ranking · dia"
-      subtitle={`${rows.length} ${rows.length === 1 ? "AAI" : "AAIs"} no dia`}
+      subtitle={
+        isToday
+          ? "Pontos zeram à meia-noite e são acumulados para a semana."
+          : `${rows.length} ${rows.length === 1 ? "AAI" : "AAIs"} no dia`
+      }
+      headerActions={isToday ? <LiveBadge /> : undefined}
       bodyless
     >
       <div className="overflow-x-auto">

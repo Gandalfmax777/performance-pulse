@@ -42,16 +42,19 @@ const SquadPoolHero = () => {
 
   return (
     <div
-      className="rounded-[var(--radius)] overflow-hidden border border-line text-white relative"
+      className="rounded-[var(--radius)] overflow-hidden border text-white relative"
       style={{
+        // Design: linear-gradient(135deg, accent-3 → ink). Mantemos a
+        // direção 135° que cria uma diagonal mais dramática.
         background:
-          "linear-gradient(120deg, hsl(var(--ink)) 0%, hsl(var(--eqi-forest)) 100%)",
+          "linear-gradient(135deg, hsl(var(--eqi-forest)) 0%, hsl(var(--ink)) 100%)",
+        borderColor: "hsl(var(--eqi-forest))",
       }}
     >
-      <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr] gap-6 px-6 py-6 md:py-7">
-        {/* Pote ativo */}
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-8 px-6 py-7 md:py-8 items-center">
+        {/* Pote ativo — value 72px conforme design */}
         <div>
-          <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center gap-3 mb-2">
             {activeBet ? (
               <span
                 className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-[0.16em] px-2 py-0.5 rounded-full"
@@ -74,12 +77,15 @@ const SquadPoolHero = () => {
             </span>
           </div>
 
-          <p className="text-[10px] uppercase tracking-[0.16em] font-mono font-semibold text-white/50 mb-2">
-            Pote da rodada
+          <p
+            className="text-[10px] uppercase tracking-[0.16em] font-mono font-semibold mb-2"
+            style={{ color: "hsl(var(--gold))" }}
+          >
+            Premiação total
           </p>
           <p
-            className="num font-display font-extrabold leading-none tracking-[-0.04em]"
-            style={{ fontSize: 52, color: "hsl(var(--gold))" }}
+            className="num font-display font-extrabold leading-[1] tracking-[-0.04em] text-white"
+            style={{ fontSize: 72 }}
           >
             R${" "}
             {(activeBet?.value ?? 0).toLocaleString("pt-BR", {
@@ -87,10 +93,10 @@ const SquadPoolHero = () => {
             })}
           </p>
 
-          <div className="mt-4 flex items-center gap-4 text-[12px] text-white/70 flex-wrap">
+          <div className="mt-3 flex items-center gap-4 text-[13px] text-white/70 flex-wrap">
             {daysRemaining !== null && (
               <span className="inline-flex items-center gap-1.5">
-                <Calendar size={12} weight="bold" />
+                <Calendar size={13} weight="bold" />
                 <span>
                   <span className="num font-mono font-bold text-white">
                     {daysRemaining}
@@ -101,7 +107,7 @@ const SquadPoolHero = () => {
             )}
             {activeBet && (
               <span className="inline-flex items-center gap-1.5">
-                <CurrencyDollar size={12} weight="bold" />
+                <CurrencyDollar size={13} weight="bold" />
                 <span>
                   Tipo:{" "}
                   <span className="font-semibold text-white">
@@ -123,21 +129,26 @@ const SquadPoolHero = () => {
           </div>
         </div>
 
-        {/* Cofre acumulado */}
-        <div className="md:border-l md:border-white/10 md:pl-6 flex flex-col justify-center">
-          <div className="flex items-center gap-2 mb-2">
-            <Vault size={14} weight="fill" style={{ color: "hsl(var(--gold))" }} />
-            <p className="text-[10px] uppercase tracking-[0.16em] font-mono font-semibold text-white/70">
-              Cofre acumulado · todos squads
+        {/* Cofre acumulado — coluna direita compacta com 24px font-display
+            por linha (alinhado com design 1º/2º/3º distribution). */}
+        <div className="md:border-l md:border-white/10 md:pl-8 flex flex-col gap-3 md:text-right">
+          <div className="flex md:flex-col items-center md:items-end gap-2">
+            <Vault
+              size={14}
+              weight="fill"
+              style={{ color: "hsl(var(--gold))" }}
+            />
+            <p className="text-[10px] uppercase tracking-[0.16em] font-mono font-semibold text-white/50">
+              Cofre acumulado
             </p>
           </div>
           <p
             className="num font-display font-extrabold leading-none tracking-[-0.03em] text-white"
-            style={{ fontSize: 36 }}
+            style={{ fontSize: 28 }}
           >
             R$ {totalCofre.toLocaleString("pt-BR")}
           </p>
-          <p className="text-[12px] text-white/60 mt-2">
+          <p className="text-[11px] text-white/60">
             <span className="num font-mono font-bold text-white">
               {finishedBets}
             </span>{" "}
