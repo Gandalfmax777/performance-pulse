@@ -51,7 +51,6 @@ export default tseslint.config(
       "src/components/dashboard/PomodoroTimer.tsx",
       "src/components/dashboard/PresentationMode.tsx",
       "src/components/dashboard/RegistrationPanel.tsx",
-      "src/components/dashboard/SquadBet.tsx",
       "src/components/dashboard/TournamentFinishedOverlay.tsx",
       "src/components/dashboard/WeeklyHeatmap.tsx",
       "src/components/ui/DateRangePicker.tsx",
