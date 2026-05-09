@@ -1,7 +1,17 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Flame, TrendingUp, Clock, Crown, CalendarOff, CheckCircle2, CalendarDays } from "lucide-react";
-import { Target, X as XIcon } from "@phosphor-icons/react";
+import {
+  Trophy,
+  Fire,
+  TrendUp,
+  Clock,
+  Crown,
+  CalendarX,
+  CheckCircle,
+  CalendarBlank,
+  Target,
+  X as XIcon,
+} from "@phosphor-icons/react";
 import { startOfWeek, addDays, format } from "date-fns";
 import { type Assessor } from "@/types/assessor";
 import PomodoroTimer from "./PomodoroTimer";
@@ -189,7 +199,7 @@ const DayView = ({ assessors }: DayViewProps) => {
           }`}
           title="Navegar pra uma data específica"
         >
-          <CalendarDays className="w-4 h-4" />
+          <CalendarBlank size={16} />
           <span className="text-xs font-semibold whitespace-nowrap">Ir pra outra data</span>
           <input
             type="date"
@@ -247,7 +257,7 @@ const DayView = ({ assessors }: DayViewProps) => {
           <div className="xl:col-span-3 space-y-4">
             <div className="card-glass rounded-xl p-5">
               <div className="flex items-center gap-2 mb-4">
-                <Clock className="w-4 h-4 text-primary" />
+                <Clock size={16} weight="bold" className="text-primary" />
                 <h2 className="text-sm font-bold text-foreground">Atividades – {dayLabel}</h2>
               </div>
 
@@ -255,7 +265,7 @@ const DayView = ({ assessors }: DayViewProps) => {
                 <p className="text-xs text-muted-foreground">Carregando…</p>
               ) : activities.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                  <CalendarOff className="w-8 h-8 mb-2 opacity-50" />
+                  <CalendarX size={32} className="mb-2 opacity-50" />
                   <p className="text-xs text-center">Nenhuma atividade ativa hoje.</p>
                 </div>
               ) : (
@@ -295,7 +305,7 @@ const DayView = ({ assessors }: DayViewProps) => {
           <div className="xl:col-span-5">
             <div className="card-glass rounded-xl p-5 h-full">
               <div className="flex items-center gap-2 mb-4">
-                <Trophy className="w-5 h-5 text-primary" />
+                <Trophy size={20} weight="bold" className="text-primary" />
                 <h2 className="text-lg font-bold text-foreground">Ranking – {dayLabel}</h2>
               </div>
               <div className="space-y-3">
@@ -334,7 +344,7 @@ const DayView = ({ assessors }: DayViewProps) => {
                               : "bg-muted/30 text-muted-foreground"
                           }`}
                         >
-                          {i === 0 ? <Crown className="w-5 h-5" /> : `#${i + 1}`}
+                          {i === 0 ? <Crown size={20} weight="fill" /> : `#${i + 1}`}
                         </div>
                         <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={40} />
                         <div className="flex-1 min-w-0">
@@ -342,7 +352,7 @@ const DayView = ({ assessors }: DayViewProps) => {
                             <p className="font-bold text-sm text-foreground break-words">{a.name}</p>
                             {a.streak > 0 && (
                               <span className="flex items-center gap-0.5 text-xs text-chart-orange font-semibold">
-                                <Flame className="w-3.5 h-3.5" /> {a.streak}
+                                <Fire size={14} weight="fill" /> {a.streak}
                               </span>
                             )}
                             <span className="text-[10px] font-mono text-muted-foreground">
@@ -357,7 +367,7 @@ const DayView = ({ assessors }: DayViewProps) => {
                                   : "text-muted-foreground/40 hover:text-success/60"
                               }`}
                             >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <CheckCircle size={14} weight="bold" />
                             </button>
                           </div>
                           <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
@@ -399,7 +409,7 @@ const DayView = ({ assessors }: DayViewProps) => {
                                 : "text-destructive"
                             }`}
                           >
-                            <TrendingUp className="w-3.5 h-3.5" /> {avgPct}%
+                            <TrendUp size={14} weight="bold" /> {avgPct}%
                           </div>
                           <div className="w-20 h-2 bg-muted/40 rounded-full mt-1.5 overflow-hidden">
                             <motion.div

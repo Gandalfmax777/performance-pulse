@@ -16,8 +16,8 @@ import { SectionCard } from "@/components/shared";
 import { useActiveTournaments } from "@/hooks/useTournaments";
 import { useTournamentFinishedStream } from "@/hooks/useTournamentFinishedStream";
 
-// Lazy: views condicionais carregam só quando o user navega
-const DayView = lazy(() => import("@/components/dashboard/DayView"));
+// Lazy: views condicionais carregam só quando o user navega.
+// `daily` migrou para /por-dia (PR redesign-por-dia) — não está aqui.
 const DailyResults = lazy(() => import("@/components/dashboard/DailyResults"));
 const KpiAnalytics = lazy(() => import("@/components/dashboard/KpiAnalytics"));
 const SquadBet = lazy(() => import("@/components/dashboard/SquadBet"));
@@ -86,8 +86,11 @@ const VIEW_EYEBROWS: Partial<Record<View, string>> = {
   team: "ADMINISTRAÇÃO",
 };
 
+// `daily` saiu da lista — migrou para /por-dia (PR redesign-por-dia).
+// Permanece no type DashboardView para a sidebar matchear a rota
+// /por-dia via active state legacy.
 const VALID_VIEWS: ReadonlySet<View> = new Set([
-  "overview", "daily", "results", "kpis", "squad", "tournament", "team",
+  "overview", "results", "kpis", "squad", "tournament", "team",
 ]);
 const VALID_PERIODS: ReadonlySet<OverviewPeriod> = new Set(["daily", "weekly", "monthly", "semester"]);
 
@@ -102,10 +105,13 @@ const Index = () => {
   const navigate = useNavigate();
 
   // Legacy: `/?tv=1` virou `/tv` público
+  // Legacy: `/?view=daily` virou `/por-dia` (PR redesign-por-dia)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("tv") === "1") {
       navigate("/tv", { replace: true });
+    } else if (params.get("view") === "daily") {
+      navigate("/por-dia", { replace: true });
     }
   }, [navigate]);
 
@@ -297,7 +303,6 @@ const Index = () => {
           )}
 
           <Suspense fallback={<InlineLoader />}>
-            {view === "daily" && <DayView assessors={assessors} />}
             {view === "results" && <DailyResults assessors={assessors} period={overviewPeriod} />}
             {view === "kpis" && <KpiAnalytics assessors={assessors} />}
             {view === "squad" && <SquadBet assessors={assessors} />}
