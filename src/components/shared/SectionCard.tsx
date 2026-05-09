@@ -1,7 +1,10 @@
 import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-interface SectionCardProps extends HTMLAttributes<HTMLDivElement> {
+// `title` em HTMLAttributes<HTMLDivElement> é `string` (atributo HTML
+// do tooltip nativo). Para usar ReactNode no header sem conflito,
+// removemos `title` do tipo base via Omit.
+interface SectionCardProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
   /** Título do header. Quando ausente, header não é renderizado. */
   title?: ReactNode;
   /** Subtítulo abaixo do título (linha auxiliar). */

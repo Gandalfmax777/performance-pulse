@@ -6,12 +6,6 @@ import { AppShellLayout } from "@/components/layouts/AppShellLayout";
 import { SectionCard } from "@/components/shared";
 import { useActiveTournaments } from "@/hooks/useTournaments";
 
-interface ApiTournament {
-  id: string;
-  // Tipos parciais — só pra prop forward; TournamentCard valida a forma completa.
-  [k: string]: unknown;
-}
-
 /**
  * /torneio — torneios ativos (lista de cards).
  *
@@ -35,13 +29,9 @@ const Torneio = () => {
 
   // Title/subtitle do topbar — espelham o primeiro torneio ativo (mesma
   // lógica que o Index legacy aplicava para view === "tournament").
-  const first = tournaments[0] as
-    | (ApiTournament & {
-        roundLabel?: string;
-        startDate?: string;
-        scope?: "INDIVIDUAL" | "SQUAD";
-      })
-    | undefined;
+  // ApiTournament vem tipado do hook (roundLabel, startDate, scope são
+  // garantidos), então não precisa de cast.
+  const first = tournaments[0];
 
   let title = "Torneio";
   let subtitle: string | undefined = "Sem torneio ativo no momento.";
@@ -84,19 +74,9 @@ const Torneio = () => {
               : "grid-cols-1 xl:grid-cols-2"
           }`}
         >
-          {tournaments.map((t) => {
-            const tour = t as ApiTournament;
-            return (
-              <TournamentCard
-                key={tour.id}
-                tournament={
-                  tour as unknown as Parameters<
-                    typeof TournamentCard
-                  >[0]["tournament"]
-                }
-              />
-            );
-          })}
+          {tournaments.map((tour) => (
+            <TournamentCard key={tour.id} tournament={tour} />
+          ))}
         </div>
       )}
     </AppShellLayout>

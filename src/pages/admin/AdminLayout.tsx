@@ -6,7 +6,8 @@ import { AdminSubnav } from "@/components/shared";
 import { usePenaltyProposalsCount } from "@/hooks/usePenaltyProposals";
 
 interface AdminRoute {
-  path: string;
+  /** Pathname — alinha com `AdminSubnavItem.to` para forwarding direto. */
+  to: string;
   /** Label do tab no AdminSubnav. */
   label: string;
   /** Título completo no topbar (eyebrow comum: "CONFIGURAÇÕES"). */
@@ -16,16 +17,16 @@ interface AdminRoute {
 }
 
 const ADMIN_ROUTES: readonly AdminRoute[] = [
-  { path: "/admin/goals",         label: "Metas & KPIs",  title: "Metas & KPIs" },
-  { path: "/admin/scoring",       label: "Pontuação",     title: "Pontuação" },
-  { path: "/admin/penalties",     label: "Penalidades",   title: "Penalidades", badge: "penalty" },
-  { path: "/admin/sounds",        label: "Sons dos KPIs", title: "Sons dos KPIs" },
-  { path: "/admin/schedule",      label: "Cronograma",    title: "Cronograma" },
-  { path: "/admin/biweekly",      label: "Indique Day",   title: "Indique Day" },
-  { path: "/admin/bets-config",   label: "Apostas",       title: "Apostas" },
-  { path: "/admin/tournaments",   label: "Torneios",      title: "Torneios" },
-  { path: "/admin/announcements", label: "Avisos",        title: "Avisos" },
-  { path: "/admin/users",         label: "Usuários",      title: "Usuários" },
+  { to: "/admin/goals",         label: "Metas & KPIs",  title: "Metas & KPIs" },
+  { to: "/admin/scoring",       label: "Pontuação",     title: "Pontuação" },
+  { to: "/admin/penalties",     label: "Penalidades",   title: "Penalidades", badge: "penalty" },
+  { to: "/admin/sounds",        label: "Sons dos KPIs", title: "Sons dos KPIs" },
+  { to: "/admin/schedule",      label: "Cronograma",    title: "Cronograma" },
+  { to: "/admin/biweekly",      label: "Indique Day",   title: "Indique Day" },
+  { to: "/admin/bets-config",   label: "Apostas",       title: "Apostas" },
+  { to: "/admin/tournaments",   label: "Torneios",      title: "Torneios" },
+  { to: "/admin/announcements", label: "Avisos",        title: "Avisos" },
+  { to: "/admin/users",         label: "Usuários",      title: "Usuários" },
 ] as const;
 
 /**
@@ -51,7 +52,7 @@ const AdminLayout = () => {
 
   // Resolve title da rota atual (fallback: "Configurações" se não bater
   // exato — pode acontecer durante navegações intermediárias).
-  const current = ADMIN_ROUTES.find((r) => location.pathname.startsWith(r.path));
+  const current = ADMIN_ROUTES.find((r) => location.pathname.startsWith(r.to));
   const title = current?.title ?? "Configurações";
 
   const openTv = useCallback(() => {
