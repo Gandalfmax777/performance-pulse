@@ -72,8 +72,6 @@ export default tseslint.config(
       "src/components/ui/sheet.tsx",
       "src/components/ui/sidebar.tsx",
       "src/components/ui/toast.tsx",
-      "src/pages/Relatorio.tsx",
-      "src/pages/RelatorioAssessor.tsx",
       "src/pages/admin/AdminAnnouncements.tsx",
       "src/pages/admin/AdminBetsConfig.tsx",
       "src/pages/admin/AdminBiweekly.tsx",
