@@ -27,9 +27,31 @@ const TvPage = () => {
   const [intervalSec, setIntervalSec] = useState(15);
   const [progress, setProgress] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(true);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { assessors } = useAssessors();
+
+  // Auto-hide controls on idle (3s sem movimento de mouse). Visíveis em
+  // qualquer mousemove ou quando o popover de Settings está aberto.
+  useEffect(() => {
+    const resetIdle = () => {
+      setControlsVisible(true);
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = setTimeout(() => {
+        if (!showSettings) setControlsVisible(false);
+      }, 3000);
+    };
+    resetIdle();
+    window.addEventListener("mousemove", resetIdle);
+    window.addEventListener("touchstart", resetIdle);
+    return () => {
+      window.removeEventListener("mousemove", resetIdle);
+      window.removeEventListener("touchstart", resetIdle);
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    };
+  }, [showSettings]);
 
   useRankingStream(true);
   useSystemNotifications(true);
@@ -80,8 +102,15 @@ const TvPage = () => {
         <TvSlides slideIdx={slideIdx} assessors={assessors} />
       </div>
 
-      {/* Controles flutuantes top-right — discreto, fora do Chrome do slide */}
-      <div className="fixed top-3 right-3 z-50 flex items-center gap-1">
+      {/* Controles flutuantes — auto-hide após 3s idle. Posicionados
+          ABAIXO do chrome top header (top-72px) pra não sobrepor o
+          rangeLabel "Semana de XX a YY". */}
+      <div
+        className={`fixed top-[72px] right-4 z-50 flex items-center gap-1 transition-opacity duration-300 ${
+          controlsVisible ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        onMouseEnter={() => setControlsVisible(true)}
+      >
         <button
           onClick={() => setPlaying((p) => !p)}
           className="p-2 rounded-[6px] bg-white/5 hover:bg-white/15 text-white/70 hover:text-white backdrop-blur-sm transition-all"
