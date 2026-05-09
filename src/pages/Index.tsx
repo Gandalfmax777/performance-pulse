@@ -5,13 +5,13 @@ import DashboardTopbar from "@/components/dashboard/DashboardTopbar";
 import { AppShellLayout } from "@/components/layouts/AppShellLayout";
 import Leaderboard from "@/components/dashboard/Leaderboard";
 import HeroMetricStrip from "@/components/dashboard/HeroMetricStrip";
-import WeeklyCadenceChart from "@/components/dashboard/WeeklyCadenceChart";
-import KpiGoalsList from "@/components/dashboard/KpiGoalsList";
+import { OverviewKpiGrid } from "@/components/dashboard/OverviewKpiGrid";
+import { ScheduleStripCard } from "@/components/dashboard/ScheduleStripCard";
+import { AnnouncementsCard } from "@/components/dashboard/AnnouncementsCard";
+import { InsightFeaturedCard } from "@/components/dashboard/InsightFeaturedCard";
 import TournamentSidebarCard from "@/components/dashboard/TournamentSidebarCard";
-import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import AnnouncementTicker from "@/components/dashboard/AnnouncementTicker";
 import TournamentFinishedOverlay from "@/components/dashboard/TournamentFinishedOverlay";
-import { SectionCard } from "@/components/shared";
 import { useTournamentFinishedStream } from "@/hooks/useTournamentFinishedStream";
 
 // Lazy: views condicionais carregam só quando o user navega.
@@ -228,42 +228,29 @@ const Index = () => {
       >
         {view === "overview" && (
             <>
+              {/* AnnouncementTicker continua acima do hero — feature de
+                  marquee animado (não é o card "Avisos da mesa" abaixo). */}
               <AnnouncementTicker assessors={assessors} />
 
+              {/* Hero KPI strip 3-col (alinha com Dashboard.html) */}
               <HeroMetricStrip from={overviewRange.from} to={overviewRange.to} />
 
-              {/* 3-column body editorial: Ranking | Cadência+Atividade | Metas+Tournament */}
-              <div className="grid gap-4 grid-cols-1 lg:grid-cols-[1.2fr_1.6fr_1fr]">
-                {/* LEFT: Ranking */}
+              {/* KPIs do período — grid 6 tiles flat */}
+              <OverviewKpiGrid from={overviewRange.from} to={overviewRange.to} />
+
+              {/* Linha 2-col 1.3fr | 1fr: Ranking top 10 | (Torneio + Avisos) */}
+              <div className="grid gap-4 grid-cols-1 lg:grid-cols-[1.3fr_1fr]">
                 <Leaderboard assessors={assessors} />
-
-                {/* MIDDLE: Cadência + Atividade ao vivo */}
                 <div className="flex flex-col gap-4">
-                  <SectionCard
-                    title="Cadência da Semana"
-                    subtitle="Reuniões realizadas e ativações por dia"
-                  >
-                    <WeeklyCadenceChart from={overviewRange.from} to={overviewRange.to} />
-                    <div className="flex items-center gap-4 mt-3 text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3">
-                      <span className="inline-flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(var(--eqi-green))" }} />
-                        Reuniões Real.
-                      </span>
-                      <span className="inline-flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-sm" style={{ background: "hsl(var(--gold))" }} />
-                        Ativações
-                      </span>
-                    </div>
-                  </SectionCard>
-
-                  <ActivityFeed />
-                </div>
-
-                {/* RIGHT: Metas por KPI + Tournament card */}
-                <div className="flex flex-col gap-4">
-                  <KpiGoalsList from={overviewRange.from} to={overviewRange.to} />
                   <TournamentSidebarCard onClick={() => navigate("/torneio")} />
+                  <AnnouncementsCard />
                 </div>
+              </div>
+
+              {/* Linha 2-col 1fr | 1fr: Cronograma | Análise IA */}
+              <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+                <ScheduleStripCard />
+                <InsightFeaturedCard />
               </div>
             </>
           )}
