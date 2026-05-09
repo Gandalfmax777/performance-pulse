@@ -93,6 +93,44 @@ const AdminBetsConfig = () => {
     <div className="space-y-5">
       {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar. */}
 
+      {/* 3 config cards info (alinha com design/Admin-Bets.html).
+          Valores hardcoded por ora — vir de backend quando endpoint /bets/config existir. */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="rounded-[var(--radius)] border border-line bg-card p-5">
+          <p className="text-[10px] uppercase tracking-[0.12em] font-mono font-semibold text-ink-3 mb-2">
+            Stake mínima
+          </p>
+          <p className="font-display font-extrabold text-[24px] text-ink leading-none num">
+            R$ 50
+          </p>
+          <p className="text-[11px] text-ink-3 mt-1.5">
+            Valor mínimo aceito ao iniciar uma aposta
+          </p>
+        </div>
+        <div className="rounded-[var(--radius)] border border-line bg-card p-5">
+          <p className="text-[10px] uppercase tracking-[0.12em] font-mono font-semibold text-ink-3 mb-2">
+            Stake máxima
+          </p>
+          <p className="font-display font-extrabold text-[24px] text-ink leading-none num">
+            R$ 5.000
+          </p>
+          <p className="text-[11px] text-ink-3 mt-1.5">
+            Limite por rodada — ajuste com cautela
+          </p>
+        </div>
+        <div className="rounded-[var(--radius)] border border-line bg-card p-5">
+          <p className="text-[10px] uppercase tracking-[0.12em] font-mono font-semibold text-ink-3 mb-2">
+            Cooldown
+          </p>
+          <p className="font-display font-extrabold text-[24px] text-ink leading-none num">
+            0 dias
+          </p>
+          <p className="text-[11px] text-ink-3 mt-1.5">
+            Tempo mínimo entre o fim de uma rodada e o início da próxima
+          </p>
+        </div>
+      </div>
+
       {/* Create form */}
       <div className="rounded-[14px] p-5 border border-line bg-card space-y-4">
         <h2 className="text-[14px] font-extrabold tracking-tight text-ink flex items-center gap-2">

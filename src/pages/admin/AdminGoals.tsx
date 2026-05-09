@@ -73,9 +73,65 @@ const AdminGoals = () => {
 
   const kpis = useMemo(() => (allKpisRaw ?? []).filter((k) => !k.isDerived), [allKpisRaw]);
 
+  // Última atualização: maior createdAt das goals ativas (proxy: representa
+  // quando admin tocou no sistema mais recentemente). Se nenhuma goal,
+  // usa "—".
+  const lastUpdate = useMemo(() => {
+    const dates = kpis
+      .map((k) => k.activeGoal?.validFrom)
+      .filter((d): d is string => !!d)
+      .sort()
+      .reverse();
+    if (dates.length === 0) return null;
+    try {
+      return format(new Date(dates[0]), "dd/MM 'às' HH:mm", { locale: ptBR });
+    } catch {
+      return null;
+    }
+  }, [kpis]);
+
   return (
     <div className="space-y-5">
       {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar. */}
+
+      {/* 3 status cards (alinha com design/Admin-Goals.html) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="rounded-[var(--radius)] border border-line bg-card p-5">
+          <p className="text-[10px] uppercase tracking-[0.12em] font-mono font-semibold text-ink-3 mb-2">
+            Período base
+          </p>
+          <p className="text-[15px] font-bold text-ink leading-tight">
+            Semana ISO
+          </p>
+          <p className="text-[11px] text-ink-3 mt-1">
+            Segunda a domingo · weekStartsOn=1
+          </p>
+        </div>
+        <div className="rounded-[var(--radius)] border border-line bg-card p-5">
+          <p className="text-[10px] uppercase tracking-[0.12em] font-mono font-semibold text-ink-3 mb-2">
+            KPIs ativos
+          </p>
+          <p className="font-display font-extrabold text-[24px] text-ink leading-none num">
+            {kpis.filter((k) => k.active).length}
+          </p>
+          <p className="text-[11px] text-ink-3 mt-1.5">
+            Desative para esconder do dashboard sem apagar histórico
+          </p>
+        </div>
+        <div className="rounded-[var(--radius)] border border-line bg-card p-5">
+          <p className="text-[10px] uppercase tracking-[0.12em] font-mono font-semibold text-ink-3 mb-2">
+            Última atualização
+          </p>
+          <p className="text-[15px] font-bold text-ink leading-tight">
+            {lastUpdate ?? "—"}
+          </p>
+          <p className="text-[11px] text-ink-3 mt-1">
+            Maior validFrom entre as goals ativas
+          </p>
+        </div>
+      </div>
+
+      {/* CTA "Novo KPI" */}
       <div className="flex justify-end">
         <Button
           onClick={() => setCreateOpen(true)}

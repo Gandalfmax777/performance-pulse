@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { CircleNotch, Users, Plus, PencilSimple, Trash } from "@phosphor-icons/react";
+import { CircleNotch, Plus, PencilSimple, Trash } from "@phosphor-icons/react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useUsers, useCreateUser, useUpdateUser, useDeleteUser, type ApiUser } from "@/hooks/useUsers";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useAssessors } from "@/hooks/useAssessors";
+import { useSquads } from "@/hooks/useSquads";
+import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,9 +47,22 @@ import {
 const AdminUsers = () => {
   const { data: users, isLoading } = useUsers();
   const { user: currentUser } = useCurrentUser();
+  const { assessors } = useAssessors();
+  const { data: squads = [] } = useSquads();
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
   const deleteUser = useDeleteUser();
+
+  // Lookup squad por assessorId pra mostrar coluna Squad na tabela de AAIs
+  const squadByAssessor = useMemo(() => {
+    const map = new Map<string, { name: string; color: string }>();
+    for (const sq of squads) {
+      for (const m of sq.members ?? []) {
+        map.set(m.assessorId, { name: sq.name, color: sq.color });
+      }
+    }
+    return map;
+  }, [squads]);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editUser, setEditUser] = useState<ApiUser | null>(null);
@@ -112,9 +128,61 @@ const AdminUsers = () => {
     }
   }
 
+  const adminCount = (users ?? []).filter((u) => u.role === "ADMIN").length;
+  const managerCount = (users ?? []).filter((u) => u.role === "MANAGER").length;
+
   return (
     <div className="space-y-5">
       {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar. */}
+
+      {/* 4 KPI cards (alinha com design/Admin-Users.html) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="rounded-[var(--radius)] border border-line bg-card p-5">
+          <p className="text-[10px] uppercase tracking-[0.12em] font-mono font-semibold text-ink-3 mb-2">
+            Usuários
+          </p>
+          <p className="font-display font-extrabold text-[24px] text-ink leading-none num">
+            {users?.length ?? 0}
+          </p>
+          <p className="text-[11px] text-ink-3 mt-1.5">
+            {adminCount} admin · {managerCount} manager
+          </p>
+        </div>
+        <div className="rounded-[var(--radius)] border border-line bg-card p-5">
+          <p className="text-[10px] uppercase tracking-[0.12em] font-mono font-semibold text-ink-3 mb-2">
+            Assessores (AAIs)
+          </p>
+          <p className="font-display font-extrabold text-[24px] text-ink leading-none num">
+            {assessors.length}
+          </p>
+          <p className="text-[11px] text-ink-3 mt-1.5">
+            Não logam no sistema · perfil só pra ranking/KPIs
+          </p>
+        </div>
+        <div className="rounded-[var(--radius)] border border-line bg-card p-5">
+          <p className="text-[10px] uppercase tracking-[0.12em] font-mono font-semibold text-ink-3 mb-2">
+            Squads ativos
+          </p>
+          <p className="font-display font-extrabold text-[24px] text-ink leading-none num">
+            {squads.length}
+          </p>
+          <p className="text-[11px] text-ink-3 mt-1.5">
+            Times competindo no Squad Bet
+          </p>
+        </div>
+        <div className="rounded-[var(--radius)] border border-line bg-card p-5">
+          <p className="text-[10px] uppercase tracking-[0.12em] font-mono font-semibold text-ink-3 mb-2">
+            Tenant
+          </p>
+          <p className="text-[15px] font-bold text-ink leading-tight uppercase tracking-wide">
+            EQI
+          </p>
+          <p className="text-[11px] text-ink-3 mt-1.5">
+            Mesa de Performance · v3.2
+          </p>
+        </div>
+      </div>
+
       <div className="flex justify-end">
         <Button onClick={openCreate} className="gap-1.5 bg-ink hover:bg-ink/90 text-white">
           <Plus size={14} weight="bold" /> Novo usuário
@@ -198,6 +266,102 @@ const AdminUsers = () => {
             </TableBody>
           </Table>
         )}
+      </div>
+
+      {/* Tabela de Assessores (AAIs) — read-only, complemento informativo
+          (alinha com sugestão do Felipe: "tabela com os assessores tambem
+          para ter uma noção"). AAIs não logam no sistema, mas é útil ver
+          a lista + squad + level pra contexto. */}
+      <div className="flex items-center gap-3 pt-4">
+        <p className="text-[10px] uppercase tracking-[0.12em] font-mono font-semibold text-ink-3">
+          Assessores (AAIs)
+        </p>
+        <div className="flex-1 h-px bg-line" />
+        <span className="text-[11px] text-ink-3">
+          {assessors.length}{" "}
+          {assessors.length === 1 ? "assessor cadastrado" : "assessores cadastrados"}
+          {" · "}
+          gerenciar em /assessores
+        </span>
+      </div>
+      <div className="rounded-[14px] overflow-hidden border border-line bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-line/30 hover:bg-transparent">
+              <TableHead className="text-xs">Nome</TableHead>
+              <TableHead className="text-xs">Squad</TableHead>
+              <TableHead className="text-xs">Nível</TableHead>
+              <TableHead className="text-xs text-right">Pontos · semana</TableHead>
+              <TableHead className="text-xs text-right">Meta · semana</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {assessors.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center text-ink-3 py-6 text-xs">
+                  Nenhum assessor cadastrado.
+                </TableCell>
+              </TableRow>
+            ) : (
+              assessors.map((a) => {
+                const sq = squadByAssessor.get(a.id);
+                return (
+                  <TableRow key={a.id} className="border-line/20">
+                    <TableCell>
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <AssessorAvatar
+                          initials={a.avatar}
+                          photoUrl={a.photoUrl}
+                          level={a.level}
+                          size={28}
+                        />
+                        <span className="font-medium text-ink truncate">
+                          {a.name}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {sq ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full border border-line bg-surface text-[10px] font-mono font-semibold uppercase tracking-[0.08em] text-ink-2">
+                          <span
+                            className="inline-block w-1.5 h-1.5 rounded-full mr-1.5"
+                            style={{ background: sq.color }}
+                          />
+                          {sq.name}
+                        </span>
+                      ) : (
+                        <span className="text-[11px] text-ink-4">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-[10px] font-mono uppercase border-line/40">
+                        {a.level}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className="font-mono font-bold text-sm text-ink">
+                        {a.points.toLocaleString("pt-BR")}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span
+                        className={`font-mono font-bold text-sm ${
+                          a.weeklyGoalPercent >= 100
+                            ? "text-[hsl(var(--success))]"
+                            : a.weeklyGoalPercent >= 80
+                            ? "text-ink-2"
+                            : "text-destructive"
+                        }`}
+                      >
+                        {a.weeklyGoalPercent}%
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Create Dialog */}
