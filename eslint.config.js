@@ -48,7 +48,6 @@ export default tseslint.config(
       "src/components/dashboard/DirectionComplianceTable.tsx",
       "src/components/dashboard/DirectionEditModal.tsx",
       "src/components/dashboard/InsightHistoryPanel.tsx",
-      "src/components/dashboard/KpiAnalytics.tsx",
       "src/components/dashboard/PomodoroTimer.tsx",
       "src/components/dashboard/PresentationMode.tsx",
       "src/components/dashboard/RegistrationPanel.tsx",

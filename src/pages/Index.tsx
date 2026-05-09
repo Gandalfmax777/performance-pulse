@@ -19,7 +19,7 @@ import { useTournamentFinishedStream } from "@/hooks/useTournamentFinishedStream
 // Lazy: views condicionais carregam só quando o user navega.
 // `daily` migrou para /por-dia (PR redesign-por-dia).
 // `results` migrou para /ranking (PR redesign-ranking).
-const KpiAnalytics = lazy(() => import("@/components/dashboard/KpiAnalytics"));
+// `kpis` migrou para /kpis (PR redesign-kpis).
 const SquadBet = lazy(() => import("@/components/dashboard/SquadBet"));
 const PresentationMode = lazy(() => import("@/components/dashboard/PresentationMode"));
 const AssessorManager = lazy(() => import("@/components/dashboard/AssessorManager"));
@@ -89,10 +89,11 @@ const VIEW_EYEBROWS: Partial<Record<View, string>> = {
 // Removidas da lista (cada uma vira página própria do redesign):
 // - `daily`   → /por-dia
 // - `results` → /ranking
+// - `kpis`    → /kpis
 // Permanecem no type DashboardView para a sidebar matchear as rotas
 // novas via active state legacy.
 const VALID_VIEWS: ReadonlySet<View> = new Set([
-  "overview", "kpis", "squad", "tournament", "team",
+  "overview", "squad", "tournament", "team",
 ]);
 const VALID_PERIODS: ReadonlySet<OverviewPeriod> = new Set(["daily", "weekly", "monthly", "semester"]);
 
@@ -117,6 +118,7 @@ const Index = () => {
     const v = params.get("view");
     if (v === "daily") navigate("/por-dia", { replace: true });
     else if (v === "results") navigate("/ranking", { replace: true });
+    else if (v === "kpis") navigate("/kpis", { replace: true });
   }, [navigate]);
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -239,7 +241,7 @@ const Index = () => {
         </>
       );
     }
-    if (v === "kpis" || v === "tournament") {
+    if (v === "tournament") {
       return periodTabs;
     }
     if (v === "team") {
@@ -307,7 +309,6 @@ const Index = () => {
           )}
 
           <Suspense fallback={<InlineLoader />}>
-            {view === "kpis" && <KpiAnalytics assessors={assessors} />}
             {view === "squad" && <SquadBet assessors={assessors} />}
             {view === "tournament" && (
               <TournamentView tournaments={activeTournaments} />
