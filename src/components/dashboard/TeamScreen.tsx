@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Fire, GearSix, Plus } from "@phosphor-icons/react";
+import { Fire, Plus } from "@phosphor-icons/react";
 import { type Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { useSquads } from "@/hooks/useSquads";
@@ -42,25 +42,10 @@ const TeamScreen = ({ assessors, onSelectAssessor, onManage }: TeamScreenProps) 
   }, [squadsData]);
 
   // Sem SectionCard wrapping — design tem só a grid, sem header. O título
-  // já vem do DashboardTopbar ("14 assessores") e o botão "+ Gerenciar"
-  // está no slot actions da topbar. Removendo o wrapper aqui, ganhamos
-  // espaço útil e batemos com `Assessores.html`.
+  // e o botão "Gerenciar" vêm do DashboardTopbar (slot actions). Filtros
+  // (search/squad) também ficam na topbar — removidos os duplicados aqui.
   return (
     <div className="flex flex-col gap-4">
-      {/* Action bar minimal — alinhado à direita, só Gerenciar */}
-      {assessors.length > 0 && (
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={onManage}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-[12px] font-semibold bg-ink text-white hover:bg-ink/90 transition-colors"
-            title="Gerenciar (adicionar/editar/remover)"
-          >
-            <GearSix size={12} weight="bold" /> Gerenciar
-          </button>
-        </div>
-      )}
-
       {assessors.length === 0 ? (
         <div className="rounded-[var(--radius)] border border-line bg-card p-10 text-center text-ink-3">
           <p className="text-[13px] font-semibold mb-3">Nenhum assessor cadastrado.</p>

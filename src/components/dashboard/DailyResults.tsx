@@ -9,19 +9,24 @@ import {
   type ApiRankingEntry,
 } from "@/hooks/useRankings";
 import { useSquads } from "@/hooks/useSquads";
+import { useCofreBalance } from "@/hooks/useCofre";
 import { useOverviewReport } from "@/hooks/useReports";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import LeagueTable, { type LeagueTableRow } from "./LeagueTable";
 import { RankingPodiumCard } from "./RankingPodiumCard";
 import { RankingFiltersBar, type SortKey } from "./RankingFiltersBar";
 import RankingHighlights from "./RankingHighlights";
+import SquadStandingsGrid, { type SquadStanding } from "./SquadStandingsGrid";
 import { SectionCard } from "@/components/shared";
 
 type Period = "daily" | "weekly" | "monthly" | "semester";
+type RankType = "individuals" | "squads";
 
 interface DailyResultsProps {
   assessors: Assessor[];
   period: Period;
+  /** "individuals" mostra pódio + tabela; "squads" mostra grid de squads agregados. */
+  rankType?: RankType;
 }
 
 /** Range YYYY-MM-DD do period — para casar com useOverviewReport (KPIs por assessor). */
@@ -56,7 +61,7 @@ function rangeFor(period: Period): { from: string; to: string } {
  * - RankingHighlights mantido como widget secundário (aside) abaixo
  *   da tabela quando há dados.
  */
-const DailyResults = ({ assessors, period }: DailyResultsProps) => {
+const DailyResults = ({ assessors, period, rankType = "individuals" }: DailyResultsProps) => {
   const dailyQ = useDailyRanking();
   const weeklyQ = useWeeklyRanking();
   const monthlyQ = useMonthlyRanking();
@@ -71,8 +76,58 @@ const DailyResults = ({ assessors, period }: DailyResultsProps) => {
   const range = useMemo(() => rangeFor(period), [period]);
   const { data: overview } = useOverviewReport(range);
   const { data: squads = [] } = useSquads();
+  const { data: cofreData } = useCofreBalance();
 
   const apiRankings: ApiRankingEntry[] = activeQuery.data?.rankings ?? [];
+
+  // ─── Modo "squads": agrega rankings por squad ─────────────────────────
+  // Calcula avgGoal (% média dos membros) + totalPoints + wins + cofre.
+  // Reaproveita lógica do SquadBet sem importar — evita acoplamento.
+  const perfByAssessorId = useMemo(() => {
+    const map = new Map<string, { points: number; weeklyGoalPercent: number }>();
+    for (const r of apiRankings) {
+      map.set(r.assessor.id, {
+        points: r.rollup.points,
+        weeklyGoalPercent: r.rollup.weeklyGoalPercent,
+      });
+    }
+    return map;
+  }, [apiRankings]);
+
+  const squadStandings = useMemo<SquadStanding[]>(() => {
+    return squads
+      .map((sq) => {
+        const members = assessors.filter((a) =>
+          sq.members.some((m) => m.assessorId === a.id),
+        );
+        const n = Math.max(members.length, 1);
+        const avgGoal = +(
+          members.reduce(
+            (s, m) => s + (perfByAssessorId.get(m.id)?.weeklyGoalPercent ?? 0),
+            0,
+          ) / n
+        ).toFixed(1);
+        const totalPoints = members.reduce(
+          (s, m) => s + (perfByAssessorId.get(m.id)?.points ?? 0),
+          0,
+        );
+        const cofreEntry = cofreData?.bySquad.find((c) => c.squadId === sq.id);
+        return {
+          sq,
+          members,
+          stats: { avgGoal, totalPoints },
+          wins: cofreEntry?.winCount ?? 0,
+          totalWon: cofreEntry?.totalWon ?? 0,
+        };
+      })
+      .sort((a, b) => b.stats.avgGoal - a.stats.avgGoal);
+  }, [squads, assessors, perfByAssessorId, cofreData]);
+
+  const periodLabel =
+    period === "daily" ? "diário"
+    : period === "weekly" ? "semanal"
+    : period === "monthly" ? "mensal"
+    : "semestral";
 
   const squadByAssessor = useMemo(() => {
     const map = new Map<string, { id: string; name: string }>();
@@ -150,6 +205,15 @@ const DailyResults = ({ assessors, period }: DailyResultsProps) => {
   const counterText = `${filtered.length} ${
     filtered.length === 1 ? "AAI" : "AAIs"
   } · ${squads.length} squad${squads.length === 1 ? "" : "s"}`;
+
+  // ─── Modo "squads" — render alternativo com SquadStandingsGrid ────────
+  if (rankType === "squads") {
+    return (
+      <div className="space-y-5">
+        <SquadStandingsGrid rows={squadStandings} periodLabel={periodLabel} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">

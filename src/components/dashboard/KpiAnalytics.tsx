@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -95,10 +95,26 @@ function matchActivePeriod(range: { from: string; to: string }): QuickPeriod | n
 
 interface KpiAnalyticsProps {
   assessors: Assessor[];
+  /**
+   * Range inicial (vem da Kpis.tsx baseado no period tab da topbar).
+   * Quando o period tab da topbar muda (Semanal↔Mensal), Kpis.tsx remonta
+   * KpiAnalytics com novo `initialRange` via key change ou re-render
+   * controlado. Atualmente o filter bar interno permite refinar via
+   * DateRangePicker — esse refinamento fica local.
+   */
+  initialRange?: { from: string; to: string };
 }
 
-const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
-  const [range, setRange] = useState(defaultWeekRange);
+const KpiAnalytics = ({ assessors, initialRange }: KpiAnalyticsProps) => {
+  const [range, setRange] = useState(() => initialRange ?? defaultWeekRange());
+
+  // Sync range com initialRange quando ele muda (period tab da topbar
+  // foi clicado). Mantém outros estados locais (compareEnabled, scope,
+  // selectedAssessor) intactos.
+  useEffect(() => {
+    if (initialRange) setRange(initialRange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialRange?.from, initialRange?.to]);
   const [scope, setScope] = useState<Scope>("geral");
   const [selectedAssessor, setSelectedAssessor] = useState<string | null>(null);
   const [profileAssessor, setProfileAssessor] = useState<Assessor | null>(null);

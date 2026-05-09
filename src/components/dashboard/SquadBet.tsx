@@ -851,7 +851,12 @@ const SquadBet = ({ assessors }: Props) => {
       {/* Row 3: Create Bet + History + Squad Badges */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         <div className="lg:col-span-4">
-          <div className="rounded-[14px] border border-line bg-card p-5 h-full">
+          {/* id="nova-aposta-section" — alvo do scroll do botão "+ Nova aposta"
+              da topbar (SquadBet.tsx page). */}
+          <div
+            id="nova-aposta-section"
+            className="rounded-[14px] border border-line bg-card p-5 h-full transition-shadow"
+          >
             <h3 className="text-sm font-extrabold tracking-tight text-ink mb-3 flex items-center gap-2">
               <Fire size={14} weight="fill" className="text-gold-deep" /> Nova Aposta
             </h3>
