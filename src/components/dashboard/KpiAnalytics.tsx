@@ -24,7 +24,21 @@ import { useGenerateTeamInsight, type ApiInsight } from "@/hooks/useInsight";
 import InsightHistoryPanel from "./InsightHistoryPanel";
 import DirectionComplianceTable from "./DirectionComplianceTable";
 import Markdown from "react-markdown";
-import { Filter, TrendingUp, Lightbulb, Sparkles, RefreshCw, User, Users, BarChart3, Loader2, Printer, GitCompare, ArrowUp, ArrowDown, Minus } from "lucide-react";
+import {
+  Funnel,
+  TrendUp,
+  Sparkle,
+  ArrowClockwise,
+  User,
+  Users,
+  ChartBar,
+  CircleNotch,
+  Printer,
+  GitDiff,
+  ArrowUp,
+  ArrowDown,
+  Minus,
+} from "@phosphor-icons/react";
 import { ChartBar as ChartBarIcon } from "@phosphor-icons/react";
 import ConversionFunnel from "./ConversionFunnel";
 
@@ -185,7 +199,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
       {/* Filters */}
       <div className="rounded-[14px] border border-line bg-card p-4">
         <div className="flex items-center flex-wrap gap-3">
-          <Filter className="w-4 h-4 text-eqi" />
+          <Funnel size={16} className="text-eqi" />
           <span className="text-sm font-bold text-ink mr-2">Filtros:</span>
 
           <DateRangePicker value={range} onChange={setRange} />
@@ -228,7 +242,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
                   : "text-ink-3 hover:text-ink"
               }`}
             >
-              <Users className="w-3 h-3" /> Geral
+              <Users size={12} /> Geral
             </button>
             <button
               onClick={() => setScope("individual")}
@@ -238,7 +252,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
                   : "text-ink-3 hover:text-ink"
               }`}
             >
-              <User className="w-3 h-3" /> Individual
+              <User size={12} /> Individual
             </button>
           </div>
 
@@ -273,11 +287,11 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
                 : "text-ink-3 bg-muted/20 border-line/30 hover:text-ink"
             }`}
           >
-            <GitCompare className="w-3 h-3" />
+            <GitDiff size={12} />
             {compareEnabled ? "Comparação ativa" : "Comparar com período anterior"}
           </button>
 
-          {isLoading && <Loader2 className="w-4 h-4 animate-spin text-ink-3 ml-auto" />}
+          {isLoading && <CircleNotch size={16} className="animate-spin text-ink-3 ml-auto" />}
         </div>
 
         {/* Subtitle explicativo — aparece embaixo quando compare está ativo
@@ -318,7 +332,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
                 >
                   <div className="text-[10px] text-ink-3 truncate">{k.label}</div>
                   <div className={`flex items-center gap-1 text-sm font-mono font-bold ${color}`}>
-                    <Icon className="w-3 h-3" />
+                    <Icon size={12} />
                     {label}
                   </div>
                 </div>
@@ -401,7 +415,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
         <div className="rounded-[14px] border border-line bg-card p-5">
           <div className="flex items-baseline justify-between mb-4">
             <div className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-eqi" />
+              <ChartBar size={16} className="text-eqi" />
               <h3 className="text-sm font-bold text-ink">
                 Cumprimento de Metas — {range.from} → {range.to}
               </h3>
@@ -440,7 +454,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
 
         <div className="rounded-[14px] border border-line bg-card p-5">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-4 h-4 text-eqi" />
+            <TrendUp size={16} className="text-eqi" />
             <h3 className="text-sm font-bold text-ink">Radar de Desempenho</h3>
           </div>
           <ResponsiveContainer width="100%" height={280}>
@@ -476,7 +490,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
           Clicar no nome abre o AssessorProfile modal (mantém o fluxo). */}
       <div className="rounded-[14px] border border-line bg-card overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-3 border-b border-line">
-          <Users className="w-4 h-4 text-ink-3" />
+          <Users size={16} className="text-ink-3" />
           <h3 className="text-sm font-extrabold tracking-tight text-ink">Matriz por assessor</h3>
           <span className="text-[10px] text-ink-3 ml-2">Clique no nome para ver perfil completo</span>
         </div>
@@ -603,7 +617,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
       <div className="rounded-[14px] border border-line bg-card p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-eqi" />
+            <Sparkle size={20} className="text-eqi" />
             <h3 className="text-sm font-bold text-ink">Análise IA do Time</h3>
             {teamInsight?.cached && (
               <span className="text-[9px] text-ink-3 bg-muted/30 px-1.5 py-0.5 rounded">
@@ -617,7 +631,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-ink-3 bg-muted/20 border border-line/30 hover:bg-muted/40 transition-all"
               title="Abre relatório dedicado em nova aba e auto-imprime"
             >
-              <Printer className="w-3 h-3" />
+              <Printer size={12} />
               PDF
             </button>
             <button
@@ -631,9 +645,9 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-eqi bg-eqi/10 border border-eqi/20 hover:bg-eqi/20 transition-all disabled:opacity-50"
             >
               {generateTeam.isPending ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
+                <CircleNotch size={12} className="animate-spin" />
               ) : (
-                <RefreshCw className="w-3 h-3" />
+                <ArrowClockwise size={12} />
               )}
               {generateTeam.isPending ? "Analisando…" : "Gerar Análise"}
             </button>
@@ -642,7 +656,7 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
 
         {generateTeam.isPending ? (
           <div className="flex items-center gap-3 text-sm text-ink-3 py-6">
-            <Loader2 className="w-5 h-5 animate-spin text-eqi" />
+            <CircleNotch size={20} className="animate-spin text-eqi" />
             Gemini Flash analisando desempenho do time…
           </div>
         ) : teamInsight ? (
