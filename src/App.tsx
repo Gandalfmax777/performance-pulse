@@ -78,6 +78,60 @@ const App = () => (
               }
             />
 
+            {/* Rotas placeholder do redesign — redirecionam para o conteúdo
+                legacy do Index (?view=...) até cada PR de tela substituir
+                pela página real. Ver redesign plan §7.
+                Sequência: redesign-por-dia, redesign-ranking, redesign-kpis,
+                redesign-squad-bet, redesign-torneio, redesign-assessores. */}
+            <Route
+              path="/por-dia"
+              element={
+                <RequireAuth>
+                  <Navigate to="/?view=daily" replace />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/ranking"
+              element={
+                <RequireAuth>
+                  <Navigate to="/?view=results" replace />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/kpis"
+              element={
+                <RequireAuth>
+                  <Navigate to="/?view=kpis" replace />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/squad-bet"
+              element={
+                <RequireAuth>
+                  <Navigate to="/?view=squad" replace />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/torneio"
+              element={
+                <RequireAuth>
+                  <Navigate to="/?view=tournament" replace />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/assessores"
+              element={
+                <RequireAuth>
+                  <Navigate to="/?view=team" replace />
+                </RequireAuth>
+              }
+            />
+
             {/* Relatório PDF dedicado (auth obrigatório) */}
             <Route
               path="/relatorio"
