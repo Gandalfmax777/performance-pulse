@@ -20,6 +20,7 @@ const Ranking = lazy(() => import("./pages/Ranking"));
 const Kpis = lazy(() => import("./pages/Kpis"));
 const SquadBet = lazy(() => import("./pages/SquadBet"));
 const Torneio = lazy(() => import("./pages/Torneio"));
+const Assessores = lazy(() => import("./pages/Assessores"));
 const Relatorio = lazy(() => import("./pages/Relatorio"));
 const RelatorioAssessor = lazy(() => import("./pages/RelatorioAssessor"));
 const TvPage = lazy(() => import("./pages/Tv"));
@@ -132,7 +133,7 @@ const App = () => (
               path="/assessores"
               element={
                 <RequireAuth>
-                  <Navigate to="/?view=team" replace />
+                  <Assessores />
                 </RequireAuth>
               }
             />

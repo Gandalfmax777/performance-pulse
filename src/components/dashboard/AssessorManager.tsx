@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import {
+  CircleNotch,
   UserPlus,
   Trash as Trash2,
   X,
@@ -325,7 +325,7 @@ const AssessorManager = ({ assessors, onAdd, onRemove, onClose }: AssessorManage
                       className="w-8 h-8 rounded-lg bg-primary/10 hover:bg-primary/20 flex items-center justify-center text-primary transition-all"
                     >
                       {saving ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <CircleNotch size={16} className="animate-spin" />
                       ) : (
                         <Check size={16} weight="bold" />
                       )}

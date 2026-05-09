@@ -15,18 +15,19 @@ import { SectionCard } from "@/components/shared";
 import { useTournamentFinishedStream } from "@/hooks/useTournamentFinishedStream";
 
 // Lazy: views condicionais carregam só quando o user navega.
-// `daily` migrou para /por-dia (PR redesign-por-dia).
-// `results` migrou para /ranking (PR redesign-ranking).
-// `kpis` migrou para /kpis (PR redesign-kpis).
-// `squad` migrou para /squad-bet (PR redesign-squad-bet).
+// `daily`      migrou para /por-dia      (PR redesign-por-dia)
+// `results`    migrou para /ranking      (PR redesign-ranking)
+// `kpis`       migrou para /kpis         (PR redesign-kpis)
+// `squad`      migrou para /squad-bet    (PR redesign-squad-bet)
+// `tournament` migrou para /torneio      (PR redesign-torneio)
+// `team`       migrou para /assessores   (PR redesign-assessores)
+// Index agora só renderiza `overview` (Visão Geral). PresentationMode
+// continua aqui porque é um modal aberto pelo botão "Apresentação" na
+// topbar do overview.
 const PresentationMode = lazy(() => import("@/components/dashboard/PresentationMode"));
-const AssessorManager = lazy(() => import("@/components/dashboard/AssessorManager"));
-const AssessorProfile = lazy(() => import("@/components/dashboard/AssessorProfile"));
-const TeamScreen = lazy(() => import("@/components/dashboard/TeamScreen"));
 
-import { PresentationChart, Plus } from "@phosphor-icons/react";
+import { PresentationChart } from "@phosphor-icons/react";
 import { useAssessors } from "@/hooks/useAssessors";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useRankingStream } from "@/hooks/useRankingStream";
 import { useSystemNotifications } from "@/hooks/useSystemNotifications";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
@@ -84,17 +85,11 @@ const VIEW_EYEBROWS: Partial<Record<View, string>> = {
   team: "ADMINISTRAÇÃO",
 };
 
-// Removidas da lista (cada uma vira página própria do redesign):
-// - `daily`      → /por-dia
-// - `results`    → /ranking
-// - `kpis`       → /kpis
-// - `squad`      → /squad-bet
-// - `tournament` → /torneio
-// Permanecem no type DashboardView para a sidebar matchear as rotas
-// novas via active state legacy.
-const VALID_VIEWS: ReadonlySet<View> = new Set([
-  "overview", "team",
-]);
+// Index só aceita `overview` agora — todas as outras views viraram rotas
+// próprias do redesign (ver comentário do bloco lazy acima). Permanecem
+// no type DashboardView porque a sidebar usa as keys para active state
+// legacy enquanto rotas novas convivem com `?view=` antigo.
+const VALID_VIEWS: ReadonlySet<View> = new Set(["overview"]);
 const VALID_PERIODS: ReadonlySet<OverviewPeriod> = new Set(["daily", "weekly", "monthly", "semester"]);
 
 function parseView(raw: string | null): View {
@@ -121,6 +116,7 @@ const Index = () => {
     else if (v === "kpis") navigate("/kpis", { replace: true });
     else if (v === "squad") navigate("/squad-bet", { replace: true });
     else if (v === "tournament") navigate("/torneio", { replace: true });
+    else if (v === "team") navigate("/assessores", { replace: true });
   }, [navigate]);
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -143,13 +139,8 @@ const Index = () => {
     }, { replace: true });
   }, [setSearchParams]);
 
-  const { assessors, addAssessor, removeAssessor } = useAssessors();
-  const { user } = useCurrentUser();
+  const { assessors } = useAssessors();
   const { event: finishedEvent, dismiss: dismissFinished } = useTournamentFinishedStream(true);
-  const [showManager, setShowManager] = useState(false);
-  // Profile modal aberto a partir do TeamScreen — clicar em um card de
-  // assessor abre o AssessorProfile com os dados dele.
-  const [selectedProfile, setSelectedProfile] = useState<Parameters<typeof AssessorProfile>[0]["assessor"] | null>(null);
   const overviewRange = rangeForPeriod(overviewPeriod);
 
   const [presentationOpen, setPresentationOpen] = useState(false);
@@ -169,14 +160,13 @@ const Index = () => {
   // viraram rotas próprias do redesign).
   const titleFor = (v: View): string => VIEW_LABELS[v];
 
-  // Subtitle por view (segue artboards do design)
+  // Subtitle (Index só renderiza overview agora — demais viraram rotas próprias)
   const subtitleFor = (v: View): string | undefined => {
     if (v === "overview") {
       const week = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "dd MMM");
       const weekEnd = format(endOfWeek(new Date(), { weekStartsOn: 1 }), "dd MMM");
       return `Semana atual · ${week} — ${weekEnd} · ${assessors.length} assessores`;
     }
-    if (v === "team") return `Gerencie a mesa · ${assessors.length} ativos`;
     return undefined;
   };
 
@@ -208,16 +198,6 @@ const Index = () => {
     </button>
   );
 
-  const teamManageBtn = (
-    <button
-      onClick={() => setShowManager(true)}
-      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-ink text-white text-xs font-semibold hover:bg-ink/90 transition-colors"
-    >
-      <Plus size={14} weight="bold" />
-      Gerenciar
-    </button>
-  );
-
   const topActionsByView = (v: View): React.ReactNode => {
     if (v === "overview") {
       return (
@@ -226,9 +206,6 @@ const Index = () => {
           {presentationBtn}
         </>
       );
-    }
-    if (v === "team") {
-      return teamManageBtn;
     }
     return null;
   };
@@ -291,39 +268,9 @@ const Index = () => {
             </>
           )}
 
-          <Suspense fallback={<InlineLoader />}>
-            {view === "team" && (
-              <TeamScreen
-                assessors={assessors}
-                onSelectAssessor={(a) => setSelectedProfile(a)}
-                onManage={() => setShowManager(true)}
-              />
-            )}
-          </Suspense>
-
       </AppShellLayout>
 
       {/* Modais top-level — irmãos do shell porque usam portais. */}
-      {selectedProfile && (
-        <Suspense fallback={null}>
-          <AssessorProfile
-            assessor={selectedProfile}
-            onClose={() => setSelectedProfile(null)}
-          />
-        </Suspense>
-      )}
-
-      {showManager && (
-        <Suspense fallback={null}>
-          <AssessorManager
-            assessors={assessors}
-            onAdd={addAssessor}
-            onRemove={removeAssessor}
-            onClose={() => setShowManager(false)}
-          />
-        </Suspense>
-      )}
-
       {presentationOpen && (
         <Suspense fallback={null}>
           <PresentationMode
@@ -337,11 +284,5 @@ const Index = () => {
     </>
   );
 };
-
-const InlineLoader = () => (
-  <div className="flex items-center justify-center py-12">
-    <div className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
-  </div>
-);
 
 export default Index;
