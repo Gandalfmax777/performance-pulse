@@ -1,5 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Warning, ArrowClockwise } from "@phosphor-icons/react";
 
 interface Props {
   children: ReactNode;
@@ -29,7 +29,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="min-h-screen flex items-center justify-center bg-background p-8">
           <div className="card-glass rounded-2xl p-8 max-w-md w-full text-center border border-destructive/30">
-            <AlertTriangle className="w-12 h-12 text-destructive mx-auto mb-4" />
+            <Warning size={48} weight="bold" className="text-destructive mx-auto mb-4" />
             <h1 className="text-xl font-bold text-foreground mb-2">Algo deu errado</h1>
             <p className="text-sm text-muted-foreground mb-4">
               {this.state.error?.message ?? "Erro inesperado na aplicação."}
@@ -38,7 +38,7 @@ export class ErrorBoundary extends Component<Props, State> {
               onClick={() => window.location.reload()}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
             >
-              <RefreshCw className="w-4 h-4" />
+              <ArrowClockwise size={16} weight="bold" />
               Recarregar
             </button>
           </div>

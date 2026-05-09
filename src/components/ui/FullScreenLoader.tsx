@@ -1,10 +1,10 @@
-import { Activity } from "lucide-react";
+import { Pulse } from "@phosphor-icons/react";
 
 const FullScreenLoader = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
     <div className="flex flex-col items-center gap-3">
       <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center animate-pulse">
-        <Activity className="w-5 h-5 text-primary-foreground" />
+        <Pulse size={20} weight="bold" className="text-primary-foreground" />
       </div>
       <p className="text-xs text-muted-foreground">Carregando…</p>
     </div>

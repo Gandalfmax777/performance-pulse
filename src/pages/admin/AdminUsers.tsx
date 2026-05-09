@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-import { Users, Plus, PencilSimple, Trash } from "@phosphor-icons/react";
+import { CircleNotch, Users, Plus, PencilSimple, Trash } from "@phosphor-icons/react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useUsers, useCreateUser, useUpdateUser, useDeleteUser, type ApiUser } from "@/hooks/useUsers";
@@ -136,7 +135,7 @@ const AdminUsers = () => {
       <div className="rounded-[14px] overflow-hidden border border-line bg-card">
         {isLoading ? (
           <div className="p-10 flex items-center justify-center">
-            <Loader2 className="w-6 h-6 text-eqi animate-spin" />
+            <CircleNotch size={24} className="text-eqi animate-spin" />
           </div>
         ) : (
           <Table>
@@ -245,7 +244,7 @@ const AdminUsers = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
             <Button onClick={handleCreate} disabled={!cName.trim() || !cEmail.trim() || cPassword.length < 8 || createUser.isPending}>
-              {createUser.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              {createUser.isPending && <CircleNotch size={16} className="animate-spin mr-2" />}
               Criar
             </Button>
           </DialogFooter>
@@ -285,7 +284,7 @@ const AdminUsers = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditUser(null)}>Cancelar</Button>
             <Button onClick={handleEdit} disabled={updateUser.isPending}>
-              {updateUser.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              {updateUser.isPending && <CircleNotch size={16} className="animate-spin mr-2" />}
               Salvar
             </Button>
           </DialogFooter>

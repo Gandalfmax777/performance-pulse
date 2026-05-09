@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
-import { Loader2, Target, CalendarDays, Save } from "lucide-react";
+import {
+  CircleNotch,
+  Target,
+  CalendarBlank as CalendarDays,
+  FloppyDisk as Save,
+} from "@phosphor-icons/react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -124,7 +129,7 @@ const DirectionEditModal = ({ date, open, onClose }: Props) => {
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Target className="w-5 h-5 text-primary" />
+            <Target size={20} className="text-primary" />
             Definir Foco
           </DialogTitle>
           <DialogDescription>{periodLabel}</DialogDescription>
@@ -156,13 +161,13 @@ const DirectionEditModal = ({ date, open, onClose }: Props) => {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs flex items-center gap-1">
-                  <CalendarDays className="w-3 h-3" /> Início
+                  <CalendarDays size={12} /> Início
                 </Label>
                 <Input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} />
               </div>
               <div>
                 <Label className="text-xs flex items-center gap-1">
-                  <CalendarDays className="w-3 h-3" /> Fim
+                  <CalendarDays size={12} /> Fim
                 </Label>
                 <Input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} />
               </div>
@@ -205,7 +210,7 @@ const DirectionEditModal = ({ date, open, onClose }: Props) => {
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
           <Button onClick={handleSave} disabled={upsert.isPending || !text.trim()}>
-            {upsert.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+            {upsert.isPending ? <CircleNotch size={16} className="mr-2 animate-spin" /> : <Save size={16} weight="bold" className="mr-2" />}
             Salvar foco
           </Button>
         </DialogFooter>

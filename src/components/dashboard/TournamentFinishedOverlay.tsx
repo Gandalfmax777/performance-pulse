@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Crown, Medal, Award, X } from "lucide-react";
-import { Trophy } from "@phosphor-icons/react";
+import { Crown, Medal, X, Trophy } from "@phosphor-icons/react";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
 import { playGoalHitSound } from "@/lib/sounds";
 
@@ -35,7 +34,7 @@ function rankColor(rank: number): string {
 function rankIcon(rank: number) {
   if (rank === 1) return Crown;
   if (rank === 2) return Medal;
-  if (rank === 3) return Award;
+  if (rank === 3) return Medal; // Phosphor não tem Award; Medal cobre 2º+3º
   return Crown;
 }
 
@@ -122,7 +121,7 @@ const TournamentFinishedOverlay = ({ event, onDismiss, autoDismissMs = 12000 }: 
             aria-label="Fechar"
             className="absolute top-6 right-6 z-10 w-12 h-12 rounded-full bg-muted/30 border border-border hover:bg-muted/60 flex items-center justify-center text-foreground transition-all"
           >
-            <X className="w-5 h-5" />
+            <X size={20} />
           </button>
 
           {/* Conteúdo central */}
@@ -187,7 +186,7 @@ const TournamentFinishedOverlay = ({ event, onDismiss, autoDismissMs = 12000 }: 
                     }`}
                   >
                     <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full mb-3 ${rankColor(w.rank)}`}>
-                      <RankIcon className="w-4 h-4" />
+                      <RankIcon size={16} weight="fill" />
                       <span className="font-black text-sm">{w.rank}º LUGAR</span>
                     </div>
                     <div className="flex flex-col items-center gap-3">
