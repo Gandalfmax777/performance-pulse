@@ -11,6 +11,7 @@ import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import AnnouncementTicker from "@/components/dashboard/AnnouncementTicker";
 import TournamentCard from "@/components/dashboard/TournamentCard";
 import TournamentFinishedOverlay from "@/components/dashboard/TournamentFinishedOverlay";
+import { SectionCard } from "@/components/shared";
 import { useActiveTournaments } from "@/hooks/useTournaments";
 import { useTournamentFinishedStream } from "@/hooks/useTournamentFinishedStream";
 
@@ -243,7 +244,6 @@ const Index = () => {
 
       <DashboardSidebar
         view={view}
-        onViewChange={setView}
         onEnterTv={openTv}
         onEnterPresentation={openPresentation}
         mobileOpen={mobileNavOpen}
@@ -273,17 +273,10 @@ const Index = () => {
 
                 {/* MIDDLE: Cadência + Atividade ao vivo */}
                 <div className="flex flex-col gap-4">
-                  <div className="rounded-[14px] border border-line bg-card p-5">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="text-[14px] font-extrabold tracking-tight text-ink">
-                          Cadência da Semana
-                        </h3>
-                        <p className="text-[11px] text-ink-3 mt-0.5">
-                          Reuniões realizadas e ativações por dia
-                        </p>
-                      </div>
-                    </div>
+                  <SectionCard
+                    title="Cadência da Semana"
+                    subtitle="Reuniões realizadas e ativações por dia"
+                  >
                     <WeeklyCadenceChart from={overviewRange.from} to={overviewRange.to} />
                     <div className="flex items-center gap-4 mt-3 text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3">
                       <span className="inline-flex items-center gap-1.5">
@@ -295,7 +288,7 @@ const Index = () => {
                         Ativações
                       </span>
                     </div>
-                  </div>
+                  </SectionCard>
 
                   <ActivityFeed />
                 </div>
@@ -382,9 +375,9 @@ interface TournamentViewProps {
 const TournamentView = ({ tournaments }: TournamentViewProps) => {
   if (tournaments.length === 0) {
     return (
-      <div className="rounded-[14px] border border-line bg-card p-10 text-center">
-        <p className="text-ink-3 text-sm">Sem torneio ativo no momento.</p>
-      </div>
+      <SectionCard className="text-center">
+        <p className="text-ink-3 text-sm py-6">Sem torneio ativo no momento.</p>
+      </SectionCard>
     );
   }
   return (
