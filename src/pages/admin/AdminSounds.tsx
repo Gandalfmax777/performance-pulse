@@ -10,7 +10,7 @@
  * de dialog pra cada KPI.
  */
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   CircleNotch,
@@ -18,6 +18,10 @@ import {
   UploadSimple as Upload,
   Trash as Trash2,
   SpeakerSimpleSlash as VolumeX,
+  Trophy,
+  Fire,
+  CurrencyDollar,
+  Crown,
 } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/api/client";
@@ -42,20 +46,12 @@ export default function AdminSounds() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
-          ADMINISTRAÇÃO
-        </p>
-        <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-          <Volume2 size={20} weight="fill" className="text-eqi" />
-          Sons dos KPIs
-        </h1>
-        <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
-          Carregue um arquivo MP3/WAV (até 2MB) por KPI. Quando marcado como{" "}
-          <strong className="text-ink">broadcast</strong>, o som toca em todos
-          dispositivos conectados (TV + dashboards abertos) assim que alguém registra o evento.
-        </p>
+      {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar. */}
+
+      {/* Volume global + Sons especiais (alinha com design/Admin-Sounds.html) */}
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_1.4fr] gap-4">
+        <VolumeControlCard />
+        <SpecialSoundsCard />
       </div>
 
       {/* Lista */}
@@ -100,6 +96,131 @@ export default function AdminSounds() {
           </li>
         </ul>
       </div>
+    </div>
+  );
+}
+
+// ─── Volume Control ──────────────────────────────────────────────────────
+// Slider client-side persistido em localStorage. O controle real do
+// volume é por <audio> tag — quem tocar sons (TvLiveTicker, ranking
+// stream) deveria ler `localStorage.pulseVolume` e aplicar. Por ora é
+// só UI: documenta a config; integração efetiva fica pra round 5.
+
+const VOLUME_KEY = "pulse:soundVolume";
+
+function VolumeControlCard() {
+  const [volume, setVolume] = useState<number>(() => {
+    const stored = typeof window !== "undefined" ? localStorage.getItem(VOLUME_KEY) : null;
+    return stored ? Number(stored) : 80;
+  });
+  const [muted, setMuted] = useState<boolean>(() => {
+    const stored = typeof window !== "undefined" ? localStorage.getItem(VOLUME_KEY + ":muted") : null;
+    return stored === "1";
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") localStorage.setItem(VOLUME_KEY, String(volume));
+  }, [volume]);
+  useEffect(() => {
+    if (typeof window !== "undefined") localStorage.setItem(VOLUME_KEY + ":muted", muted ? "1" : "0");
+  }, [muted]);
+
+  return (
+    <div className="rounded-[var(--radius)] border border-line bg-card p-5">
+      <div className="flex items-center gap-2 mb-3">
+        <Volume2 size={14} weight="fill" className="text-primary" />
+        <h3 className="text-[13px] font-bold text-ink">Volume global</h3>
+      </div>
+      <p className="text-[11px] text-ink-3 mb-4">
+        Controle local deste navegador (não compartilhado entre TVs/laptops).
+        Persistido via localStorage.
+      </p>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setMuted(!muted)}
+          className={`p-2 rounded-[6px] transition-colors ${
+            muted ? "bg-destructive/10 text-destructive" : "text-ink-3 hover:text-ink hover:bg-surface-2"
+          }`}
+          title={muted ? "Mute ativo — clique pra reativar" : "Click pra mute"}
+        >
+          {muted ? <VolumeX size={16} weight="fill" /> : <Volume2 size={16} weight="bold" />}
+        </button>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={muted ? 0 : volume}
+          onChange={(e) => {
+            setVolume(Number(e.target.value));
+            if (muted) setMuted(false);
+          }}
+          className="flex-1 accent-primary"
+        />
+        <span className="num font-mono font-bold text-[14px] text-ink min-w-[40px] text-right">
+          {muted ? 0 : volume}%
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Sons especiais (info card) ──────────────────────────────────────────
+// Lista os eventos do sistema que tem som (quando configurado por KPI).
+// Aqui é só informativo; configuração efetiva é via lista de KPIs abaixo.
+
+function SpecialSoundsCard() {
+  const events = [
+    {
+      icon: Crown,
+      label: "1º lugar do dia",
+      desc: "Toca quando alguém assume liderança no ranking diário",
+    },
+    {
+      icon: CurrencyDollar,
+      label: "Captação registrada",
+      desc: "Som do KPI ativacao_conta dispara em broadcast",
+    },
+    {
+      icon: Trophy,
+      label: "Squad bate meta combinada",
+      desc: "Premiação automática quando squad cruza 100%",
+    },
+    {
+      icon: Fire,
+      label: "Streak ≥ 5 dias",
+      desc: "Indica consistência crítica do AAI",
+    },
+  ];
+
+  return (
+    <div className="rounded-[var(--radius)] border border-line bg-card p-5">
+      <div className="flex items-center gap-2 mb-3">
+        <Trophy size={14} weight="fill" className="text-gold-deep" />
+        <h3 className="text-[13px] font-bold text-ink">Sons especiais</h3>
+      </div>
+      <p className="text-[11px] text-ink-3 mb-4">
+        Eventos do sistema que tocam som quando há KPI configurado abaixo
+        com broadcast ativo.
+      </p>
+      <ul className="space-y-2.5">
+        {events.map((e) => {
+          const Icon = e.icon;
+          return (
+            <li key={e.label} className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-7 h-7 rounded-[6px] bg-surface-2 flex items-center justify-center">
+                <Icon size={13} weight="fill" className="text-ink-3" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-semibold text-ink">{e.label}</p>
+                <p className="text-[11px] text-ink-3 leading-tight mt-0.5">
+                  {e.desc}
+                </p>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

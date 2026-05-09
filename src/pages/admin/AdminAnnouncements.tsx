@@ -2,7 +2,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import {
   CircleNotch,
-  Megaphone,
   Plus,
   PencilSimple,
   Trash,
@@ -64,25 +63,201 @@ const AdminAnnouncements = () => {
     }
   };
 
+  // Composer state — UI-only por ora; "Publicar" abre o dialog real
+  // de createAnnouncement com a mensagem pre-filled. Quando backend
+  // ganhar campos type/channels/start/end, vira persisted.
+  type AnnouncementType = "info" | "success" | "warning" | "critical";
+  const [composerType, setComposerType] = useState<AnnouncementType>("info");
+  const [composerMsg, setComposerMsg] = useState(
+    "🏆 Liga das Ativações termina sexta — top 3 leva R$ 1.400 em prêmios.",
+  );
+  const [composerStart, setComposerStart] = useState("");
+  const [composerEnd, setComposerEnd] = useState("");
+  const [chTicker, setChTicker] = useState(true);
+  const [chBanner, setChBanner] = useState(true);
+  const [chPush, setChPush] = useState(false);
+
+  const TYPE_META: Record<AnnouncementType, { label: string; bg: string; color: string; emoji: string }> = {
+    info: { label: "Info", bg: "hsl(var(--primary)/0.12)", color: "hsl(var(--primary))", emoji: "📢" },
+    success: { label: "Sucesso", bg: "hsl(var(--success)/0.12)", color: "hsl(var(--success))", emoji: "🏆" },
+    warning: { label: "Atenção", bg: "hsl(var(--warning)/0.12)", color: "hsl(var(--warning))", emoji: "⚠️" },
+    critical: { label: "Crítico", bg: "hsl(var(--destructive)/0.12)", color: "hsl(var(--destructive))", emoji: "🚨" },
+  };
+
   return (
     <div className="space-y-5">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
-            ADMINISTRAÇÃO
-          </p>
-          <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-            <Megaphone size={20} weight="bold" className="text-eqi" />
-            Avisos
-          </h1>
-          <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
-            Mensagens manuais que aparecem no ticker do topo da Visão Geral. Aparecem
-            ANTES das mensagens auto-geradas (líder, streaks, etc).
-          </p>
-        </div>
-        <Button onClick={() => setDialog({ open: true, editing: null })} className="gap-2 bg-ink hover:bg-ink/90 text-white">
+      {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar.
+          Aqui só renderizamos a action bar com o CTA primário. */}
+      <div className="flex justify-end">
+        <Button
+          onClick={() => setDialog({ open: true, editing: null })}
+          className="gap-2 bg-ink hover:bg-ink/90 text-white"
+        >
           <Plus size={14} weight="bold" /> Novo Aviso
         </Button>
+      </div>
+
+      {/* Composer 2-col: form esquerda + preview TV ticker direita
+          (alinha com design/Admin-Announcements.html v3) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="rounded-[var(--radius)] border border-line bg-card p-5 space-y-4">
+          <div>
+            <h3 className="text-[13px] font-bold text-ink mb-1">
+              Compor aviso
+            </h3>
+            <p className="text-[11px] text-ink-3">
+              Aparece no ticker do Modo TV e no banner do dashboard.
+            </p>
+          </div>
+          <div>
+            <Label className="text-xs uppercase tracking-[0.12em] font-mono text-ink-3">
+              Tipo
+            </Label>
+            <div className="flex gap-2 mt-2 flex-wrap">
+              {(["info", "success", "warning", "critical"] as AnnouncementType[]).map((t) => {
+                const meta = TYPE_META[t];
+                const active = composerType === t;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setComposerType(t)}
+                    className={`px-3 py-1.5 rounded-[6px] text-[12px] font-semibold border transition-all ${
+                      active
+                        ? "border-transparent text-white"
+                        : "border-line text-ink-3 hover:text-ink hover:bg-surface-2"
+                    }`}
+                    style={
+                      active
+                        ? { background: meta.color, borderColor: meta.color }
+                        : undefined
+                    }
+                  >
+                    {meta.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs uppercase tracking-[0.12em] font-mono text-ink-3">
+              Mensagem
+            </Label>
+            <textarea
+              value={composerMsg}
+              onChange={(e) => setComposerMsg(e.target.value)}
+              rows={3}
+              className="mt-1.5 w-full text-[13px] rounded-[8px] border border-line bg-card px-3 py-2 focus:outline-none focus:border-primary/50 resize-y"
+              placeholder="🏆 Squad Bet rodada 18 abre amanhã às 9h…"
+            />
+            <p className="text-[10px] text-ink-3 mt-1.5">
+              {composerMsg.length} caracteres · use emojis pra peso visual
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs uppercase tracking-[0.12em] font-mono text-ink-3">
+                Início
+              </Label>
+              <Input
+                type="datetime-local"
+                value={composerStart}
+                onChange={(e) => setComposerStart(e.target.value)}
+                className="mt-1.5 text-[13px]"
+              />
+            </div>
+            <div>
+              <Label className="text-xs uppercase tracking-[0.12em] font-mono text-ink-3">
+                Fim
+              </Label>
+              <Input
+                type="datetime-local"
+                value={composerEnd}
+                onChange={(e) => setComposerEnd(e.target.value)}
+                className="mt-1.5 text-[13px]"
+              />
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs uppercase tracking-[0.12em] font-mono text-ink-3">
+              Canais
+            </Label>
+            <div className="flex gap-4 mt-2 flex-wrap text-[13px]">
+              <label className="inline-flex items-center gap-2 cursor-pointer">
+                <Checkbox
+                  checked={chTicker}
+                  onCheckedChange={(v) => setChTicker(!!v)}
+                />
+                Ticker TV
+              </label>
+              <label className="inline-flex items-center gap-2 cursor-pointer">
+                <Checkbox
+                  checked={chBanner}
+                  onCheckedChange={(v) => setChBanner(!!v)}
+                />
+                Banner dashboard
+              </label>
+              <label className="inline-flex items-center gap-2 cursor-pointer text-ink-3">
+                <Checkbox
+                  checked={chPush}
+                  onCheckedChange={(v) => setChPush(!!v)}
+                />
+                Notificação push
+                <span className="text-[10px] uppercase tracking-[0.12em] font-mono text-ink-4">
+                  em breve
+                </span>
+              </label>
+            </div>
+          </div>
+          <div className="flex gap-2 pt-2">
+            <Button
+              onClick={() => {
+                // Pre-fills o dialog real de createAnnouncement com a msg.
+                // Backend ainda não tem campos type/channels/start/end —
+                // só a `message` + `active` é persistido.
+                setDialog({ open: true, editing: null });
+              }}
+              className="bg-ink hover:bg-ink/90 text-white"
+            >
+              Publicar
+            </Button>
+            <Button variant="outline" disabled title="Rascunho ainda não suportado pelo backend">
+              Salvar rascunho
+            </Button>
+          </div>
+        </div>
+
+        <div className="rounded-[var(--radius)] border border-line bg-card p-5 flex flex-col">
+          <div className="mb-4">
+            <h3 className="text-[13px] font-bold text-ink mb-1">
+              Preview · TV ticker
+            </h3>
+            <p className="text-[11px] text-ink-3">
+              Ao vivo no Modo TV. Texto rola da direita pra esquerda em loop.
+            </p>
+          </div>
+          <div
+            className="flex-1 flex items-center overflow-hidden border-t-[2px] min-h-[80px]"
+            style={{
+              background: "hsl(var(--ink))",
+              borderTopColor: TYPE_META[composerType].color,
+            }}
+          >
+            <div className="flex items-center whitespace-nowrap animate-marquee text-white px-6">
+              <span className="inline-flex items-center gap-2.5 text-[13px] font-mono font-semibold tracking-[0.04em]">
+                <span style={{ color: TYPE_META[composerType].color }}>
+                  {TYPE_META[composerType].emoji} {TYPE_META[composerType].label.toUpperCase()} ·
+                </span>
+                {composerMsg || "Sua mensagem aparece aqui…"}
+                <span className="text-white/25 ml-3">·</span>
+              </span>
+            </div>
+          </div>
+          <p className="text-[10px] text-ink-3 mt-3 font-mono uppercase tracking-[0.12em]">
+            Visualização aproximada · TV usa fonte 13px mono · cor do
+            border-top reflete o tipo selecionado
+          </p>
+        </div>
       </div>
 
       <div className="rounded-[14px] overflow-hidden border border-line bg-card">
@@ -95,57 +270,115 @@ const AdminAnnouncements = () => {
             Nenhum aviso cadastrado. O ticker mostra só mensagens auto-geradas.
           </div>
         ) : (
-          <div className="divide-y divide-border/20">
-            {announcements!.map((a) => {
-              const expired = a.expiresAt && new Date(a.expiresAt) < new Date();
-              return (
-                <div key={a.id} className="p-4 flex items-start gap-3">
-                  <button
-                    onClick={() => handleToggleActive(a)}
-                    className="mt-0.5 text-ink-3 hover:text-eqi transition-all"
-                    title={a.active ? "Desativar" : "Ativar"}
-                  >
-                    {a.active ? <Eye size={16} /> : <EyeSlash size={16} />}
-                  </button>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <p className={`text-sm ${a.active && !expired ? "text-ink" : "text-ink-3 line-through"}`}>
-                        {a.message}
-                      </p>
-                      {!a.active && <Badge variant="outline" className="text-[9px]">INATIVO</Badge>}
-                      {expired && <Badge variant="destructive" className="text-[9px]">EXPIRADO</Badge>}
-                    </div>
-                    <p className="text-[10px] text-ink-3">
-                      por {a.createdByName} em{" "}
-                      {format(new Date(a.createdAt), "dd/MM 'às' HH:mm", { locale: ptBR })}
-                      {a.expiresAt && (
-                        <>
-                          {" • expira "}
-                          {format(new Date(a.expiresAt), "dd/MM 'às' HH:mm", { locale: ptBR })}
-                        </>
-                      )}
-                      {a.sortOrder !== 0 && <> • ordem {a.sortOrder}</>}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => setDialog({ open: true, editing: a })}
-                      className="w-8 h-8 rounded-md text-ink-3 hover:text-eqi hover:bg-eqi/10 flex items-center justify-center transition-all"
-                      title="Editar"
+          <div className="overflow-x-auto">
+            <table className="w-full text-[13px]">
+              <thead>
+                <tr className="bg-surface-2">
+                  <th className="text-[10px] font-mono font-semibold uppercase tracking-[0.16em] text-ink-3 text-left px-3 py-2.5 w-24">
+                    Tipo
+                  </th>
+                  <th className="text-[10px] font-mono font-semibold uppercase tracking-[0.16em] text-ink-3 text-left px-3 py-2.5">
+                    Mensagem
+                  </th>
+                  <th className="text-[10px] font-mono font-semibold uppercase tracking-[0.16em] text-ink-3 text-left px-3 py-2.5 w-40">
+                    Janela
+                  </th>
+                  <th className="text-[10px] font-mono font-semibold uppercase tracking-[0.16em] text-ink-3 text-left px-3 py-2.5">
+                    Canais
+                  </th>
+                  <th className="text-[10px] font-mono font-semibold uppercase tracking-[0.16em] text-ink-3 text-left px-3 py-2.5 w-28">
+                    Status
+                  </th>
+                  <th className="text-right px-3 py-2.5 w-24" />
+                </tr>
+              </thead>
+              <tbody>
+                {announcements!.map((a) => {
+                  const expired = a.expiresAt && new Date(a.expiresAt) < new Date();
+                  // Tipo/canais ainda não persistidos no backend — display
+                  // como "INFO" + "TV/Banner" como default. Quando backend
+                  // expandir o schema (Announcement.type + .channels),
+                  // estes campos viram dinâmicos.
+                  const status = !a.active
+                    ? { label: "INATIVO", color: "text-ink-3", bg: "bg-surface-2", border: "border-line" }
+                    : expired
+                    ? { label: "EXPIRADO", color: "text-destructive", bg: "bg-destructive/10", border: "border-destructive/30" }
+                    : new Date(a.createdAt) > new Date()
+                    ? { label: "AGENDADO", color: "text-[hsl(var(--warning))]", bg: "bg-[hsl(var(--warning)/0.1)]", border: "border-[hsl(var(--warning)/0.3)]" }
+                    : { label: "ATIVO", color: "text-[hsl(var(--success))]", bg: "bg-[hsl(var(--success)/0.1)]", border: "border-[hsl(var(--success)/0.3)]" };
+                  return (
+                    <tr
+                      key={a.id}
+                      className={`border-t border-line transition-colors hover:bg-surface-2/60 ${
+                        !a.active || expired ? "opacity-60" : ""
+                      }`}
                     >
-                      <PencilSimple size={14} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(a)}
-                      className="w-8 h-8 rounded-md text-ink-3 hover:text-destructive hover:bg-destructive/10 flex items-center justify-center transition-all"
-                      title="Remover"
-                    >
-                      <Trash size={14} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+                      <td className="px-3 py-2.5">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full border border-line bg-surface text-[10px] font-mono font-bold uppercase tracking-[0.08em] text-ink-2">
+                          INFO
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <p className="text-ink truncate max-w-[420px]" title={a.message}>
+                          {a.message}
+                        </p>
+                      </td>
+                      <td className="px-3 py-2.5 text-[11px] num font-mono text-ink-3">
+                        {format(new Date(a.createdAt), "dd/MM HH:mm")}
+                        {a.expiresAt && (
+                          <>
+                            <br />
+                            → {format(new Date(a.expiresAt), "dd/MM HH:mm")}
+                          </>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <div className="flex gap-1 flex-wrap">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded border border-line bg-surface text-[10px] font-mono font-semibold uppercase tracking-[0.08em] text-ink-3">
+                            TV
+                          </span>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded border border-line bg-surface text-[10px] font-mono font-semibold uppercase tracking-[0.08em] text-ink-3">
+                            Banner
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-mono font-bold uppercase tracking-[0.08em] ${status.color} ${status.bg} ${status.border}`}
+                        >
+                          {status.label}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => handleToggleActive(a)}
+                            className="w-7 h-7 rounded-md text-ink-3 hover:text-eqi hover:bg-eqi/10 flex items-center justify-center transition-all"
+                            title={a.active ? "Desativar" : "Ativar"}
+                          >
+                            {a.active ? <Eye size={13} /> : <EyeSlash size={13} />}
+                          </button>
+                          <button
+                            onClick={() => setDialog({ open: true, editing: a })}
+                            className="w-7 h-7 rounded-md text-ink-3 hover:text-eqi hover:bg-eqi/10 flex items-center justify-center transition-all"
+                            title="Editar"
+                          >
+                            <PencilSimple size={13} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(a)}
+                            className="w-7 h-7 rounded-md text-ink-3 hover:text-destructive hover:bg-destructive/10 flex items-center justify-center transition-all"
+                            title="Remover"
+                          >
+                            <Trash size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

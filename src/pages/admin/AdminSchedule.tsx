@@ -1,8 +1,7 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   CircleNotch,
-  CalendarBlank as Calendar,
   Plus,
   PencilSimple as Pencil,
   Trash as Trash2,
@@ -180,19 +179,13 @@ const AdminSchedule = () => {
 
   return (
     <div className="space-y-5">
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
-          ADMINISTRAÇÃO
-        </p>
-        <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-          <Calendar size={20} weight="bold" className="text-eqi" />
-          Cronograma Semanal
-        </h1>
-        <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
-          Edite atividades, horários e KPIs vinculados. Activities desativadas
-          não aparecem no cronograma do dashboard.
-        </p>
-      </div>
+      {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar. */}
+
+      {/* Heatmap visual — grid 5 dias × 11 horas (8h-18h) com células
+          coloridas por cobertura de atividade (alinha com design/Admin-Schedule.html). */}
+      {!isLoading && activities && activities.length > 0 && (
+        <ScheduleHeatmap activities={activities} />
+      )}
 
       {isLoading ? (
         <div className="rounded-[14px] border border-line bg-card p-10 flex items-center justify-center">
@@ -588,6 +581,121 @@ function InlineTimeEditor({
         className="w-[70px] px-1 py-0.5 rounded bg-muted/30 border border-eqi/30 text-xs font-mono focus:outline-none focus:border-primary"
       />
       {saving && <CircleNotch size={12} className="animate-spin text-eqi" />}
+    </div>
+  );
+}
+
+// ─── ScheduleHeatmap ─────────────────────────────────────────────────────
+// Grid 5 dias × 11 horas (8h-18h) mostrando cobertura de atividade por
+// célula. Cor da célula reflete se há atividade naquela hora/dia. Hover
+// mostra nome da atividade. Atividades BIWEEKLY ficam meio-tom.
+
+const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+
+interface HeatmapCell {
+  has: boolean;
+  activities: ApiActivity[];
+}
+
+function ScheduleHeatmap({ activities }: { activities: ApiActivity[] }) {
+  const grid = useMemo<Record<number, Record<number, HeatmapCell>>>(() => {
+    const map: Record<number, Record<number, HeatmapCell>> = {};
+    for (const dow of [1, 2, 3, 4, 5]) {
+      map[dow] = {};
+      for (const h of HOURS) {
+        map[dow][h] = { has: false, activities: [] };
+      }
+    }
+    for (const a of activities) {
+      if (a.dayOfWeek < 1 || a.dayOfWeek > 5 || !a.active) continue;
+      const startH = parseInt(a.startTime?.split(":")[0] ?? "9", 10);
+      const endH = parseInt(a.endTime?.split(":")[0] ?? "9", 10);
+      for (let h = startH; h <= endH; h++) {
+        if (h < 8 || h > 18) continue;
+        const cell = map[a.dayOfWeek][h];
+        if (cell) {
+          cell.has = true;
+          cell.activities.push(a);
+        }
+      }
+    }
+    return map;
+  }, [activities]);
+
+  return (
+    <div className="rounded-[var(--radius)] border border-line bg-card p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="text-[13px] font-bold text-ink">Visão semanal</h3>
+          <p className="text-[11px] text-ink-3 mt-0.5">
+            Cobertura horária 08h–18h por dia útil · células coloridas =
+            atividade ativa
+          </p>
+        </div>
+        <div className="flex items-center gap-3 text-[11px] text-ink-3">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-block w-2.5 h-2.5 rounded-[2px] bg-primary" />
+            Ativa
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-block w-2.5 h-2.5 rounded-[2px] bg-primary/40" />
+            Quinzenal
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-block w-2.5 h-2.5 rounded-[2px] bg-surface-2 border border-line" />
+            Vazia
+          </span>
+        </div>
+      </div>
+
+      {/* Grid 6 cols (label + 5 dias úteis) × 12 rows (header + 11 horas) */}
+      <div
+        className="grid gap-px bg-line text-[11px]"
+        style={{
+          gridTemplateColumns: "60px repeat(5, minmax(0, 1fr))",
+        }}
+      >
+        {/* Header row */}
+        <div className="bg-surface-2 px-2 py-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-3">
+          Hora
+        </div>
+        {[1, 2, 3, 4, 5].map((dow) => (
+          <div
+            key={`h-${dow}`}
+            className="bg-surface-2 px-2 py-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-3 text-center"
+          >
+            {DAY_LABELS[dow].slice(0, 3)}
+          </div>
+        ))}
+
+        {HOURS.map((h) => (
+          <Fragment key={h}>
+            <div className="bg-card px-2 py-2 font-mono text-[10px] text-ink-3 text-right">
+              {String(h).padStart(2, "0")}h
+            </div>
+            {[1, 2, 3, 4, 5].map((dow) => {
+              const cell = grid[dow][h];
+              const onlyBiweekly =
+                cell.has && cell.activities.every((a) => a.cadenceType === "BIWEEKLY");
+              const bg = !cell.has
+                ? "bg-surface-2"
+                : onlyBiweekly
+                ? "bg-primary/40"
+                : "bg-primary";
+              const titles = cell.activities
+                .map((a) => `${a.name} (${a.startTime}-${a.endTime})`)
+                .join("\n");
+              return (
+                <div
+                  key={`${dow}-${h}`}
+                  className={`${bg} h-7 transition-colors hover:opacity-80`}
+                  title={titles || `${DAY_LABELS[dow]} ${h}h00 (sem atividade)`}
+                />
+              );
+            })}
+          </Fragment>
+        ))}
+      </div>
     </div>
   );
 }

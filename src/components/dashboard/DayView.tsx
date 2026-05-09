@@ -1,30 +1,25 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Trophy,
-  Fire,
-  TrendUp,
-  Clock,
-  Crown,
   CalendarX,
-  CheckCircle,
   CalendarBlank,
   Target,
+  Clock,
   X as XIcon,
 } from "@phosphor-icons/react";
 import { startOfWeek, addDays, format } from "date-fns";
 import { type Assessor } from "@/types/assessor";
 import PomodoroTimer from "./PomodoroTimer";
 import RegistrationPanel from "./RegistrationPanel";
-import { useDailyRanking } from "@/hooks/useRankings";
 import { useActivities, type ApiActivity, type ApiActivityKpi } from "@/hooks/useActivities";
-import { useMetrics } from "@/hooks/useMetrics";
 import { useKpis } from "@/hooks/useKpis";
-import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
-import { apiFetch } from "@/api/client";
-import { SALESFORCE_PREFIX, isSalesforceCheck } from "@/lib/meetingBonus";
+import { useDailyRanking } from "@/hooks/useRankings";
 import DailyDirection from "./DailyDirection";
-import DayHeroMetrics from "./DayHeroMetrics";
+import DayKpiTilesRow from "./DayKpiTilesRow";
+import HourlyBarChart from "./HourlyBarChart";
+import DailyRankingTable from "./DailyRankingTable";
+import { Eyebrow, SectionCard } from "@/components/shared";
+import { cn } from "@/lib/utils";
 
 /**
  * Labels Pt-BR pros 5 dias úteis. dayOfWeek 1=segunda ... 5=sexta
@@ -42,36 +37,49 @@ interface DayViewProps {
   assessors: Assessor[];
 }
 
+/**
+ * `/por-dia` — alinha com `Por-Dia.html`.
+ *
+ * Topo (design):
+ *   [Day strip 5 cards: SEG/TER/QUA/QUI/SEX com pontos do dia]
+ *   [Custom date picker à direita]
+ *   [4 KPI tiles: Pontos · hoje | Ligações | Reuniões ag. | Reuniões real.]
+ *   [Hourly bar chart 08-18h]
+ *   [Tabela ranking · dia]
+ *
+ * Operação do dia (funcionalidades preservadas, abaixo):
+ *   [Schedule panel + Pomodoro] | [DailyDirection]
+ *   [RegistrationPanel full-width]
+ */
 const DayView = ({ assessors }: DayViewProps) => {
   // ─── Data e tab ────────────────────────────────────────────────────────────
   const today = new Date();
-  const todayDow = today.getDay(); // 0=dom..6=sab
-  // defaultTab é o índice (0..4) do dia útil atual (seg=0..sex=4)
+  const todayDow = today.getDay();
   const defaultTab = todayDow >= 1 && todayDow <= 5 ? todayDow - 1 : 0;
   const [activeDay, setActiveDay] = useState(defaultTab);
-
-  // Date picker: data arbitrária pra editar dias passados (não só semana atual).
-  // Quando definida, sobrescreve o tab da semana.
   const [customDate, setCustomDate] = useState<string | null>(null);
 
-  // Calcula a data exata: ou customDate (se definida) ou tab da semana corrente.
   const weekMonday = useMemo(() => startOfWeek(today, { weekStartsOn: 1 }), [today]);
   const tabDate = useMemo(() => addDays(weekMonday, activeDay), [weekMonday, activeDay]);
   const activeDateString = customDate ?? format(tabDate, "yyyy-MM-dd");
 
+  // Pontos por dia do strip (5 days da semana atual) — só pré-fetcha o dia
+  // ativo. Para o strip mostrar pontos por cada dia precisaríamos abrir 5
+  // queries; preferimos manter leve e mostrar "•" se não-ativo.
+  const { data: activeDayRanking } = useDailyRanking(activeDateString);
+  const activeDayPoints = (activeDayRanking?.rankings ?? []).reduce(
+    (s, r) => s + (r.rollup.points ?? 0),
+    0,
+  );
+
   // ─── Activities do dia (backend resolve biweekly) ──────────────────────────
   const { data: activities, isLoading: activitiesLoading } = useActivities(activeDateString);
 
-  // KPI keys únicos das atividades do dia (collapsa duplicatas como Bloco 1+2)
   const kpiKeysForDay = useMemo(
     () => Array.from(new Set(activities.flatMap((a) => a.kpis.map((k) => k.key)))),
     [activities],
   );
 
-  // KPIs ativos "extras" — os que NÃO estão no cronograma do dia mas podem
-  // ter sido realizados pelo assessor (ex: ligação numa segunda onde cronograma
-  // só tem Leads+Cadência). Felipe pediu pra permitir lançamento fora do
-  // cronograma oficial.
   const { kpis: allActiveKpis } = useKpis();
   const extraKpiKeys = useMemo(
     () => allActiveKpis
@@ -80,7 +88,6 @@ const DayView = ({ assessors }: DayViewProps) => {
     [allActiveKpis, kpiKeysForDay],
   );
 
-  // Blocos manhã/tarde pra discriminar no RegistrationPanel
   const activityBlocks = useMemo(() => {
     const morning: Array<{ name: string; time: string; kpiKeys: string[] }> = [];
     const afternoon: Array<{ name: string; time: string; kpiKeys: string[] }> = [];
@@ -96,8 +103,10 @@ const DayView = ({ assessors }: DayViewProps) => {
     return { morning, afternoon };
   }, [activities]);
 
-  // Lookup kpiKey → ApiActivityKpi (pra label/target/unit nos KPI breakdowns do ranking)
-  const kpiByKey = useMemo(() => {
+  // Lookup kpiKey → ApiActivityKpi (mantido para compat com RegistrationPanel)
+  // — usa-se apenas quando precisamos de label/target/unit. Não usado agora
+  // que o ranking tem componente dedicado.
+  void useMemo(() => {
     const map: Record<string, ApiActivityKpi> = {};
     for (const act of activities) {
       for (const k of act.kpis) {
@@ -107,114 +116,93 @@ const DayView = ({ assessors }: DayViewProps) => {
     return map;
   }, [activities]);
 
-  // ─── Ranking diário (usa a data do tab selecionado, não sempre "hoje") ─────
-  const { data: dailyRanking } = useDailyRanking(activeDateString);
-  const { data: dayMetrics } = useMetrics({ from: activeDateString, to: activeDateString });
-
-  // Salesforce check: set de assessorIds que já marcaram [SALESFORCE_OK] no dia
-  const sfCheckedIds = useMemo(() => {
-    const set = new Set<string>();
-    for (const m of dayMetrics ?? []) {
-      if (isSalesforceCheck(m.notes)) set.add(m.assessorId);
-    }
-    return set;
-  }, [dayMetrics]);
-
-  const handleSfCheck = async (assessorId: string) => {
-    try {
-      await apiFetch("/metrics", {
-        method: "POST",
-        body: {
-          assessorId,
-          kpiKey: kpiKeysForDay[0] ?? "leads",
-          rawValue: 0,
-          notes: `${SALESFORCE_PREFIX} Confirmado`,
-          date: activeDateString,
-        },
-      });
-    } catch {}
-  };
-
-  const sorted = (dailyRanking?.rankings ?? [])
-    .map((r) => {
-      const a = assessors.find((x) => x.id === r.assessor.id);
-      if (!a) return null;
-      return {
-        assessor: a,
-        dayScore: r.rollup.points,
-        dayPct: r.rollup.weeklyGoalPercent,
-      };
-    })
-    .filter((x): x is NonNullable<typeof x> => x !== null);
-
   const dayLabel = DAY_LABELS[activeDay + 1].label;
+  const formattedDate = activeDateString.split("-").reverse().slice(0, 2).join("/");
 
   return (
-    <div className="space-y-4">
-      {/* Day picker Editorial V1 — 5 cards horizontais com nº mono grande */}
-      <div className="rounded-[14px] border border-line bg-card overflow-hidden">
-        <div className="grid grid-cols-5">
-          {[1, 2, 3, 4, 5].map((dow) => {
-            const i = dow - 1;
-            const lbl = DAY_LABELS[dow];
-            const selected = !customDate && activeDay === i;
-            return (
-              <button
-                key={dow}
-                onClick={() => { setCustomDate(null); setActiveDay(i); }}
-                className={`relative text-left px-4 py-3.5 transition-all ${
-                  i < 4 ? "border-r border-line" : ""
-                } ${selected ? "" : "hover:bg-surface-2"}`}
-                style={{
-                  background: selected ? "hsl(var(--ink))" : "transparent",
-                  color: selected ? "white" : "hsl(var(--ink))",
-                }}
-              >
-                <p
-                  className="text-[9px] uppercase tracking-[0.12em] font-semibold"
-                  style={{ color: selected ? "oklch(1 0 0 / 0.5)" : "hsl(var(--ink-3))" }}
+    <div className="space-y-5">
+      {/* Day strip + custom date picker */}
+      <div className="flex items-stretch gap-3 flex-wrap">
+        <div className="flex-1 min-w-[300px] rounded-[var(--radius)] border border-line bg-card overflow-hidden">
+          <div className="grid grid-cols-5">
+            {[1, 2, 3, 4, 5].map((dow) => {
+              const i = dow - 1;
+              const lbl = DAY_LABELS[dow];
+              const selected = !customDate && activeDay === i;
+              const isToday = i === defaultTab && !customDate;
+              return (
+                <button
+                  key={dow}
+                  type="button"
+                  onClick={() => { setCustomDate(null); setActiveDay(i); }}
+                  className={cn(
+                    "relative text-left px-4 py-3.5 transition-all border-r border-line last:border-r-0",
+                    selected
+                      ? "bg-ink text-white"
+                      : "bg-transparent hover:bg-surface-2",
+                  )}
                 >
-                  <span className="hidden md:inline">{lbl.label}</span>
-                  <span className="md:hidden">{lbl.short}</span>
-                </p>
-                {i === defaultTab && !customDate && (
-                  <span
-                    className="absolute top-2 right-2 w-2 h-2 rounded-full animate-pulse"
-                    style={{ background: selected ? "hsl(var(--gold))" : "hsl(var(--eqi-green))" }}
-                  />
-                )}
-              </button>
-            );
-          })}
+                  <p
+                    className={cn(
+                      "text-[9px] uppercase tracking-[0.12em] font-mono font-semibold",
+                      selected ? "text-white/60" : "text-ink-3",
+                    )}
+                  >
+                    <span className="hidden md:inline">{lbl.label}</span>
+                    <span className="md:hidden">{lbl.short}</span>
+                  </p>
+                  <p
+                    className={cn(
+                      "font-display font-extrabold leading-none mt-1.5 tracking-[-0.03em]",
+                      "text-[22px]",
+                      selected ? "text-white" : "text-ink",
+                    )}
+                  >
+                    {format(addDays(weekMonday, i), "dd/MM")}
+                  </p>
+                  {isToday && (
+                    <span
+                      className="absolute top-2 right-2 w-2 h-2 rounded-full animate-pulse"
+                      style={{
+                        background: selected ? "hsl(var(--gold))" : "hsl(var(--eqi-green))",
+                      }}
+                      aria-label="hoje"
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* Date picker pra editar dias fora da semana atual */}
-      <div className="flex justify-end">
         <label
-          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-[8px] border cursor-pointer transition-all ${
+          className={cn(
+            "inline-flex items-center gap-2 px-3 py-2 rounded-[var(--radius)] border cursor-pointer transition-all shrink-0",
             customDate
-              ? "bg-accent border-primary/15 text-primary"
-              : "bg-surface border-line text-ink-3 hover:text-ink"
-          }`}
+              ? "bg-accent border-primary/30 text-primary"
+              : "bg-card border-line text-ink-3 hover:text-ink",
+          )}
           title="Navegar pra uma data específica"
         >
-          <CalendarBlank size={16} />
-          <span className="text-xs font-semibold whitespace-nowrap">Ir pra outra data</span>
+          <CalendarBlank size={14} />
+          <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.12em] whitespace-nowrap">
+            Outra data
+          </span>
           <input
             type="date"
             value={customDate ?? ""}
             onChange={(e) => setCustomDate(e.target.value || null)}
             max={format(today, "yyyy-MM-dd")}
-            className="bg-transparent text-sm font-mono focus:outline-none cursor-pointer"
+            className="bg-transparent text-[12px] font-mono focus:outline-none cursor-pointer"
           />
           {customDate && (
             <button
+              type="button"
               onClick={(e) => { e.preventDefault(); setCustomDate(null); }}
               className="ml-1 text-ink-3 hover:text-destructive"
               title="Voltar pra semana atual"
             >
-              <XIcon size={12} weight="bold" />
+              <XIcon size={11} weight="bold" />
             </button>
           )}
         </label>
@@ -222,27 +210,25 @@ const DayView = ({ assessors }: DayViewProps) => {
 
       {/* Foco do dia — direcionamento rápido */}
       {!activitiesLoading && activities.length > 0 && (
-        <div className="rounded-[14px] border border-line bg-card px-4 py-3 flex items-center gap-3 flex-wrap">
-          <span className="text-xs font-extrabold text-primary inline-flex items-center gap-1.5"><Target size={13} weight="bold" /> Foco do dia:</span>
+        <div className="rounded-[var(--radius)] border border-line bg-card px-4 py-3 flex items-center gap-3 flex-wrap">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-[0.12em] text-primary inline-flex items-center gap-1.5">
+            <Target size={12} weight="bold" /> Foco do dia
+          </span>
           {activities.map((act) => (
-            <span key={act.id} className="text-xs text-foreground">
+            <span key={act.id} className="text-[12px] text-ink-2">
               <span className="font-semibold">{act.name}</span>
-              <span className="text-muted-foreground ml-1">({act.startTime}–{act.endTime})</span>
+              <span className="text-ink-3 ml-1">
+                ({act.startTime}–{act.endTime})
+              </span>
               {act.kpis.length > 0 && (
-                <span className="text-muted-foreground ml-1">
-                  — Meta: {act.kpis.map((k) => `${k.target} ${k.label}`).join(", ")}
+                <span className="text-ink-3 ml-1">
+                  · Meta: {act.kpis.map((k) => `${k.target} ${k.label}`).join(", ")}
                 </span>
               )}
             </span>
           ))}
         </div>
       )}
-
-      {/* Hero metrics do dia (artboard DailyDrilldown) */}
-      <DayHeroMetrics date={activeDateString} />
-
-      {/* Direcionamento livre editável (orientação do coordenador) */}
-      <DailyDirection date={activeDateString} dayLabel={`${dayLabel} ${activeDateString.split("-").reverse().slice(0, 2).join("/")}`} />
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -251,45 +237,70 @@ const DayView = ({ assessors }: DayViewProps) => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
-          className="grid grid-cols-1 xl:grid-cols-12 gap-4"
+          className="space-y-5"
         >
-          {/* ─── Schedule panel (esquerda) ─────────────────────────────────── */}
-          <div className="xl:col-span-3 space-y-4">
-            <div className="card-glass rounded-xl p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <Clock size={16} weight="bold" className="text-primary" />
-                <h2 className="text-sm font-bold text-foreground">Atividades – {dayLabel}</h2>
-              </div>
+          {/* 4 KPI tiles do dia */}
+          <DayKpiTilesRow date={activeDateString} />
 
+          {/* Hourly bar chart */}
+          <HourlyBarChart date={activeDateString} />
+
+          {/* Tabela ranking · dia */}
+          <DailyRankingTable date={activeDateString} assessors={assessors} />
+
+          {/* ─── Operação do dia ──────────────────────────────────────────── */}
+          <div className="flex items-center gap-3 pt-2">
+            <Eyebrow>Operação do dia</Eyebrow>
+            <div className="flex-1 h-px bg-line" />
+            <span className="text-[11px] text-ink-3">
+              {dayLabel} · {formattedDate} · {activeDayPoints} pts
+            </span>
+          </div>
+
+          {/* Schedule + DailyDirection */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <SectionCard
+              title={`Atividades · ${dayLabel}`}
+              subtitle={
+                activitiesLoading
+                  ? "Carregando…"
+                  : `${activities.length} ${activities.length === 1 ? "bloco" : "blocos"} no dia`
+              }
+            >
               {activitiesLoading ? (
-                <p className="text-xs text-muted-foreground">Carregando…</p>
+                <p className="text-[12px] text-ink-3">Carregando…</p>
               ) : activities.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                <div className="flex flex-col items-center justify-center py-6 text-ink-3">
                   <CalendarX size={32} className="mb-2 opacity-50" />
-                  <p className="text-xs text-center">Nenhuma atividade ativa hoje.</p>
+                  <p className="text-[12px] text-center">Nenhuma atividade ativa hoje.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {activities.map((act: ApiActivity) => (
-                    <div key={act.id} className="p-3 rounded-lg bg-muted/20 border border-border/30">
+                    <div
+                      key={act.id}
+                      className="rounded-[var(--radius)] border border-line bg-surface-2/50 p-3"
+                    >
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-semibold text-foreground">{act.name}</p>
+                        <p className="text-[13px] font-semibold text-ink">{act.name}</p>
                         {act.cadenceType === "BIWEEKLY" && (
-                          <span className="text-[9px] font-bold text-primary bg-primary/10 border border-primary/30 rounded px-1.5 py-0.5 whitespace-nowrap">
+                          <span className="text-[9px] font-mono font-bold text-primary bg-primary/10 border border-primary/30 rounded px-1.5 py-0.5 whitespace-nowrap">
                             QUINZENAL
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                        <span className="text-xs font-mono text-primary">
+                      <div className="flex items-center gap-2 mt-1">
+                        <Clock size={11} className="text-primary" />
+                        <span className="text-[11px] font-mono text-primary">
                           {act.startTime}–{act.endTime}
                         </span>
                       </div>
-                      <div className="mt-1.5 space-y-0.5">
+                      <div className="mt-2 space-y-0.5">
                         {act.kpis.map((k) => (
-                          <p key={k.kpiId} className="text-xs text-muted-foreground">
-                            Meta: {k.target}
-                            {k.unit} {k.label}
+                          <p key={k.kpiId} className="text-[11px] text-ink-3">
+                            Meta: <span className="num font-mono font-semibold text-ink-2">
+                              {k.target}{k.unit}
+                            </span> {k.label}
                           </p>
                         ))}
                       </div>
@@ -297,143 +308,25 @@ const DayView = ({ assessors }: DayViewProps) => {
                   ))}
                 </div>
               )}
-            </div>
-            <PomodoroTimer />
+              <div className="mt-4">
+                <PomodoroTimer />
+              </div>
+            </SectionCard>
+
+            <DailyDirection
+              date={activeDateString}
+              dayLabel={`${dayLabel} ${formattedDate}`}
+            />
           </div>
 
-          {/* ─── Ranking (centro) ──────────────────────────────────────────── */}
-          <div className="xl:col-span-5">
-            <div className="card-glass rounded-xl p-5 h-full">
-              <div className="flex items-center gap-2 mb-4">
-                <Trophy size={20} weight="bold" className="text-primary" />
-                <h2 className="text-lg font-bold text-foreground">Ranking – {dayLabel}</h2>
-              </div>
-              <div className="space-y-3">
-                {sorted.map((row, i) => {
-                  const a = row.assessor;
-                  const dayScore = row.dayScore;
-                  // dayPct agora é soma cap 150 (refletindo esforço cumulativo).
-                  // Usamos o valor real pro display e capamos só a largura da barra em 100.
-                  const avgPct = row.dayPct;
-                  const barWidth = Math.min(100, avgPct);
-                  return (
-                    <motion.div
-                      key={a.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.08 }}
-                      className={`p-3.5 rounded-xl border transition-all ${
-                        i === 0
-                          ? "bg-primary/10 border-primary/30 glow-primary"
-                          : i === 1
-                          ? "bg-silver/5 border-silver/20"
-                          : i === 2
-                          ? "bg-bronze/5 border-bronze/20"
-                          : "border-border/30 bg-muted/10"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-9 h-9 rounded-lg flex items-center justify-center font-mono font-bold text-sm ${
-                            i === 0
-                              ? "bg-primary/20 text-primary"
-                              : i === 1
-                              ? "bg-silver/15 text-silver"
-                              : i === 2
-                              ? "bg-bronze/15 text-bronze"
-                              : "bg-muted/30 text-muted-foreground"
-                          }`}
-                        >
-                          {i === 0 ? <Crown size={20} weight="fill" /> : `#${i + 1}`}
-                        </div>
-                        <AssessorAvatar initials={a.avatar} photoUrl={a.photoUrl} level={a.level} size={40} />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="font-bold text-sm text-foreground break-words">{a.name}</p>
-                            {a.streak > 0 && (
-                              <span className="flex items-center gap-0.5 text-xs text-chart-orange font-semibold">
-                                <Fire size={14} weight="fill" /> {a.streak}
-                              </span>
-                            )}
-                            <span className="text-[10px] font-mono text-muted-foreground">
-                              {dayScore} pts
-                            </span>
-                            <button
-                              onClick={() => !sfCheckedIds.has(a.id) && handleSfCheck(a.id)}
-                              title={sfCheckedIds.has(a.id) ? "Salesforce OK" : "Marcar Salesforce"}
-                              className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
-                                sfCheckedIds.has(a.id)
-                                  ? "text-success"
-                                  : "text-muted-foreground/40 hover:text-success/60"
-                              }`}
-                            >
-                              <CheckCircle size={14} weight="bold" />
-                            </button>
-                          </div>
-                          <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
-                            {kpiKeysForDay.map((kpiKey) => {
-                              const val = (a.kpis as Record<string, number>)[kpiKey] ?? 0;
-                              const k = kpiByKey[kpiKey];
-                              const target = k?.target ?? 1;
-                              const unit = k?.unit ?? "";
-                              const label = k?.label ?? kpiKey;
-                              const pct = Math.min(100, Math.round((val / target) * 100));
-                              return (
-                                <div key={kpiKey} className="flex items-center gap-1.5">
-                                  <span className="text-[10px] text-muted-foreground">{label}:</span>
-                                  <span
-                                    className={`text-xs font-mono font-bold ${
-                                      pct >= 80
-                                        ? "text-primary"
-                                        : pct >= 50
-                                        ? "text-chart-orange"
-                                        : "text-destructive"
-                                    }`}
-                                  >
-                                    {val}
-                                    {unit}/{target}
-                                    {unit}
-                                  </span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div
-                            className={`flex items-center gap-1 text-sm font-mono font-bold ${
-                              avgPct >= 80
-                                ? "text-primary"
-                                : avgPct >= 50
-                                ? "text-chart-orange"
-                                : "text-destructive"
-                            }`}
-                          >
-                            <TrendUp size={14} weight="bold" /> {avgPct}%
-                          </div>
-                          <div className="w-20 h-2 bg-muted/40 rounded-full mt-1.5 overflow-hidden">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${barWidth}%` }}
-                              transition={{ duration: 1, delay: i * 0.1 }}
-                              className={`h-full rounded-full ${
-                                avgPct >= 80 ? "bg-success" : "bg-primary"
-                              }`}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* ─── Registration (direita) ────────────────────────────────────── */}
-          <div className="xl:col-span-4">
-            <RegistrationPanel assessors={assessors} kpiKeys={kpiKeysForDay} extraKpiKeys={extraKpiKeys} date={activeDateString} blocks={activityBlocks} />
-          </div>
+          {/* RegistrationPanel full-width */}
+          <RegistrationPanel
+            assessors={assessors}
+            kpiKeys={kpiKeysForDay}
+            extraKpiKeys={extraKpiKeys}
+            date={activeDateString}
+            blocks={activityBlocks}
+          />
         </motion.div>
       </AnimatePresence>
     </div>

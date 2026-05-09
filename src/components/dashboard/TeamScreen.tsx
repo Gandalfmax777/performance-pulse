@@ -1,7 +1,10 @@
 import { useMemo } from "react";
-import { Fire, Funnel, GearSix, Plus } from "@phosphor-icons/react";
+import { Fire, Plus } from "@phosphor-icons/react";
 import { type Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
+import { useSquads } from "@/hooks/useSquads";
+import { Eyebrow } from "@/components/shared";
+import { cn } from "@/lib/utils";
 
 interface TeamScreenProps {
   assessors: Assessor[];
@@ -12,146 +15,145 @@ interface TeamScreenProps {
 }
 
 /**
- * Página "Assessores" (artboard TeamScreen). Layout fiel:
- *   - 4 KPI cards no topo: TOTAL / ACIMA DA META / EM RISCO (<70%) /
- *     STREAKS ATIVAS
- *   - Card "Equipe completa" com grid 2-col de cards por assessor
- *     (avatar 42px, nome, email, level, mesa, streak, % semana)
+ * `/assessores` — alinha com `Assessores.html` do design.
  *
- * Clicar no card abre o AssessorProfile (modal). O botão "Gerenciar"
- * no header continua abrindo o AssessorManager pra ações de
- * adicionar/remover/foto/férias.
+ * Removidos os 4 KPI cards do topo (Total, Acima da meta, Em risco,
+ * Streaks) — não estão no design e duplicavam dados visíveis nos
+ * próprios cards de pessoas.
+ *
+ * Layout: SectionCard "Equipe completa" com grid auto-fill cards.
+ * Cada card: avatar 48px + nome + squad badge + pontos + meta %
+ * com progress bar + streak.
+ *
+ * Click no card → AssessorProfile modal (preservado).
+ * Header tem GearSix → AssessorManager.
  */
 const TeamScreen = ({ assessors, onSelectAssessor, onManage }: TeamScreenProps) => {
-  const stats = useMemo(() => {
-    const total = assessors.length;
-    const acimaMeta = assessors.filter((a) => a.weeklyGoalPercent >= 100).length;
-    const emRisco = assessors.filter((a) => a.weeklyGoalPercent < 70).length;
-    const streaksAtivas = assessors.filter((a) => a.streak >= 4).length;
-    return { total, acimaMeta, emRisco, streaksAtivas };
-  }, [assessors]);
+  const { data: squadsData = [] } = useSquads();
 
-  const kpiCards = [
-    { label: "TOTAL", value: stats.total, color: "hsl(var(--ink))" },
-    { label: "ACIMA DA META", value: stats.acimaMeta, color: "hsl(var(--success))" },
-    { label: "EM RISCO (< 70%)", value: stats.emRisco, color: "hsl(var(--destructive))" },
-    { label: "STREAKS ATIVAS", value: stats.streaksAtivas, color: "hsl(var(--gold-deep))" },
-  ];
+  const squadByAssessor = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; color: string }>();
+    for (const sq of squadsData) {
+      for (const m of sq.members ?? []) {
+        map.set(m.assessorId, { id: sq.id, name: sq.name, color: sq.color });
+      }
+    }
+    return map;
+  }, [squadsData]);
 
+  // Sem SectionCard wrapping — design tem só a grid, sem header. O título
+  // e o botão "Gerenciar" vêm do DashboardTopbar (slot actions). Filtros
+  // (search/squad) também ficam na topbar — removidos os duplicados aqui.
   return (
     <div className="flex flex-col gap-4">
-      {/* 4 KPI cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {kpiCards.map((c) => (
-          <div key={c.label} className="rounded-[14px] border border-line bg-card p-5">
-            <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3">
-              {c.label}
-            </p>
-            <p
-              className="font-mono font-extrabold leading-none mt-1.5"
-              style={{ fontSize: 32, color: c.color }}
-            >
-              {c.value}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* Equipe completa */}
-      <div className="rounded-[14px] border border-line bg-card overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-line">
-          <h3 className="text-[14px] font-extrabold tracking-tight text-ink">
-            Equipe completa
-          </h3>
-          <div className="flex gap-2">
-            <button className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[6px] text-[11px] font-semibold text-ink-3 hover:text-ink hover:bg-surface-2 transition-colors">
-              <Funnel size={12} /> Mesa
-            </button>
-            <button
-              onClick={onManage}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[6px] text-[11px] font-semibold text-ink-3 hover:text-ink hover:bg-surface-2 transition-colors"
-              title="Gerenciar (adicionar/editar/remover)"
-            >
-              <GearSix size={12} />
-            </button>
-          </div>
+      {assessors.length === 0 ? (
+        <div className="rounded-[var(--radius)] border border-line bg-card p-10 text-center text-ink-3">
+          <p className="text-[13px] font-semibold mb-3">Nenhum assessor cadastrado.</p>
+          <button
+            type="button"
+            onClick={onManage}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-ink text-white text-[12px] font-semibold hover:bg-ink/90 transition-colors"
+          >
+            <Plus size={13} weight="bold" /> Adicionar primeiro assessor
+          </button>
         </div>
+      ) : (
+        <div
+          className="grid gap-4"
+          style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}
+        >
+          {assessors.map((p) => {
+            const sq = squadByAssessor.get(p.id);
+            const pct = p.weeklyGoalPercent;
+            const pctColor =
+              pct >= 100
+                ? "text-[hsl(var(--success))]"
+                : pct >= 80
+                ? "text-ink"
+                : "text-destructive";
+            const barColor =
+              pct >= 100
+                ? "bg-primary"
+                : pct >= 80
+                ? "bg-[hsl(var(--warning))]"
+                : "bg-destructive";
 
-        <div className="grid grid-cols-1 md:grid-cols-2">
-          {assessors.length === 0 ? (
-            <div className="col-span-full p-10 text-center text-ink-3">
-              <p className="text-[13px] font-semibold mb-3">Nenhum assessor cadastrado.</p>
+            return (
               <button
-                onClick={onManage}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-ink text-white text-[12px] font-semibold hover:bg-ink/90 transition-colors"
+                key={p.id}
+                type="button"
+                onClick={() => onSelectAssessor?.(p)}
+                className={cn(
+                  "text-left p-5 rounded-[var(--radius)] border border-line bg-card",
+                  "shadow-[0_1px_2px_hsl(240_12%_16%/0.05),0_4px_16px_hsl(240_12%_16%/0.04)]",
+                  "transition-all hover:border-primary/50 hover:shadow-md",
+                  "flex flex-col gap-3.5",
+                )}
               >
-                <Plus size={13} weight="bold" /> Adicionar primeiro assessor
-              </button>
-            </div>
-          ) : (
-            assessors.map((p, i) => {
-              const evenColumn = i % 2 === 0;
-              const onLastRow = i >= assessors.length - (assessors.length % 2 || 2);
-              const pctColor =
-                p.weeklyGoalPercent >= 100
-                  ? "hsl(var(--success))"
-                  : p.weeklyGoalPercent >= 70
-                  ? "hsl(var(--ink))"
-                  : "hsl(var(--destructive))";
-              return (
-                <button
-                  key={p.id}
-                  onClick={() => onSelectAssessor?.(p)}
-                  className={`text-left p-4 flex items-center gap-3 transition-colors hover:bg-surface-2 ${
-                    onLastRow ? "" : "border-b border-line"
-                  } ${evenColumn ? "md:border-r border-line" : ""}`}
-                >
+                {/* Header: avatar + name+squad + streak badge (alinhado com design) */}
+                <div className="flex items-center gap-3 min-w-0">
                   <AssessorAvatar
                     initials={p.avatar}
                     photoUrl={p.photoUrl}
                     level={p.level}
-                    size={42}
+                    size={44}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-bold text-ink truncate">{p.name}</p>
-                    <p className="font-mono text-[10px] text-ink-3 mt-0.5 truncate">
-                      {`${p.name.toLowerCase().replace(/ /g, ".")}@eqi.com.br`}
+                    <p className="text-[14px] font-semibold text-ink truncate">
+                      {p.name}
                     </p>
-                    <div className="flex gap-3 mt-1.5 flex-wrap">
-                      <span className="text-[10px] text-ink-3">
-                        NV{" "}
-                        <strong className="text-ink capitalize">{p.level}</strong>
-                      </span>
-                      <span className="text-[10px] text-ink-3">
-                        Mesa{" "}
-                        <strong className="text-ink font-mono">
-                          SP-{p.id.slice(-2).toUpperCase()}
-                        </strong>
-                      </span>
-                      {p.streak > 0 && (
-                        <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-gold-deep">
-                          <Fire size={10} weight="fill" /> {p.streak}d
-                        </span>
-                      )}
-                    </div>
+                    <Eyebrow className="mt-0.5">
+                      Squad {sq?.name ?? "—"}
+                    </Eyebrow>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p
-                      className="font-mono font-extrabold leading-none"
-                      style={{ fontSize: 18, color: pctColor }}
+                  {p.streak >= 5 && (
+                    <span
+                      className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-[0.12em] px-2 py-0.5 rounded-full border shrink-0"
+                      style={{
+                        background: "hsl(var(--gold-soft))",
+                        color: "hsl(var(--gold-deep))",
+                        borderColor: "hsl(var(--gold))",
+                      }}
                     >
-                      {p.weeklyGoalPercent}%
-                    </p>
-                    <p className="text-[8px] uppercase tracking-[0.12em] font-semibold text-ink-3 mt-1">
-                      SEMANA
+                      <Fire size={10} weight="fill" />
+                      {p.streak}
+                    </span>
+                  )}
+                </div>
+
+                {/* Pontos + Meta — 2-col grid após divisor (match design) */}
+                <div className="grid grid-cols-2 gap-2.5 pt-3 border-t border-line">
+                  <div>
+                    <Eyebrow className="mb-1">Pontos</Eyebrow>
+                    <p className="num font-display font-extrabold text-[20px] text-ink leading-none tracking-[-0.02em]">
+                      {p.points.toLocaleString("pt-BR")}
                     </p>
                   </div>
-                </button>
-              );
-            })
-          )}
+                  <div className="text-right">
+                    <Eyebrow className="mb-1">Meta</Eyebrow>
+                    <p
+                      className={cn(
+                        "num font-display font-bold text-[14px] leading-none",
+                        pctColor,
+                      )}
+                    >
+                      {pct}%
+                    </p>
+                  </div>
+                </div>
+
+                {/* Progress bar 4px (design) */}
+                <div className="h-1 rounded-[2px] bg-surface-2 overflow-hidden">
+                  <div
+                    className={cn("h-full rounded-[2px] transition-all", barColor)}
+                    style={{ width: `${Math.min(100, pct)}%` }}
+                  />
+                </div>
+              </button>
+            );
+          })}
         </div>
-      </div>
+      )}
     </div>
   );
 };

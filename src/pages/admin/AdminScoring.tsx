@@ -93,16 +93,11 @@ const AdminScoring = () => {
 
   return (
     <div className="space-y-6 p-6 max-w-5xl">
-      <header>
-        <h1 className="text-2xl font-extrabold tracking-tight text-ink flex items-center gap-2">
-          <Sliders size={22} weight="bold" className="text-primary" />
-          Regras de Pontuação
-        </h1>
-        <p className="text-sm text-ink-3 mt-1">
-          Edite os parâmetros que regem o ranking. Mudanças disparam recálculo retroativo
-          automático em background — o ranking atualiza nos próximos minutos.
-        </p>
-      </header>
+      {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar. */}
+
+      {/* Fórmula visual editorial — alinha com design/Admin-Scoring.html
+          que pede "fórmula em box monoespacial com border-left accent" */}
+      <FormulaBox />
 
       <BonusTypesSection bonusTypes={bonusTypes ?? []} />
       <PenaltySection config={config} />
@@ -111,6 +106,58 @@ const AdminScoring = () => {
     </div>
   );
 };
+
+// ─── Fórmula Visual ──────────────────────────────────────────────────────
+// Box editorial mostrando a fórmula da pontuação composta. Conteúdo
+// estático (refletindo regras do backend); bater com schema quando
+// admin atualiza scoring-config.
+
+function FormulaBox() {
+  return (
+    <section
+      className="rounded-[var(--radius)] border border-line bg-card overflow-hidden"
+      style={{ borderLeft: "3px solid hsl(var(--primary))" }}
+    >
+      <div className="px-5 py-4 border-b border-line">
+        <h2 className="text-[13px] font-bold text-ink flex items-center gap-2">
+          <Sliders size={14} weight="bold" className="text-primary" />
+          Fórmula da pontuação composta
+        </h2>
+        <p className="text-[11px] text-ink-3 mt-0.5">
+          Como cada AAI acumula pontos no ranking
+        </p>
+      </div>
+      <div className="p-5 space-y-3">
+        <pre
+          className="font-mono text-[13px] leading-relaxed bg-surface-2/50 p-4 rounded-[8px] overflow-x-auto"
+          style={{ color: "hsl(var(--ink))" }}
+        >
+{`  pontos = Σ (kpi.actual × kpi.weight)
+         + Σ (bonus.points    [se observação aplicada])
+         + tournament.bonus   [1º=+50, 2º=+30, 3º=+15]
+         − Σ (penalty.points  [N dias ociosos consecutivos])`}
+        </pre>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+          <div className="text-[11px] text-ink-3">
+            <strong className="text-ink-2 block mb-1">KPIs base</strong>
+            Cada KPI tem um peso (1×, 2×, etc) configurável em /admin/goals.
+            Pontos são proporcionais ao realizado.
+          </div>
+          <div className="text-[11px] text-ink-3">
+            <strong className="text-ink-2 block mb-1">Bônus</strong>
+            Observações marcadas por gestor adicionam pontos extras (Sales
+            Performance, MAR atualizado, etc) — ver seção abaixo.
+          </div>
+          <div className="text-[11px] text-ink-3">
+            <strong className="text-ink-2 block mb-1">Penalidades</strong>
+            Dias ociosos consecutivos (sem nenhum lançamento) penalizam
+            automaticamente — config abaixo.
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default AdminScoring;
 

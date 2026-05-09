@@ -1,28 +1,30 @@
 import { useMemo } from "react";
 import { differenceInDays, format, parseISO, subDays } from "date-fns";
+import { Fire } from "@phosphor-icons/react";
+import { KpiTile, StatDelta } from "@/components/shared";
 import { useOverviewReport } from "@/hooks/useReports";
 import { useWeeklyRanking } from "@/hooks/useRankings";
+
 
 interface HeroMetricStripProps {
   from: string;
   to: string;
 }
 
-interface Metric {
-  label: string;
-  value: string;
-  sub: string;
-  delta: number | null;
-  accent: "eqi" | "ink" | "pos";
-}
-
 /**
- * Faixa de 4 métricas grandes Editorial V1 (artboard DashEditorial):
- * card único dividido em 4 colunas com label uppercase, valor mono
- * 44px e bloco delta + subtitle.
+ * Hero KPI strip — 3 cards seguindo `Dashboard.html` do design:
  *
- * Delta calculado comparando com o range imediatamente anterior
- * (mesmo length de dias deslocado pra trás).
+ *   1. Total de pontos · time   (accent — primeiro card destacado)
+ *   2. Meta atingida · média    (% agregado)
+ *   3. Streak · time            (maior streak ativo + flame icon)
+ *
+ * Cada card é um `KpiTile size="lg"` com label, valor display 36px,
+ * trailing StatDelta (vs período anterior), sub line e progress bar.
+ *
+ * Fontes:
+ *   - useWeeklyRanking → totalPoints + maior streak
+ *   - useOverviewReport (current + previous range) → meta % agregada e
+ *     deltas vs período anterior.
  */
 const HeroMetricStrip = ({ from, to }: HeroMetricStripProps) => {
   const previousRange = useMemo(() => {
@@ -33,154 +35,125 @@ const HeroMetricStrip = ({ from, to }: HeroMetricStripProps) => {
     };
   }, [from, to]);
 
-  const { data: overview, isLoading } = useOverviewReport({ from, to });
+  const { data: overview } = useOverviewReport({ from, to });
   const { data: previousOverview } = useOverviewReport(previousRange);
   const { data: weekly } = useWeeklyRanking();
 
-  const metrics = useMemo<Metric[]>(() => {
-    const aggPct = overview?.byKpi?.length
-      ? Math.round(overview.byKpi.reduce((s, k) => s + (k.percent || 0), 0) / overview.byKpi.length)
-      : null;
-    const aggPrev = previousOverview?.byKpi?.length
-      ? Math.round(
-          previousOverview.byKpi.reduce((s, k) => s + (k.percent || 0), 0) /
-            previousOverview.byKpi.length,
-        )
-      : null;
-    const aggDelta = aggPct != null && aggPrev != null && aggPrev > 0
-      ? Math.round(((aggPct - aggPrev) / aggPrev) * 100)
-      : null;
+  const totalPoints = useMemo(
+    () => weekly?.rankings?.reduce((s, r) => s + (r.rollup.points || 0), 0) ?? 0,
+    [weekly],
+  );
+  // Total de pontos do período anterior — soma allPerformers.points do
+  // overview anterior. allPerformers é o array completo (todos os AAIs)
+  // do range, com pontos compostos calculados pelo backend.
+  const totalPointsPrev = useMemo(
+    () =>
+      previousOverview?.allPerformers?.reduce(
+        (s, p) => s + (p.points || 0),
+        0,
+      ) ?? 0,
+    [previousOverview],
+  );
+  const totalPointsDelta = computeDeltaPct(totalPoints, totalPointsPrev);
 
-    const totalPoints = weekly?.rankings?.reduce((s, r) => s + (r.rollup.points || 0), 0) ?? null;
+  const aggPct = overview?.byKpi?.length
+    ? Math.round(
+        overview.byKpi.reduce((s, k) => s + (k.percent || 0), 0) /
+          overview.byKpi.length,
+      )
+    : 0;
+  const aggPrev = previousOverview?.byKpi?.length
+    ? Math.round(
+        previousOverview.byKpi.reduce((s, k) => s + (k.percent || 0), 0) /
+          previousOverview.byKpi.length,
+      )
+    : 0;
+  const aggDelta = computeDeltaPct(aggPct, aggPrev);
 
-    const ativacao = overview?.byKpi?.find(
-      (k) => k.key === "ativacao_conta" || k.key === "ativacao" || k.key === "ativacoes",
-    );
-    const ativacaoPrev = previousOverview?.byKpi?.find(
-      (k) => k.key === "ativacao_conta" || k.key === "ativacao" || k.key === "ativacoes",
-    );
-    const ativacaoDelta =
-      ativacao && ativacaoPrev && ativacaoPrev.actual > 0
-        ? Math.round(((ativacao.actual - ativacaoPrev.actual) / ativacaoPrev.actual) * 100)
-        : null;
+  const overGoalCount =
+    weekly?.rankings?.filter((r) => (r.rollup.weeklyGoalPercent ?? 0) >= 80)
+      .length ?? 0;
+  const totalCount = weekly?.rankings?.length ?? 0;
 
-    const reunioesReal = overview?.byKpi?.find(
-      (k) => k.key === "reunioes_realizadas" || k.key === "reunioes_real",
-    );
-    const reunioesRealPrev = previousOverview?.byKpi?.find(
-      (k) => k.key === "reunioes_realizadas" || k.key === "reunioes_real",
-    );
-    const reunioesRealDelta =
-      reunioesReal && reunioesRealPrev && reunioesRealPrev.actual > 0
-        ? Math.round(
-            ((reunioesReal.actual - reunioesRealPrev.actual) / reunioesRealPrev.actual) * 100,
-          )
-        : null;
-
-    return [
-      {
-        label: "META AGREGADA",
-        value: aggPct != null ? `${aggPct}%` : "—",
-        sub: "time inteiro",
-        delta: aggDelta,
-        accent: aggPct != null && aggPct >= 100 ? "eqi" : "ink",
-      },
-      {
-        label: "PONTOS DA SEMANA",
-        value: totalPoints != null ? formatCompact(totalPoints) : "—",
-        sub: "soma do time",
-        delta: null,
-        accent: "ink",
-      },
-      {
-        label: ativacao?.label?.toUpperCase() ?? "ATIVAÇÕES DE CONTA",
-        value: ativacao ? String(Math.round(ativacao.actual)) : "—",
-        sub: ativacao
-          ? `meta ${ativacao.target}${ativacao.percent >= 100 ? " · acima" : ""}`
-          : "",
-        delta: ativacaoDelta,
-        accent: ativacao && ativacao.percent >= 100 ? "eqi" : "ink",
-      },
-      {
-        label: reunioesReal?.label?.toUpperCase() ?? "REUNIÕES REALIZADAS",
-        value: reunioesReal ? String(Math.round(reunioesReal.actual)) : "—",
-        sub: reunioesReal ? `meta ${reunioesReal.target}` : "",
-        delta: reunioesRealDelta,
-        accent: reunioesReal && reunioesReal.percent >= 100 ? "pos" : "ink",
-      },
-    ];
-  }, [overview, previousOverview, weekly]);
+  const maxStreak = weekly?.rankings?.reduce(
+    (max, r) => Math.max(max, r.rollup.streak ?? 0),
+    0,
+  ) ?? 0;
+  const leaderName =
+    weekly?.rankings?.find((r) => r.rollup.streak === maxStreak)?.assessor.name ?? "—";
 
   return (
-    <div className="rounded-[14px] border border-line bg-card overflow-hidden">
-      <div className="grid grid-cols-2 lg:grid-cols-4">
-        {metrics.map((m, i) => (
-          <div
-            key={m.label}
-            className={`px-7 py-6 ${i < 3 ? "lg:border-r border-line" : ""} ${
-              i % 2 === 0 ? "border-r lg:border-r border-line" : ""
-            } ${i < 2 ? "border-b lg:border-b-0 border-line" : ""}`}
-          >
-            <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-3">
-              {m.label}
-            </p>
-            <p
-              className={`font-mono font-extrabold tracking-[-0.03em] leading-none ${
-                isLoading ? "text-ink-4 animate-pulse" : ""
-              }`}
-              style={{ fontSize: 44, color: accentColor(m.accent) }}
-            >
-              {m.value}
-            </p>
-            <div className="flex items-center gap-2.5 mt-2.5">
-              <Delta value={m.delta} />
-              {m.sub && <span className="text-[11px] text-ink-3">{m.sub}</span>}
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* 1. Total de pontos · time — barra reflete % de cumprimento agregado
+          (mesmo do card 2), porque "% de pontos vs meta de pontos" não existe
+          como agregado no backend. */}
+      <KpiTile
+        accent
+        size="lg"
+        label="Total de pontos · time"
+        value={totalPoints.toLocaleString("pt-BR")}
+        trailing={
+          totalPointsDelta != null ? (
+            <StatDelta direction={totalPointsDelta >= 0 ? "up" : "down"}>
+              {totalPointsDelta >= 0 ? "+" : ""}
+              {totalPointsDelta}%
+            </StatDelta>
+          ) : null
+        }
+        sub={
+          totalPointsPrev > 0
+            ? `vs ${totalPointsPrev.toLocaleString("pt-BR")} no período anterior`
+            : "Sem dados do período anterior"
+        }
+        progress={Math.min(100, aggPct)}
+      />
+
+      {/* 2. Meta atingida · média */}
+      <KpiTile
+        size="lg"
+        label="Meta atingida · média"
+        value={`${aggPct}%`}
+        trailing={
+          aggDelta != null ? (
+            <StatDelta direction={aggDelta >= 0 ? "up" : "down"}>
+              {aggDelta >= 0 ? "+" : ""}
+              {aggDelta} pp
+            </StatDelta>
+          ) : null
+        }
+        sub={
+          totalCount > 0
+            ? `${overGoalCount} dos ${totalCount} AAIs acima de 80%`
+            : "Sem dados no período"
+        }
+        progress={Math.min(100, aggPct)}
+        progressColor={aggPct >= 100 ? "success" : aggPct >= 80 ? "warning" : "danger"}
+      />
+
+      {/* 3. Maior streak ativo */}
+      <KpiTile
+        size="lg"
+        label="Maior streak · time"
+        value={maxStreak}
+        unit={maxStreak === 1 ? "dia" : "dias"}
+        trailing={
+          maxStreak > 0 ? (
+            <span className="inline-flex items-center gap-1 text-[12px] font-mono font-medium text-[hsl(var(--warning))]">
+              <Fire size={14} weight="fill" /> ativo
+            </span>
+          ) : null
+        }
+        sub={maxStreak > 0 ? `Líder: ${leaderName}` : "Ninguém em sequência"}
+        progress={Math.min(100, (maxStreak / 14) * 100)}
+        progressColor="warning"
+      />
     </div>
   );
 };
 
-function accentColor(accent: Metric["accent"]): string {
-  switch (accent) {
-    case "eqi":
-      return "hsl(var(--eqi-green))";
-    case "pos":
-      return "hsl(var(--success))";
-    default:
-      return "hsl(var(--ink))";
-  }
-}
-
-/**
- * Delta indicator — segue o componente `Delta` do primitives.jsx do
- * design: ▲ verde se positivo, ▼ vermelho se negativo, "—" cinza se
- * neutro/null.
- */
-function Delta({ value }: { value: number | null }) {
-  if (value === null || value === 0) {
-    return (
-      <span className="font-mono text-[12px] font-bold text-ink-3">—</span>
-    );
-  }
-  const pos = value > 0;
-  return (
-    <span
-      className="font-mono inline-flex items-center gap-0.5 text-[12px] font-bold"
-      style={{ color: pos ? "hsl(var(--success))" : "hsl(var(--destructive))" }}
-    >
-      <span style={{ fontSize: 9 }}>{pos ? "▲" : "▼"}</span>
-      {Math.abs(value)}%
-    </span>
-  );
-}
-
-function formatCompact(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return String(n);
+function computeDeltaPct(curr: number, prev: number): number | null {
+  if (prev <= 0) return null;
+  return Math.round(((curr - prev) / prev) * 100);
 }
 
 export default HeroMetricStrip;

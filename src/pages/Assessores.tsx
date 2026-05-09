@@ -1,10 +1,19 @@
-import { Suspense, lazy, useCallback, useState } from "react";
-import { Plus } from "@phosphor-icons/react";
+import { Suspense, lazy, useCallback, useMemo, useState } from "react";
+import { GearSix, MagnifyingGlass } from "@phosphor-icons/react";
 import DashboardTopbar from "@/components/dashboard/DashboardTopbar";
 import TeamScreen from "@/components/dashboard/TeamScreen";
 import AssessorProfile from "@/components/dashboard/AssessorProfile";
 import { AppShellLayout } from "@/components/layouts/AppShellLayout";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAssessors } from "@/hooks/useAssessors";
+import { useSquads } from "@/hooks/useSquads";
 
 const AssessorManager = lazy(
   () => import("@/components/dashboard/AssessorManager"),
@@ -14,20 +23,47 @@ const AssessorManager = lazy(
  * /assessores — grid de cards da mesa + modais (CRUD via AssessorManager,
  * detalhe via AssessorProfile).
  *
- * Substitui o redirect placeholder /assessores → /?view=team criado na
- * PR #3. Adota AppShellLayout (PR #4); modais são state local da página
- * (eram do Index legacy).
+ * Topbar tem (alinha com `design/Assessores.html`):
+ *   • Search input (filtro por nome)
+ *   • Select squad (filtro por squad ou "Todos")
+ *   • Botão "Gerenciar" (CTA primary)
  *
- * O botão "Gerenciar" vai no slot `actions` do topbar (alinhado com o
- * teamManageBtn do Index legacy). AssessorManager é lazy porque só
- * carrega quando o admin abre.
+ * Botão "Gerenciar" inline removido do TeamScreen pra não duplicar.
  */
 const Assessores = () => {
   const { assessors, addAssessor, removeAssessor } = useAssessors();
+  const { data: squads = [] } = useSquads();
   const [showManager, setShowManager] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<
     Parameters<typeof AssessorProfile>[0]["assessor"] | null
   >(null);
+
+  // Filtros locais (não persistem em URL — feedback rápido de busca)
+  const [search, setSearch] = useState("");
+  const [squadFilter, setSquadFilter] = useState<string>("all");
+
+  // Map assessorId → squadId (lookup pra filtro)
+  const squadByAssessor = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const sq of squads) {
+      for (const m of sq.members ?? []) {
+        map.set(m.assessorId, sq.id);
+      }
+    }
+    return map;
+  }, [squads]);
+
+  const filteredAssessors = useMemo(() => {
+    let rows = assessors;
+    if (squadFilter !== "all") {
+      rows = rows.filter((a) => squadByAssessor.get(a.id) === squadFilter);
+    }
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      rows = rows.filter((a) => a.name.toLowerCase().includes(q));
+    }
+    return rows;
+  }, [assessors, squadFilter, squadByAssessor, search]);
 
   const openTv = useCallback(() => {
     window.open("/tv", "_blank", "noopener,noreferrer");
@@ -37,12 +73,43 @@ const Assessores = () => {
     window.open("/presentation", "_blank", "noopener,noreferrer");
   }, []);
 
-  const teamManageBtn = (
+  const searchInput = (
+    <div className="relative w-[200px]">
+      <MagnifyingGlass
+        size={14}
+        className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3 pointer-events-none"
+      />
+      <Input
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Buscar AAI…"
+        className="h-9 pl-8 text-[13px]"
+      />
+    </div>
+  );
+
+  const squadSelect = (
+    <Select value={squadFilter} onValueChange={setSquadFilter}>
+      <SelectTrigger className="w-[160px] h-9 text-[13px]">
+        <SelectValue placeholder="Todos squads" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">Todos squads</SelectItem>
+        {squads.map((sq) => (
+          <SelectItem key={sq.id} value={sq.id}>
+            {sq.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
+  const manageBtn = (
     <button
       onClick={() => setShowManager(true)}
       className="inline-flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-ink text-white text-xs font-semibold hover:bg-ink/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <Plus size={14} weight="bold" />
+      <GearSix size={14} weight="bold" />
       Gerenciar
     </button>
   );
@@ -57,14 +124,20 @@ const Assessores = () => {
           <DashboardTopbar
             eyebrow="ADMINISTRAÇÃO"
             title="Assessores"
-            subtitle={`Gerencie a mesa · ${assessors.length} ativos`}
-            actions={teamManageBtn}
+            subtitle={`${filteredAssessors.length} de ${assessors.length} ativos`}
+            actions={
+              <>
+                {searchInput}
+                {squadSelect}
+                {manageBtn}
+              </>
+            }
             onMenuClick={openMobileNav}
           />
         )}
       >
         <TeamScreen
-          assessors={assessors}
+          assessors={filteredAssessors}
           onSelectAssessor={(a) => setSelectedProfile(a)}
           onManage={() => setShowManager(true)}
         />

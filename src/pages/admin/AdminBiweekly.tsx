@@ -57,21 +57,69 @@ const AdminBiweekly = () => {
 
   const eightWeeks = useMemo(() => nextNWednesdays(8), []);
 
+  // Calcula próximo Indique Day ativo: a primeira quarta nas próximas 8
+  // semanas onde alguma activity BIWEEKLY estaria ativa (via âncora).
+  const nextActiveDate = useMemo(() => {
+    for (const date of eightWeeks) {
+      for (const a of biweeklyActivities) {
+        if (
+          a.active &&
+          isActivityActiveOn(
+            { cadenceType: a.cadenceType, biweeklyAnchorDate: a.biweeklyAnchorDate },
+            date,
+          )
+        ) {
+          return date;
+        }
+      }
+    }
+    return null;
+  }, [eightWeeks, biweeklyActivities]);
+
   return (
     <div className="space-y-5">
-      {/* Page header */}
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
-          ADMINISTRAÇÃO
-        </p>
-        <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-          <Repeat size={20} weight="bold" className="text-eqi" />
-          Indique Day (quartas alternadas)
-        </h1>
-        <p className="text-[12px] text-ink-3 mt-1.5 max-w-2xl">
-          O Indique Day roda a cada 15 dias. Cada activity BIWEEKLY tem uma âncora —
-          todas as quartas que estão a N*14 dias da âncora são ativadas.
-        </p>
+      {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar. */}
+
+      {/* 3 status cards (alinha com design/Admin-Biweekly.html) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="rounded-[var(--radius)] border border-line bg-card p-5">
+          <p className="text-[10px] uppercase tracking-[0.16em] font-mono font-semibold text-ink-3 mb-2">
+            Próximo Indique Day
+          </p>
+          <p className="font-display font-extrabold text-[22px] text-ink leading-none num">
+            {nextActiveDate
+              ? format(nextActiveDate, "dd 'de' MMM", { locale: ptBR })
+              : "—"}
+          </p>
+          <p className="text-[11px] text-ink-3 mt-1.5">
+            {nextActiveDate
+              ? format(nextActiveDate, "EEEE", { locale: ptBR }).replace(/^\w/, (c) => c.toUpperCase())
+              : "Sem activity ativa"}
+          </p>
+        </div>
+        <div className="rounded-[var(--radius)] border border-line bg-card p-5">
+          <p className="text-[10px] uppercase tracking-[0.16em] font-mono font-semibold text-ink-3 mb-2">
+            Frequência
+          </p>
+          <p className="font-display font-extrabold text-[22px] text-ink leading-none">
+            Quinzenal
+          </p>
+          <p className="text-[11px] text-ink-3 mt-1.5">
+            Quartas-feiras alternadas (a cada 14 dias da âncora)
+          </p>
+        </div>
+        <div className="rounded-[var(--radius)] border border-line bg-card p-5">
+          <p className="text-[10px] uppercase tracking-[0.16em] font-mono font-semibold text-ink-3 mb-2">
+            Activities ativas
+          </p>
+          <p className="font-display font-extrabold text-[22px] text-ink leading-none num">
+            {biweeklyActivities.filter((a) => a.active).length}
+          </p>
+          <p className="text-[11px] text-ink-3 mt-1.5">
+            De {biweeklyActivities.length} cadastradas · pontos por
+            indicação configurados em /admin/goals
+          </p>
+        </div>
       </div>
 
       {isLoading ? (

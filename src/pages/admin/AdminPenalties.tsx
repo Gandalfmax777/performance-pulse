@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Link } from "react-router-dom";
 import {
   CircleNotch,
   Pencil,
@@ -12,7 +13,9 @@ import {
   Clock,
   ShieldCheck,
   Robot,
+  GearSix,
 } from "@phosphor-icons/react";
+import { useScoringConfig } from "@/hooks/useScoringConfig";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -133,18 +136,11 @@ const AdminPenalties = () => {
 
   return (
     <div className="space-y-6 p-6 max-w-6xl">
-      <header>
-        <h1 className="text-2xl font-extrabold tracking-tight text-ink flex items-center gap-2">
-          <ShieldCheck size={22} weight="bold" className="text-primary" />
-          Penalidades a Revisar
-        </h1>
-        <p className="text-sm text-ink-3 mt-1">
-          Cron noturno detecta dias úteis sem registro e cria propostas pra você revisar.
-          Aprovar reduz pontos do assessor no ranking. Rejeitar ignora. Sem revisão em
-          {" "}
-          <strong>{AUTO_APPROVE_DAYS} dias</strong>, auto-aprova.
-        </p>
-      </header>
+      {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar. */}
+
+      {/* Regras ativas — display read-only do que o cron usa pra propor
+          penalidades. Editar via /admin/scoring (sub-aba PenaltySection). */}
+      <PenaltyRulesActiveCard />
 
       {/* Filtros + bulk actions */}
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -350,6 +346,86 @@ const AdminPenalties = () => {
     </div>
   );
 };
+
+// ─── PenaltyRulesActiveCard ─────────────────────────────────────────────
+// Display read-only das regras de penalidade ativas (vem do useScoringConfig).
+// Edição é feita em /admin/scoring (sub-aba PenaltySection) — link direto
+// pra evitar duplicação de UI de edição.
+
+const DAY_LABELS_BR: Record<string, string> = {
+  MON: "Seg", TUE: "Ter", WED: "Qua", THU: "Qui", FRI: "Sex", SAT: "Sáb", SUN: "Dom",
+};
+
+function PenaltyRulesActiveCard() {
+  const { data: config, isLoading } = useScoringConfig();
+
+  if (isLoading || !config) {
+    return null;
+  }
+
+  const businessDaysLabel = config.penaltyBusinessDays
+    .map((d) => DAY_LABELS_BR[d] ?? d)
+    .join(" · ");
+
+  return (
+    <section className="rounded-[var(--radius)] border border-line bg-card overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-line">
+        <div>
+          <h3 className="text-[13px] font-bold text-ink flex items-center gap-2">
+            <ShieldCheck size={14} weight="fill" className="text-primary" />
+            Regras ativas
+          </h3>
+          <p className="text-[11px] text-ink-3 mt-0.5">
+            O cron noturno usa estas regras pra propor penalidades automaticamente
+          </p>
+        </div>
+        <Link
+          to="/admin/scoring"
+          className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-ink-3 hover:text-ink transition-colors px-2 py-1 rounded-[6px]"
+        >
+          <GearSix size={12} weight="bold" /> Editar regras
+        </Link>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-line">
+        <div className="bg-card p-4">
+          <p className="text-[10px] uppercase tracking-[0.16em] font-mono font-semibold text-ink-3 mb-2">
+            Dias ociosos consecutivos
+          </p>
+          <p className="num font-display font-extrabold text-[24px] text-ink leading-none">
+            {config.penaltyConsecutiveIdleDays}
+            <span className="text-[14px] text-ink-3 ml-1">dias</span>
+          </p>
+          <p className="text-[11px] text-ink-3 mt-1.5">
+            Threshold pra cron criar proposta de penalidade
+          </p>
+        </div>
+        <div className="bg-card p-4">
+          <p className="text-[10px] uppercase tracking-[0.16em] font-mono font-semibold text-ink-3 mb-2">
+            Pontos por dia ocioso
+          </p>
+          <p className="num font-display font-extrabold text-[24px] text-destructive leading-none">
+            −{config.penaltyPointsPerIdleDay}
+            <span className="text-[14px] text-ink-3 ml-1">pts</span>
+          </p>
+          <p className="text-[11px] text-ink-3 mt-1.5">
+            Subtraído do total do AAI quando aprovado
+          </p>
+        </div>
+        <div className="bg-card p-4">
+          <p className="text-[10px] uppercase tracking-[0.16em] font-mono font-semibold text-ink-3 mb-2">
+            Dias úteis considerados
+          </p>
+          <p className="font-mono font-bold text-[13px] text-ink-2 leading-tight mt-1">
+            {businessDaysLabel}
+          </p>
+          <p className="text-[11px] text-ink-3 mt-1.5">
+            Auto-aprova após {AUTO_APPROVE_DAYS} dias sem revisão
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default AdminPenalties;
 

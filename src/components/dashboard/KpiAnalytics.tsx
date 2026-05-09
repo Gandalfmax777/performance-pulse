@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -41,6 +41,9 @@ import {
 } from "@phosphor-icons/react";
 import { ChartBar as ChartBarIcon } from "@phosphor-icons/react";
 import ConversionFunnel from "./ConversionFunnel";
+import KpiStatusOverviewCard from "./KpiStatusOverviewCard";
+import KpiDetailGrid from "./KpiDetailGrid";
+import { Eyebrow } from "@/components/shared";
 
 type Scope = "geral" | "individual";
 
@@ -92,10 +95,26 @@ function matchActivePeriod(range: { from: string; to: string }): QuickPeriod | n
 
 interface KpiAnalyticsProps {
   assessors: Assessor[];
+  /**
+   * Range inicial (vem da Kpis.tsx baseado no period tab da topbar).
+   * Quando o period tab da topbar muda (Semanal↔Mensal), Kpis.tsx remonta
+   * KpiAnalytics com novo `initialRange` via key change ou re-render
+   * controlado. Atualmente o filter bar interno permite refinar via
+   * DateRangePicker — esse refinamento fica local.
+   */
+  initialRange?: { from: string; to: string };
 }
 
-const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
-  const [range, setRange] = useState(defaultWeekRange);
+const KpiAnalytics = ({ assessors, initialRange }: KpiAnalyticsProps) => {
+  const [range, setRange] = useState(() => initialRange ?? defaultWeekRange());
+
+  // Sync range com initialRange quando ele muda (period tab da topbar
+  // foi clicado). Mantém outros estados locais (compareEnabled, scope,
+  // selectedAssessor) intactos.
+  useEffect(() => {
+    if (initialRange) setRange(initialRange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialRange?.from, initialRange?.to]);
   const [scope, setScope] = useState<Scope>("geral");
   const [selectedAssessor, setSelectedAssessor] = useState<string | null>(null);
   const [profileAssessor, setProfileAssessor] = useState<Assessor | null>(null);
@@ -342,66 +361,22 @@ const KpiAnalytics = ({ assessors }: KpiAnalyticsProps) => {
         )}
       </div>
 
-      {/* Hero strip Editorial V1 — 1 card por KPI ativo (Leads, Cadência, Ligações,
-          Reuniões Ag./Real., Ativação Conta, Indicações). Cada card: label + valor
-          atual (mono grande) + meta + barra de % + variação vs período anterior
-          (quando compareEnabled). */}
-      {overview && overview.byKpi.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-9 gap-3">
-          {overview.byKpi.map((k) => {
-            const prev = previousOverview?.byKpi.find((p) => p.key === k.key);
-            const variation = prev && prev.actual > 0
-              ? ((k.actual - prev.actual) / prev.actual) * 100
-              : null;
-            const pct = Math.min(100, k.percent);
-            const isAhead = k.percent >= 100;
-            return (
-              <div
-                key={k.key}
-                className="rounded-[14px] border border-line bg-card p-3"
-              >
-                <div className="flex items-center justify-between mb-1.5 gap-2">
-                  <p className="text-[10px] uppercase tracking-[0.08em] font-semibold text-ink-3 truncate">
-                    {k.label}
-                  </p>
-                  {compareEnabled && variation !== null && (
-                    <span
-                      className={`text-[10px] font-mono font-bold whitespace-nowrap ${
-                        variation > 0
-                          ? "text-eqi-green"
-                          : variation < 0
-                          ? "text-destructive"
-                          : "text-ink-3"
-                      }`}
-                    >
-                      {variation > 0 ? "+" : ""}
-                      {variation.toFixed(0)}%
-                    </span>
-                  )}
-                </div>
-                <p className="font-mono text-2xl font-extrabold text-ink leading-none tracking-tight">
-                  {Math.round(k.actual).toLocaleString("pt-BR")}
-                  {k.unit}
-                </p>
-                <p className="text-[10px] font-mono text-ink-3 mt-1">
-                  meta {Math.round(k.target).toLocaleString("pt-BR")}{k.unit}
-                </p>
-                <div className="mt-2 h-1 rounded-full bg-line overflow-hidden">
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${pct}%`,
-                      background: isAhead
-                        ? "hsl(var(--eqi-green))"
-                        : "hsl(var(--eqi))",
-                    }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      {/* Status geral · 1 linha por KPI com label / progress / actual-target / % */}
+      <KpiStatusOverviewCard range={range} />
+
+      {/* Grid 2-col · 1 KpiDetailCard por KPI ativo com badge OK/ATENÇÃO/ABAIXO,
+          valor 42px font-display, meta, progress e delta vs período anterior */}
+      <KpiDetailGrid range={range} />
+
+      {/* Divisor "Análise consolidada" — separa cards editoriais (acima) das
+          tabs/matriz/charts existentes (abaixo). */}
+      <div className="flex items-center gap-3 pt-2">
+        <Eyebrow>Análise consolidada</Eyebrow>
+        <div className="flex-1 h-px bg-line" />
+        <span className="text-[11px] text-ink-3">
+          {range.from} → {range.to}
+        </span>
+      </div>
 
       {/* Funil de conversão Editorial V1 — barras horizontais empilhadas */}
       <ConversionFunnel

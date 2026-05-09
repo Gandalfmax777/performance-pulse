@@ -12,21 +12,81 @@ interface AdminRoute {
   label: string;
   /** Título completo no topbar (eyebrow comum: "CONFIGURAÇÕES"). */
   title: string;
+  /** Subtitle do topbar — descreve o propósito da página. */
+  subtitle?: string;
   /** Badge slug — opcional, casa com chave de `badgeCounts`. */
   badge?: string;
 }
 
 const ADMIN_ROUTES: readonly AdminRoute[] = [
-  { to: "/admin/goals",         label: "Metas & KPIs",  title: "Metas & KPIs" },
-  { to: "/admin/scoring",       label: "Pontuação",     title: "Pontuação" },
-  { to: "/admin/penalties",     label: "Penalidades",   title: "Penalidades", badge: "penalty" },
-  { to: "/admin/sounds",        label: "Sons dos KPIs", title: "Sons dos KPIs" },
-  { to: "/admin/schedule",      label: "Cronograma",    title: "Cronograma" },
-  { to: "/admin/biweekly",      label: "Indique Day",   title: "Indique Day" },
-  { to: "/admin/bets-config",   label: "Apostas",       title: "Apostas" },
-  { to: "/admin/tournaments",   label: "Torneios",      title: "Torneios" },
-  { to: "/admin/announcements", label: "Avisos",        title: "Avisos" },
-  { to: "/admin/users",         label: "Usuários",      title: "Usuários" },
+  {
+    to: "/admin/goals",
+    label: "Metas & KPIs",
+    title: "Metas & KPIs",
+    subtitle:
+      "Edite as definições dos KPIs e suas metas ativas. Mudança retroativa recalcula os históricos.",
+  },
+  {
+    to: "/admin/scoring",
+    label: "Pontuação",
+    title: "Pontuação",
+    subtitle: "Regras de scoring por KPI — divisor, pontos por bucket, threshold.",
+  },
+  {
+    to: "/admin/penalties",
+    label: "Penalidades",
+    title: "Penalidades",
+    subtitle: "Aprovar / rejeitar propostas de penalidade abertas pelos gestores.",
+    badge: "penalty",
+  },
+  {
+    to: "/admin/sounds",
+    label: "Sons dos KPIs",
+    title: "Sons dos KPIs",
+    subtitle:
+      "Suba MP3/WAV (até 2MB) por KPI. Marcado como broadcast, toca em todos os dispositivos conectados ao registrar o evento.",
+  },
+  {
+    to: "/admin/schedule",
+    label: "Cronograma",
+    title: "Cronograma",
+    subtitle:
+      "Edite atividades, horários e KPIs vinculados. Activities desativadas não aparecem no cronograma do dashboard.",
+  },
+  {
+    to: "/admin/biweekly",
+    label: "Indique Day",
+    title: "Indique Day",
+    subtitle:
+      "O Indique Day roda a cada 15 dias. Cada atividade BIWEEKLY tem uma âncora — quartas a N×14 dias dela são ativadas.",
+  },
+  {
+    to: "/admin/bets-config",
+    label: "Apostas",
+    title: "Apostas",
+    subtitle:
+      "Crie apostas entre squads, escolha o critério de vitória e acompanhe o histórico.",
+  },
+  {
+    to: "/admin/tournaments",
+    label: "Torneios",
+    title: "Torneios",
+    subtitle:
+      "Corridas time-boxed com prêmio progressivo · top N ganham do cofre.",
+  },
+  {
+    to: "/admin/announcements",
+    label: "Avisos",
+    title: "Avisos",
+    subtitle:
+      "Mensagens manuais que aparecem no ticker do topo da Visão Geral. Aparecem ANTES das mensagens auto-geradas.",
+  },
+  {
+    to: "/admin/users",
+    label: "Usuários",
+    title: "Usuários",
+    subtitle: "Gerencie os gestores que têm acesso ao sistema.",
+  },
 ] as const;
 
 /**
@@ -50,10 +110,11 @@ const AdminLayout = () => {
     penalty: penaltyCount?.pending ?? 0,
   };
 
-  // Resolve title da rota atual (fallback: "Configurações" se não bater
+  // Resolve title/subtitle da rota atual (fallback: "Configurações" se não bater
   // exato — pode acontecer durante navegações intermediárias).
   const current = ADMIN_ROUTES.find((r) => location.pathname.startsWith(r.to));
   const title = current?.title ?? "Configurações";
+  const subtitle = current?.subtitle;
 
   const openTv = useCallback(() => {
     window.open("/tv", "_blank", "noopener,noreferrer");
@@ -75,6 +136,7 @@ const AdminLayout = () => {
         <DashboardTopbar
           eyebrow="CONFIGURAÇÕES"
           title={title}
+          subtitle={subtitle}
           onMenuClick={openMobileNav}
         />
       )}

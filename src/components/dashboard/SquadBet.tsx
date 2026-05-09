@@ -31,8 +31,10 @@ import {
   Vault,
   Medal,
 } from "@phosphor-icons/react";
-import SquadMainEventCard from "./SquadMainEventCard";
-import SquadUndercardStandings from "./SquadUndercardStandings";
+import SquadPoolHero from "./SquadPoolHero";
+import SquadStandingsGrid, { type SquadStanding } from "./SquadStandingsGrid";
+import BetsRulesRow from "./BetsRulesRow";
+import { Eyebrow } from "@/components/shared";
 import {
   RadarChart,
   PolarGrid,
@@ -361,11 +363,38 @@ const SquadBet = ({ assessors }: Props) => {
         onChange={handleEditLogoChange}
       />
 
-      {/* Editorial V1 — Main Event hero card no topo (só renderiza se tiver bet ATIVA) */}
-      <SquadMainEventCard assessors={assessors} />
+      {/* Hero pool — gradient dark com pote da rodada ativa + cofre acumulado */}
+      <SquadPoolHero />
 
-      {/* Undercard + Standings (artboard SquadBetV1) */}
-      <SquadUndercardStandings />
+      {/* Squad standings (3-col cards) — ranqueado por meta % média */}
+      <SquadStandingsGrid
+        rows={rankedSquads.map<SquadStanding>((row) => ({
+          sq: row.sq,
+          members: row.members,
+          stats: { avgGoal: row.stats.avgGoal, totalPoints: row.stats.totalPoints },
+          wins: winCount(row.sq.id),
+          totalWon: totalBetValue(row.sq.id),
+        }))}
+        periodLabel={
+          period === "daily"
+            ? "diário"
+            : period === "weekly"
+            ? "semanal"
+            : period === "monthly"
+            ? "mensal"
+            : "semestral"
+        }
+      />
+
+      {/* Regras editoriais (Stake mínimo / Cooldown / Critério / Premiação) */}
+      <BetsRulesRow />
+
+      {/* Divisor "Operação" — separa cards editoriais (acima) das ações
+          admin/charts/cofre/badges existentes (abaixo). */}
+      <div className="flex items-center gap-3 pt-2">
+        <Eyebrow>Operação · admin</Eyebrow>
+        <div className="flex-1 h-px bg-line" />
+      </div>
 
       {/* Action bar — título já vem da DashboardTopbar do Index */}
       <div className="flex items-center justify-end">
@@ -822,7 +851,12 @@ const SquadBet = ({ assessors }: Props) => {
       {/* Row 3: Create Bet + History + Squad Badges */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         <div className="lg:col-span-4">
-          <div className="rounded-[14px] border border-line bg-card p-5 h-full">
+          {/* id="nova-aposta-section" — alvo do scroll do botão "+ Nova aposta"
+              da topbar (SquadBet.tsx page). */}
+          <div
+            id="nova-aposta-section"
+            className="rounded-[14px] border border-line bg-card p-5 h-full transition-shadow"
+          >
             <h3 className="text-sm font-extrabold tracking-tight text-ink mb-3 flex items-center gap-2">
               <Fire size={14} weight="fill" className="text-gold-deep" /> Nova Aposta
             </h3>

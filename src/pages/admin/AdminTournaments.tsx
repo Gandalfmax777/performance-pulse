@@ -2,12 +2,12 @@ import { useState } from "react";
 import { toast } from "sonner";
 import {
   CircleNotch,
-  Sword as Swords,
   Plus,
   Flag,
   XCircle,
   Lightning,
   Trash,
+  Trophy,
 } from "@phosphor-icons/react";
 import { format, parseISO, addDays, startOfWeek, endOfWeek, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -206,18 +206,7 @@ const AdminTournaments = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-ink-3 mb-1">
-          ADMINISTRAÇÃO
-        </p>
-        <h1 className="text-[22px] font-extrabold tracking-tight text-ink leading-none flex items-center gap-2">
-          <Swords size={20} weight="bold" className="text-primary" />
-          Torneios
-        </h1>
-        <p className="text-[12px] text-ink-3 mt-1.5">
-          Corridas time-boxed com prêmio progressivo · top N ganham do cofre
-        </p>
-      </div>
+      {/* Page header (eyebrow + title + subtitle) vem do AdminLayout topbar. */}
 
       {/* Templates quick-create — 1 clique preenche o form abaixo */}
       <div className="rounded-[14px] border border-line bg-card p-5 space-y-3">
@@ -406,21 +395,78 @@ const AdminTournaments = () => {
         </div>
       )}
 
-      {/* Finalizados */}
+      {/* Finalizados — tabela compacta últimos 60 dias (alinha com design) */}
       {finished.length > 0 && (
         <div>
-          <h2 className="text-sm font-bold text-ink mb-3">
+          <h2 className="text-sm font-bold text-ink mb-3 flex items-center gap-2">
+            <Trophy size={16} weight="fill" className="text-gold-deep" />
             Histórico ({finished.length})
           </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {finished.slice(0, 6).map((t) => (
-              <div key={t.id} className="space-y-1">
-                <TournamentCard tournament={t} />
-                <p className="text-[10px] text-ink-3 font-mono text-center">
-                  Finalizado em {t.finishedAt ? format(parseISO(t.finishedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) : "—"}
-                </p>
-              </div>
-            ))}
+          <div className="rounded-[14px] overflow-hidden border border-line bg-card">
+            <table className="w-full text-[13px]">
+              <thead>
+                <tr className="bg-surface-2">
+                  <th className="text-[10px] font-mono font-semibold uppercase tracking-[0.16em] text-ink-3 text-left px-3 py-2.5">
+                    Torneio
+                  </th>
+                  <th className="text-[10px] font-mono font-semibold uppercase tracking-[0.16em] text-ink-3 text-left px-3 py-2.5">
+                    Escopo
+                  </th>
+                  <th className="text-[10px] font-mono font-semibold uppercase tracking-[0.16em] text-ink-3 text-left px-3 py-2.5">
+                    Período
+                  </th>
+                  <th className="text-[10px] font-mono font-semibold uppercase tracking-[0.16em] text-ink-3 text-left px-3 py-2.5">
+                    Campeão
+                  </th>
+                  <th className="num text-[10px] font-mono font-semibold uppercase tracking-[0.16em] text-ink-3 text-right px-3 py-2.5">
+                    Pool
+                  </th>
+                  <th className="text-[10px] font-mono font-semibold uppercase tracking-[0.16em] text-ink-3 text-left px-3 py-2.5">
+                    Encerrado
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {finished.slice(0, 60).map((t) => {
+                  const champion = [...t.participants].sort(
+                    (a, b) => (a.rank ?? 999) - (b.rank ?? 999),
+                  )[0];
+                  return (
+                    <tr key={t.id} className="border-t border-line hover:bg-surface-2/60 transition-colors">
+                      <td className="px-3 py-2.5">
+                        <span className="font-medium text-ink">{t.roundLabel}</span>
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full border border-line bg-surface text-[10px] font-mono font-semibold uppercase tracking-[0.08em] text-ink-2">
+                          {t.scope === "INDIVIDUAL" ? "Individual" : "Squad"}
+                        </span>
+                      </td>
+                      <td className="num text-[12px] text-ink-3 px-3 py-2.5">
+                        {format(parseISO(t.startDate), "dd/MM")} →{" "}
+                        {format(parseISO(t.endDate), "dd/MM")}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        {champion ? (
+                          <span className="text-ink">{champion.displayName}</span>
+                        ) : (
+                          <span className="text-[11px] text-ink-4">—</span>
+                        )}
+                      </td>
+                      <td className="num text-right px-3 py-2.5">
+                        <span className="font-display font-bold text-[14px] text-primary">
+                          R$ {Number(t.totalPrizePool ?? 0).toLocaleString("pt-BR")}
+                        </span>
+                      </td>
+                      <td className="num text-[11px] text-ink-3 px-3 py-2.5">
+                        {t.finishedAt
+                          ? format(parseISO(t.finishedAt), "dd/MM/yyyy", { locale: ptBR })
+                          : "—"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
