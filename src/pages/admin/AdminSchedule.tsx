@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import {
+  CircleNotch,
   CalendarBlank as Calendar,
   Plus,
   PencilSimple as Pencil,
@@ -196,7 +196,7 @@ const AdminSchedule = () => {
 
       {isLoading ? (
         <div className="rounded-[14px] border border-line bg-card p-10 flex items-center justify-center">
-          <Loader2 className="w-6 h-6 text-eqi animate-spin" />
+          <CircleNotch size={24} className="text-eqi animate-spin" />
         </div>
       ) : (
         <Tabs defaultValue="1" className="w-full">
@@ -350,7 +350,7 @@ const AdminSchedule = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => { setCreateDialog(null); setEditDialog(null); }}>Cancelar</Button>
             <Button onClick={formAction} disabled={!formName.trim() || formSaving}>
-              {formSaving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              {formSaving && <CircleNotch size={16} className="animate-spin mr-2" />}
               {editDialog ? "Salvar" : "Criar"}
             </Button>
           </DialogFooter>
@@ -587,7 +587,7 @@ function InlineTimeEditor({
         disabled={saving}
         className="w-[70px] px-1 py-0.5 rounded bg-muted/30 border border-eqi/30 text-xs font-mono focus:outline-none focus:border-primary"
       />
-      {saving && <Loader2 className="w-3 h-3 animate-spin text-eqi" />}
+      {saving && <CircleNotch size={12} className="animate-spin text-eqi" />}
     </div>
   );
 }

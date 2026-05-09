@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import {
+  CircleNotch,
   Sword as Swords,
   Plus,
   Flag,
@@ -325,7 +325,7 @@ const AdminTournaments = () => {
         </div>
 
         <Button onClick={handleCreate} disabled={create.isPending} className="w-full md:w-auto">
-          {create.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus size={16} className="mr-2" weight="bold" />}
+          {create.isPending ? <CircleNotch size={16} className="mr-2 animate-spin" /> : <Plus size={16} className="mr-2" weight="bold" />}
           Criar torneio e anunciar
         </Button>
       </div>
