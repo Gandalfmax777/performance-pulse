@@ -2,26 +2,23 @@ import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
-  ChevronLeft,
-  ChevronRight,
-  CalendarDays,
-  Flame,
+  CaretLeft,
+  CaretRight,
+  CalendarBlank as CalendarDays,
+  Fire as Flame,
   Crown,
-  Loader2,
+  CircleNotch,
   Printer,
   ArrowUp,
   ArrowDown,
   Minus,
   Play,
   Pause,
-  TrendingUp,
-} from "lucide-react";
-import {
+  TrendUp,
   Trophy,
   Target,
   Sparkle,
   Sword as Swords,
-  TrendUp,
   Medal,
   ChartBar,
 } from "@phosphor-icons/react";
@@ -171,7 +168,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
     {
       id: "highlights",
       title: "Destaques",
-      icon: TrendingUp,
+      icon: TrendUp,
       render: () => {
         // Mostra os 6 primeiros KPIs com delta vs período anterior
         const items = (overview?.byKpi ?? []).slice(0, 6).map((k) => ({
@@ -220,7 +217,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                       {it.actual.toLocaleString("pt-BR")}
                     </p>
                     <div className={`flex items-center gap-1.5 text-lg font-mono font-bold ${color}`}>
-                      <Icon className="w-5 h-5" />
+                      <Icon size={20} weight="bold" />
                       {deltaLabel}
                       {it.delta && it.delta.previous > 0 && (
                         <span className="text-xs text-ink-3 ml-1">
@@ -367,7 +364,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                             : "bg-muted/30 text-ink-3"
                     }`}
                   >
-                    {i === 0 ? <Crown className="w-4 h-4" /> : `#${i + 1}`}
+                    {i === 0 ? <Crown size={16} weight="fill" /> : `#${i + 1}`}
                   </span>
                   <AssessorAvatar
                     initials={a.avatar}
@@ -379,7 +376,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                     <p className="text-sm font-bold text-ink truncate">{a.name}</p>
                     {a.streak > 0 && (
                       <p className="text-[10px] text-chart-orange flex items-center gap-1">
-                        <Flame className="w-3 h-3" /> {a.streak}d
+                        <Flame size={12} weight="fill" /> {a.streak}d
                       </p>
                     )}
                   </div>
@@ -446,7 +443,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                         </p>
                         {leader && (
                           <div className="flex items-center gap-3 p-3 rounded-lg bg-eqi/5 border border-eqi/20">
-                            <Crown className="w-5 h-5 text-secondary" />
+                            <Crown size={20} weight="fill" className="text-secondary" />
                             <span className="font-semibold text-ink flex-1">
                               Liderando: {leader.displayName}
                             </span>
@@ -474,7 +471,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                         key={t.id}
                         className="flex items-center gap-4 p-4 rounded-[14px] bg-muted/10 border border-line/20"
                       >
-                        <Trophy className="w-8 h-8 text-secondary" />
+                        <Trophy size={32} weight="fill" className="text-secondary" />
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-ink">{t.roundLabel}</p>
                           <p className="text-sm text-ink-3">
@@ -506,7 +503,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
           </h2>
           {generateTeam.isPending && !teamInsight ? (
             <div className="flex items-center justify-center gap-3 text-ink-3 py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-eqi" />
+              <CircleNotch size={24} className="animate-spin text-eqi" />
               <span className="text-lg">Gemini Flash analisando…</span>
             </div>
           ) : teamInsight ? (
@@ -524,7 +521,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                 }
                 className="px-6 py-3 rounded-[14px] bg-ink text-white font-bold hover:bg-ink/90 transition-colors"
               >
-                <Sparkle className="w-5 h-5 inline mr-2" />
+                <Sparkle size={20} weight="fill" className="inline mr-2" />
                 Gerar análise agora
               </button>
             </div>
@@ -644,7 +641,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
       {/* Header com controles (escondido em print) */}
       <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-6 py-3 border-b border-line/20 bg-background/80 backdrop-blur-md no-print">
         <div className="flex items-center gap-3">
-          <Sparkle className="w-5 h-5 text-eqi" />
+          <Sparkle size={20} weight="fill" className="text-eqi" />
           <span className="text-sm font-bold text-ink">Modo Apresentação</span>
           <div className="flex gap-1 bg-muted/20 rounded-lg p-1 ml-3">
             {(["weekly", "monthly"] as Period[]).map((p) => (
@@ -689,21 +686,21 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
             }`}
             title={autoPlay ? "Pausar auto-advance" : "Auto-advance a cada 12s"}
           >
-            {autoPlay ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            {autoPlay ? <Pause size={16} weight="fill" /> : <Play size={16} weight="fill" />}
           </button>
           <button
             onClick={() => window.print()}
             className="p-2 rounded-lg bg-muted/30 hover:bg-muted/50 text-ink"
             title="Exportar como PDF"
           >
-            <Printer className="w-4 h-4" />
+            <Printer size={16} />
           </button>
           <button
             onClick={onClose}
             className="p-2 rounded-lg bg-destructive/20 hover:bg-destructive/30 text-destructive"
             title="Fechar (Esc)"
           >
-            <X className="w-4 h-4" />
+            <X size={16} />
           </button>
         </div>
       </div>
@@ -734,7 +731,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
           disabled={slideIdx === 0}
           className="p-3 rounded-full bg-muted/30 hover:bg-muted/50 disabled:opacity-30 transition-all"
         >
-          <ChevronLeft className="w-6 h-6" />
+          <CaretLeft size={24} weight="bold" />
         </button>
 
         <span className="text-sm font-mono text-ink-3">
@@ -746,7 +743,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
           disabled={slideIdx === slides.length - 1}
           className="p-3 rounded-full bg-muted/30 hover:bg-muted/50 disabled:opacity-30 transition-all"
         >
-          <ChevronRight className="w-6 h-6" />
+          <CaretRight size={24} weight="bold" />
         </button>
       </div>
 

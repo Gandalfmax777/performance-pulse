@@ -12,8 +12,8 @@
 
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import {
+  CircleNotch,
   SpeakerHigh as Volume2,
   UploadSimple as Upload,
   Trash as Trash2,
@@ -62,7 +62,7 @@ export default function AdminSounds() {
       <div className="rounded-[14px] border border-line bg-card divide-y divide-line">
         {isLoading && (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-5 h-5 animate-spin text-ink-3" />
+            <CircleNotch size={20} className="animate-spin text-ink-3" />
           </div>
         )}
         {kpis?.map((kpi) => (
@@ -228,7 +228,7 @@ function KpiSoundRow({ kpi }: { kpi: ApiKpi }) {
             disabled={busy}
           >
             {upload.isPending ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+              <CircleNotch size={14} className="animate-spin mr-1.5" />
             ) : (
               <Upload size={14} className="mr-1.5" />
             )}
@@ -307,7 +307,7 @@ function KpiSoundRow({ kpi }: { kpi: ApiKpi }) {
               disabled={busy}
             >
               {upload.isPending ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                <CircleNotch size={14} className="animate-spin mr-1.5" />
               ) : (
                 <Upload size={14} className="mr-1.5" />
               )}

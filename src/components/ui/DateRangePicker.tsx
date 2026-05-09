@@ -1,6 +1,6 @@
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, startOfYear } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon } from "@phosphor-icons/react";
 import type { DateRange } from "react-day-picker";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -101,7 +101,7 @@ export function DateRangePicker({ value, onChange, className }: DateRangePickerP
             className,
           )}
         >
-          <CalendarIcon className="w-4 h-4" />
+          <CalendarIcon size={16} />
           {label}
         </Button>
       </PopoverTrigger>

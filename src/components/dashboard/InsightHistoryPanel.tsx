@@ -1,6 +1,11 @@
 import { useState } from "react";
 import Markdown from "react-markdown";
-import { ChevronDown, ChevronRight, History, Loader2 } from "lucide-react";
+import {
+  CaretDown,
+  CaretRight,
+  ClockCounterClockwise as History,
+  CircleNotch,
+} from "@phosphor-icons/react";
 import {
   useAssessorInsightHistory,
   useTeamInsightHistory,
@@ -55,7 +60,7 @@ const InsightHistoryPanel = (props: Props) => {
         className="w-full flex items-center justify-between gap-2 text-left"
       >
         <div className="flex items-center gap-2">
-          <History className="w-4 h-4 text-primary" />
+          <History size={16} className="text-primary" />
           <span className="text-sm font-display font-bold text-foreground">
             Histórico de análises IA
           </span>
@@ -66,9 +71,9 @@ const InsightHistoryPanel = (props: Props) => {
           )}
         </div>
         {open ? (
-          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          <CaretDown size={16} className="text-muted-foreground" />
         ) : (
-          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          <CaretRight size={16} className="text-muted-foreground" />
         )}
       </button>
 
@@ -76,7 +81,7 @@ const InsightHistoryPanel = (props: Props) => {
         <div className="mt-3 space-y-2">
           {query.isLoading && (
             <div className="flex items-center justify-center py-6 text-xs text-muted-foreground">
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              <CircleNotch size={16} className="animate-spin mr-2" />
               Carregando histórico…
             </div>
           )}
@@ -134,9 +139,9 @@ const HistoryEntry = ({ item }: { item: ApiInsightHistoryItem }) => {
           )}
         </div>
         {expanded ? (
-          <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-1" />
+          <CaretDown size={14} className="text-muted-foreground shrink-0 mt-1" />
         ) : (
-          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-1" />
+          <CaretRight size={14} className="text-muted-foreground shrink-0 mt-1" />
         )}
       </button>
 
