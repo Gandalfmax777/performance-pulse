@@ -128,7 +128,10 @@ const TvPage = () => {
   const tm = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden tv-mode" style={{ background: 'hsl(var(--background))' }}>
+    // `dark` escopa os tokens dark mode só ao /tv — não toca next-themes
+    // global. As CSS vars dentro de .dark (--background, --ink, etc.)
+    // sobrescrevem aqui e em tudo que renderizar como descendente.
+    <div className="dark min-h-screen relative overflow-x-hidden tv-mode bg-background text-foreground">
       {/* ─── TV Header — placar de estádio (sério mas divertido) ─── */}
       <header
         className="fixed top-0 left-0 right-0 z-50 flex items-center gap-5 px-8 py-3 border-b text-white"
@@ -136,13 +139,13 @@ const TvPage = () => {
       >
         <div className="flex items-center gap-3">
           <div
-            className="w-9 h-9 rounded-lg flex items-center justify-center font-extrabold text-lg"
-            style={{ background: 'hsl(var(--gold))', color: 'hsl(var(--ink))', fontFamily: "'Instrument Serif', serif" }}
+            className="w-9 h-9 rounded-lg flex items-center justify-center font-display font-extrabold text-lg"
+            style={{ background: 'hsl(var(--gold))', color: 'hsl(var(--ink))' }}
           >
             P
           </div>
           <div className="leading-tight">
-            <p className="font-serif italic text-[18px] font-bold tracking-tight">Performance Pulse</p>
+            <p className="font-display italic text-[18px] font-extrabold tracking-tight">Performance Pulse</p>
             <p className="text-[9px] uppercase tracking-[0.12em] font-semibold text-white/55 mt-0.5">
               Mesa de Vendas · Modo TV
             </p>

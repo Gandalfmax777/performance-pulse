@@ -97,14 +97,14 @@ const TvTournamentBoard = () => {
             TORNEIO ATIVO · {format(parseISO(tournament.startDate), "MMM yyyy").toUpperCase()}
           </p>
           <h2
-            className="font-serif italic font-bold leading-none tracking-[-0.03em] mt-3 text-ink"
-            style={{ fontFamily: "'Instrument Serif', serif", fontSize: 56 }}
+            className="font-display italic font-bold leading-none tracking-[-0.03em] mt-3 text-ink"
+            style={{ fontSize: 56 }}
           >
             {tournament.roundLabel}
           </h2>
           <p
-            className="font-serif italic mt-2 text-ink-2 font-normal"
-            style={{ fontFamily: "'Instrument Serif', serif", fontSize: 18 }}
+            className="font-display italic mt-2 text-ink-2 font-normal"
+            style={{ fontSize: 18 }}
           >
             Quem fechar mais {kpiLabel.toLowerCase()} até{" "}
             {format(parseISO(tournament.endDate), "dd/MM")} leva.
@@ -131,8 +131,8 @@ const TvTournamentBoard = () => {
               PRÊMIO
             </p>
             <p
-              className="font-serif italic font-bold leading-tight mt-1 text-ink"
-              style={{ fontFamily: "'Instrument Serif', serif", fontSize: 22 }}
+              className="font-display italic font-bold leading-tight mt-1 text-ink"
+              style={{ fontSize: 22 }}
             >
               R$ {tournament.totalPrizePool.toLocaleString("pt-BR")}
             </p>
@@ -164,8 +164,8 @@ const TvTournamentBoard = () => {
         <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
           <div>
             <h3
-              className="font-serif italic font-bold tracking-[-0.02em]"
-              style={{ fontFamily: "'Instrument Serif', serif", fontSize: 28 }}
+              className="font-display italic font-bold tracking-[-0.02em]"
+              style={{ fontSize: 28 }}
             >
               Boletômetro
             </h3>
@@ -212,9 +212,8 @@ const TvTournamentBoard = () => {
                   style={{ gridTemplateColumns: "50px 44px 1fr 120px" }}
                 >
                   <p
-                    className="font-serif italic font-bold leading-none tracking-[-0.04em]"
+                    className="font-display italic font-bold leading-none tracking-[-0.04em]"
                     style={{
-                      fontFamily: "'Instrument Serif', serif",
                       fontSize: 44,
                       color: accent,
                     }}
