@@ -24,7 +24,7 @@ import {
   parseISO,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ArrowLeft, Printer, Loader2 } from "lucide-react";
+import { ArrowLeft, Printer, CircleNotch } from "@phosphor-icons/react";
 import Markdown from "react-markdown";
 import { useOverviewReport } from "@/hooks/useReports";
 import { useAssessors } from "@/hooks/useAssessors";
@@ -113,11 +113,11 @@ const Relatorio = () => {
       {/* Toolbar (escondida em print) */}
       <div className="relatorio-toolbar no-print">
         <button onClick={() => navigate(-1)} className="rt-btn">
-          <ArrowLeft className="w-4 h-4" /> Voltar
+          <ArrowLeft size={16} weight="bold" /> Voltar
         </button>
         <span className="rt-title">Relatório • {range.label}</span>
         <button onClick={() => window.print()} className="rt-btn rt-btn-primary">
-          <Printer className="w-4 h-4" /> Imprimir / Salvar PDF
+          <Printer size={16} weight="bold" /> Imprimir / Salvar PDF
         </button>
       </div>
 
@@ -213,7 +213,7 @@ const Relatorio = () => {
           <h2>Análise do Time (IA)</h2>
           {generateTeam.isPending && !teamInsight ? (
             <p className="r-loading">
-              <Loader2 className="w-4 h-4 inline animate-spin" /> Gemini Flash analisando…
+              <CircleNotch size={16} className="inline animate-spin" /> Gemini Flash analisando…
             </p>
           ) : teamInsight ? (
             <div className="r-markdown">
