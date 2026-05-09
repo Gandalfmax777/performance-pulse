@@ -10,10 +10,8 @@ import KpiGoalsList from "@/components/dashboard/KpiGoalsList";
 import TournamentSidebarCard from "@/components/dashboard/TournamentSidebarCard";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import AnnouncementTicker from "@/components/dashboard/AnnouncementTicker";
-import TournamentCard from "@/components/dashboard/TournamentCard";
 import TournamentFinishedOverlay from "@/components/dashboard/TournamentFinishedOverlay";
 import { SectionCard } from "@/components/shared";
-import { useActiveTournaments } from "@/hooks/useTournaments";
 import { useTournamentFinishedStream } from "@/hooks/useTournamentFinishedStream";
 
 // Lazy: views condicionais carregam só quando o user navega.
@@ -87,14 +85,15 @@ const VIEW_EYEBROWS: Partial<Record<View, string>> = {
 };
 
 // Removidas da lista (cada uma vira página própria do redesign):
-// - `daily`   → /por-dia
-// - `results` → /ranking
-// - `kpis`    → /kpis
-// - `squad`   → /squad-bet
+// - `daily`      → /por-dia
+// - `results`    → /ranking
+// - `kpis`       → /kpis
+// - `squad`      → /squad-bet
+// - `tournament` → /torneio
 // Permanecem no type DashboardView para a sidebar matchear as rotas
 // novas via active state legacy.
 const VALID_VIEWS: ReadonlySet<View> = new Set([
-  "overview", "tournament", "team",
+  "overview", "team",
 ]);
 const VALID_PERIODS: ReadonlySet<OverviewPeriod> = new Set(["daily", "weekly", "monthly", "semester"]);
 
@@ -121,6 +120,7 @@ const Index = () => {
     else if (v === "results") navigate("/ranking", { replace: true });
     else if (v === "kpis") navigate("/kpis", { replace: true });
     else if (v === "squad") navigate("/squad-bet", { replace: true });
+    else if (v === "tournament") navigate("/torneio", { replace: true });
   }, [navigate]);
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -145,7 +145,6 @@ const Index = () => {
 
   const { assessors, addAssessor, removeAssessor } = useAssessors();
   const { user } = useCurrentUser();
-  const { data: activeTournaments = [] } = useActiveTournaments();
   const { event: finishedEvent, dismiss: dismissFinished } = useTournamentFinishedStream(true);
   const [showManager, setShowManager] = useState(false);
   // Profile modal aberto a partir do TeamScreen — clicar em um card de
@@ -166,15 +165,9 @@ const Index = () => {
     window.open("/presentation", "_blank", "noopener,noreferrer");
   }, []);
 
-  // Title custom por view — geralmente vem de VIEW_LABELS, mas Torneio
-  // usa o nome do round atual (ex: "Liga das Ativações") quando há torneio
-  // ativo, seguindo o artboard TournamentScreen.
-  const titleFor = (v: View): string => {
-    if (v === "tournament" && activeTournaments[0]) {
-      return activeTournaments[0].roundLabel;
-    }
-    return VIEW_LABELS[v];
-  };
+  // Title por view (legacy — Index só renderiza overview/team agora; demais
+  // viraram rotas próprias do redesign).
+  const titleFor = (v: View): string => VIEW_LABELS[v];
 
   // Subtitle por view (segue artboards do design)
   const subtitleFor = (v: View): string | undefined => {
@@ -182,15 +175,6 @@ const Index = () => {
       const week = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "dd MMM");
       const weekEnd = format(endOfWeek(new Date(), { weekStartsOn: 1 }), "dd MMM");
       return `Semana atual · ${week} — ${weekEnd} · ${assessors.length} assessores`;
-    }
-    if (v === "results") return "Atualizado em tempo real";
-    if (v === "kpis") return "Funil completo · todos os assessores";
-    if (v === "squad") return "Squads contra squads. Quem cumprir mais % da meta combinada leva o pote.";
-    if (v === "tournament") {
-      const t = activeTournaments[0];
-      if (!t) return "Sem torneio ativo no momento.";
-      const monthLabel = format(new Date(t.startDate), "MMMM");
-      return `${monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1)} · ${t.scope === "INDIVIDUAL" ? "Individual" : "Por squad"}`;
     }
     if (v === "team") return `Gerencie a mesa · ${assessors.length} ativos`;
     return undefined;
@@ -242,9 +226,6 @@ const Index = () => {
           {presentationBtn}
         </>
       );
-    }
-    if (v === "tournament") {
-      return periodTabs;
     }
     if (v === "team") {
       return teamManageBtn;
@@ -304,16 +285,13 @@ const Index = () => {
                 {/* RIGHT: Metas por KPI + Tournament card */}
                 <div className="flex flex-col gap-4">
                   <KpiGoalsList from={overviewRange.from} to={overviewRange.to} />
-                  <TournamentSidebarCard onClick={() => setView("tournament")} />
+                  <TournamentSidebarCard onClick={() => navigate("/torneio")} />
                 </div>
               </div>
             </>
           )}
 
           <Suspense fallback={<InlineLoader />}>
-            {view === "tournament" && (
-              <TournamentView tournaments={activeTournaments} />
-            )}
             {view === "team" && (
               <TeamScreen
                 assessors={assessors}
@@ -365,35 +343,5 @@ const InlineLoader = () => (
     <div className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
   </div>
 );
-
-interface ApiTournament {
-  id: string;
-  // tipos parciais — só pra prop forward
-  [k: string]: unknown;
-}
-
-interface TournamentViewProps {
-  tournaments: unknown[];
-}
-
-const TournamentView = ({ tournaments }: TournamentViewProps) => {
-  if (tournaments.length === 0) {
-    return (
-      <SectionCard className="text-center">
-        <p className="text-ink-3 text-sm py-6">Sem torneio ativo no momento.</p>
-      </SectionCard>
-    );
-  }
-  return (
-    <div className={`grid gap-4 ${tournaments.length === 1 ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2"}`}>
-      {tournaments.map((t) => {
-        const tour = t as ApiTournament;
-        return (
-          <TournamentCard key={tour.id} tournament={tour as unknown as Parameters<typeof TournamentCard>[0]["tournament"]} />
-        );
-      })}
-    </div>
-  );
-};
 
 export default Index;
