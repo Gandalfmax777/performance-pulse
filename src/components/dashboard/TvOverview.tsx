@@ -35,38 +35,16 @@ const TvOverview = ({ assessors, from, to }: TvOverviewProps) => {
 
   return (
     <div className="grid gap-5 grid-cols-1 lg:grid-cols-[1.55fr_1fr] grid-rows-[1fr_auto]">
-      {/* HERO LEADER — stadium hero card */}
+      {/* HERO LEADER — editorial financial (sem cards arredondados, sem
+          gradientes dourados, sem decorações stadium). Alinha com brief
+          de Modo-TV.html: "Editorial financeiro, não estádio". */}
       <div
-        className="relative overflow-hidden rounded-[14px] text-white p-9 flex flex-col justify-between min-h-[420px]"
+        className="relative overflow-hidden text-white p-10 flex flex-col justify-between min-h-[420px] border border-white/10"
         style={{
           background:
-            "linear-gradient(135deg, hsl(var(--ink)) 0%, hsl(var(--eqi-forest)) 60%, hsl(var(--eqi-green)) 100%)",
+            "linear-gradient(180deg, hsl(var(--ink)) 0%, hsl(var(--eqi-forest)) 100%)",
         }}
       >
-        {/* halftone overlay */}
-        <div
-          className="absolute inset-0 opacity-[0.15] pointer-events-none"
-          style={{
-            backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
-            backgroundSize: "14px 14px",
-            maskImage: "radial-gradient(ellipse at top right, black, transparent 70%)",
-            WebkitMaskImage: "radial-gradient(ellipse at top right, black, transparent 70%)",
-          }}
-        />
-        {/* gold radial glow */}
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            top: -120,
-            right: -120,
-            width: 380,
-            height: 380,
-            borderRadius: "50%",
-            background: "radial-gradient(circle, hsl(var(--gold)) 0%, transparent 65%)",
-            opacity: 0.35,
-          }}
-        />
-
         <div className="relative flex justify-between items-start">
           <div>
             <span
@@ -87,18 +65,18 @@ const TvOverview = ({ assessors, from, to }: TvOverviewProps) => {
         </div>
 
         <div className="relative">
+          {/* Tipografia display gigante — design pede 120-156px em TVs grandes */}
           <h2
-            className="font-display font-extrabold tracking-[-0.04em] leading-[0.95]"
-            style={{ fontSize: "min(11vw, 88px)" }}
+            className="font-display font-extrabold tracking-[-0.05em] leading-[0.92]"
+            style={{ fontSize: "min(14vw, 132px)" }}
           >
             {firstName}
           </h2>
           {lastName && (
             <p
-              className="font-display italic text-white/55 leading-none font-normal"
+              className="font-display text-white/45 leading-none font-medium tracking-[-0.04em]"
               style={{
-                fontSize: "min(7vw, 56px)",
-                letterSpacing: "-0.03em",
+                fontSize: "min(8vw, 64px)",
               }}
             >
               {lastName}
@@ -159,13 +137,13 @@ const TvOverview = ({ assessors, from, to }: TvOverviewProps) => {
         </div>
       </div>
 
-      {/* SCOREBOARD — perseguidores */}
-      <div className="rounded-[14px] bg-white border border-line flex flex-col overflow-hidden">
+      {/* SCOREBOARD — perseguidores. Sem rounded; grid forte alinha com brief. */}
+      <div className="bg-white border border-line flex flex-col overflow-hidden">
         <div
-          className="flex items-center justify-between px-5 py-4 text-white"
-          style={{ background: "hsl(var(--ink))", borderBottom: "2px solid hsl(var(--ink))" }}
+          className="flex items-center justify-between px-5 py-4 text-white border-b border-line"
+          style={{ background: "hsl(var(--ink))" }}
         >
-          <p className="font-display italic font-bold text-lg">
+          <p className="font-display font-bold text-lg tracking-tight">
             O placar
           </p>
           <p className="font-mono text-[10px] font-bold tracking-[0.15em]" style={{ color: "hsl(var(--gold))" }}>
@@ -219,9 +197,9 @@ const TvOverview = ({ assessors, from, to }: TvOverviewProps) => {
         </div>
       </div>
 
-      {/* KPI STRIP — bottom full width */}
+      {/* KPI STRIP — bottom full width. Grid forte sem rounded. */}
       <div
-        className="rounded-[14px] bg-white border border-line overflow-hidden grid"
+        className="bg-white border border-line overflow-hidden grid"
         style={{
           gridColumn: "1 / -1",
           gridTemplateColumns: `repeat(${Math.max(1, Math.min(9, kpis.length || 1))}, minmax(0, 1fr))`,
