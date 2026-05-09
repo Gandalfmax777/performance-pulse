@@ -2,8 +2,13 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { format, addDays, startOfWeek, nextWednesday, isWednesday } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Loader2 } from "lucide-react";
-import { Repeat, CalendarBlank as CalendarIcon, PencilSimple as Pencil, Target } from "@phosphor-icons/react";
+import {
+  CircleNotch,
+  Repeat,
+  CalendarBlank as CalendarIcon,
+  PencilSimple as Pencil,
+  Target,
+} from "@phosphor-icons/react";
 import { useAllActivities, useUpdateActivity } from "@/hooks/useAdminActivities";
 import { isActivityActiveOn, type ActivityCadenceFields } from "@/lib/biweekly";
 import { Button } from "@/components/ui/button";
@@ -71,7 +76,7 @@ const AdminBiweekly = () => {
 
       {isLoading ? (
         <div className="rounded-[14px] border border-line bg-card p-10 flex items-center justify-center">
-          <Loader2 className="w-6 h-6 text-eqi animate-spin" />
+          <CircleNotch size={24} className="text-eqi animate-spin" />
         </div>
       ) : biweeklyActivities.length === 0 ? (
         <div className="rounded-[14px] border border-line bg-card p-10 text-center">
@@ -299,7 +304,7 @@ function AnchorDialog({
             Cancelar
           </Button>
           <Button onClick={handleSave} disabled={!date || updateActivity.isPending}>
-            {updateActivity.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+            {updateActivity.isPending && <CircleNotch size={16} className="animate-spin mr-2" />}
             Salvar
           </Button>
         </DialogFooter>

@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-import { Megaphone, Plus, PencilSimple, Trash, Eye, EyeSlash } from "@phosphor-icons/react";
+import {
+  CircleNotch,
+  Megaphone,
+  Plus,
+  PencilSimple,
+  Trash,
+  Eye,
+  EyeSlash,
+} from "@phosphor-icons/react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -81,7 +88,7 @@ const AdminAnnouncements = () => {
       <div className="rounded-[14px] overflow-hidden border border-line bg-card">
         {isLoading ? (
           <div className="p-10 flex items-center justify-center">
-            <Loader2 className="w-6 h-6 text-eqi animate-spin" />
+            <CircleNotch size={24} className="text-eqi animate-spin" />
           </div>
         ) : (announcements ?? []).length === 0 ? (
           <div className="p-10 text-center text-sm text-ink-3">
@@ -288,7 +295,7 @@ function AnnouncementDialog({ state, onClose, onSave, saving }: AnnouncementDial
             }
             disabled={saving || !message.trim()}
           >
-            {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+            {saving && <CircleNotch size={16} className="animate-spin mr-2" />}
             {editing ? "Salvar" : "Criar"}
           </Button>
         </DialogFooter>

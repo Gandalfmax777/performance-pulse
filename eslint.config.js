@@ -72,11 +72,7 @@ export default tseslint.config(
       "src/components/ui/sheet.tsx",
       "src/components/ui/sidebar.tsx",
       "src/components/ui/toast.tsx",
-      "src/pages/admin/AdminAnnouncements.tsx",
-      "src/pages/admin/AdminBiweekly.tsx",
-      "src/pages/admin/AdminSchedule.tsx",
       "src/pages/admin/AdminSounds.tsx",
-      "src/pages/admin/AdminTournaments.tsx",
       "src/pages/admin/AdminUsers.tsx",
     ],
     rules: {
