@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Play, Pause, SkipForward, Timer, X } from "@phosphor-icons/react";
 import { TvSlides, TV_SLIDES } from "@/components/dashboard/TvSlides";
 import TournamentFinishedOverlay from "@/components/dashboard/TournamentFinishedOverlay";
@@ -6,6 +6,7 @@ import { useAssessors } from "@/hooks/useAssessors";
 import { useRankingStream } from "@/hooks/useRankingStream";
 import { useTournamentFinishedStream } from "@/hooks/useTournamentFinishedStream";
 import { useSystemNotifications } from "@/hooks/useSystemNotifications";
+import { isTenantSlug, type TenantSlug } from "@/config/tenants";
 
 const TV_INTERVALS = [10, 15, 20, 30, 45, 60];
 
@@ -30,6 +31,19 @@ const TvPage = () => {
   const [controlsVisible, setControlsVisible] = useState(true);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Tenant via query param `?tenant=eqi|bdn`. /tv é público (sem JWT), por
+  // isso não usa useCurrentUser. Default eqi pra compat com URL antiga.
+  const tenantSlug: TenantSlug = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get("tenant") ?? "";
+    return isTenantSlug(slug) ? slug : "eqi";
+  }, []);
+
+  // Aplica data-tenant no <html> pra ativar tema CSS escopado.
+  useEffect(() => {
+    document.documentElement.setAttribute("data-tenant", tenantSlug);
+  }, [tenantSlug]);
 
   const { assessors } = useAssessors();
 
@@ -99,7 +113,7 @@ const TvPage = () => {
     <div className="min-h-screen w-screen overflow-hidden relative" style={{ background: "#000b14" }}>
       {/* Slide ocupa tela inteira — TvSlides tem seu próprio Chrome */}
       <div className="absolute inset-0">
-        <TvSlides slideIdx={slideIdx} assessors={assessors} />
+        <TvSlides slideIdx={slideIdx} assessors={assessors} tenant={tenantSlug} />
       </div>
 
       {/* Controles flutuantes — auto-hide após 3s idle. Posicionados

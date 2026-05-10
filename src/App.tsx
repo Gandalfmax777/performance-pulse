@@ -9,6 +9,7 @@ import { getAuthToken } from "@/api/client";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { RequireAdmin } from "@/components/layouts/RequireAdmin";
 import FullScreenLoader from "@/components/ui/FullScreenLoader";
+import { TenantProvider } from "@/components/providers/TenantProvider";
 
 // Páginas lazy: cada rota vira seu próprio chunk, reduzindo bundle inicial.
 // /admin/* é usado só por admins mas era baixado junto — agora só quando navega.
@@ -36,6 +37,7 @@ const AdminBetsConfig = lazy(() => import("./pages/admin/AdminBetsConfig"));
 const AdminTournaments = lazy(() => import("./pages/admin/AdminTournaments"));
 const AdminAnnouncements = lazy(() => import("./pages/admin/AdminAnnouncements"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminTenants = lazy(() => import("./pages/admin/AdminTenants"));
 
 const queryClient = new QueryClient();
 
@@ -51,6 +53,7 @@ const App = () => (
   <ErrorBoundary>
   <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
   <QueryClientProvider client={queryClient}>
+    <TenantProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -178,6 +181,7 @@ const App = () => (
               <Route path="tournaments" element={<AdminTournaments />} />
               <Route path="announcements" element={<AdminAnnouncements />} />
               <Route path="users" element={<AdminUsers />} />
+              <Route path="tenants" element={<AdminTenants />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
@@ -185,6 +189,7 @@ const App = () => (
         </Suspense>
       </BrowserRouter>
     </TooltipProvider>
+    </TenantProvider>
   </QueryClientProvider>
   </ThemeProvider>
   </ErrorBoundary>

@@ -87,6 +87,13 @@ const ADMIN_ROUTES: readonly AdminRoute[] = [
     title: "Usuários",
     subtitle: "Gerencie os gestores que têm acesso ao sistema.",
   },
+  {
+    to: "/admin/tenants",
+    label: "Mesas",
+    title: "Mesas",
+    subtitle:
+      "Configure mesas (tenants) — branding, logo, ativação. Super admin (BDN) cria novas mesas.",
+  },
 ] as const;
 
 /**

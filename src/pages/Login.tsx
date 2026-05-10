@@ -102,7 +102,7 @@ const Login = () => {
                   Performance Pulse
                 </p>
                 <p className="num text-[9px] uppercase tracking-[0.22em] text-white/55 mt-1">
-                  EQI · Mesa de Performance
+                  Mesa de Performance
                 </p>
               </div>
             </div>
