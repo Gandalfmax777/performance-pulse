@@ -13,8 +13,21 @@ export interface ApiUser {
 export interface CreateUserInput {
   email: string;
   name: string;
-  password: string;
+  /** Obrigatória para usuários novos; ignorada se o email já existe (só
+   *  adiciona membership). */
+  password?: string;
   role?: "ADMIN" | "MANAGER";
+}
+
+export interface ApiUserLookup {
+  exists: boolean;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    hasMembershipInCurrentTenant: boolean;
+    otherMemberships: Array<{ tenantSlug: string; tenantName: string }>;
+  } | null;
 }
 
 export interface UpdateUserInput {
@@ -42,6 +55,22 @@ export function useCreateUser() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     },
+  });
+}
+
+/**
+ * Lookup de email — usado pelo form de criação pra detectar se já existe
+ * conta no sistema (em qualquer mesa). Returna `exists: false` quando email
+ * não bate ou está em formato inválido. Debounce no caller.
+ */
+export function useUserLookup(email: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ["users", "lookup", email],
+    queryFn: () =>
+      apiFetch<ApiUserLookup>(`/users/lookup?email=${encodeURIComponent(email)}`),
+    enabled: enabled && email.length > 0 && /^.+@.+\..+$/.test(email),
+    staleTime: 10_000,
+    retry: false,
   });
 }
 

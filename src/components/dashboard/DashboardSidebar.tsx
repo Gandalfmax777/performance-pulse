@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useSoundMuted } from "@/hooks/useSoundEffects";
 import { clearAuthToken } from "@/api/client";
+import { TenantSwitcher } from "@/components/shared/TenantSwitcher";
 
 export type DashboardView =
   | "overview"
@@ -78,7 +79,7 @@ const DashboardSidebar = ({
   const navigate = useNavigate();
   const location = useLocation();
   const { theme, setTheme } = useTheme();
-  const { isAdmin, user } = useCurrentUser();
+  const { isAdmin, user, tenantConfig } = useCurrentUser();
   const [muted, setMuted] = useSoundMuted();
 
   const [collapsed, setCollapsed] = useState<boolean>(() => {
@@ -138,7 +139,7 @@ const DashboardSidebar = ({
                   Performance Pulse
                 </h1>
                 <p className="num text-[9px] uppercase tracking-[0.16em] text-ink-3 mt-0.5">
-                  EQI · MESA
+                  {tenantConfig.sidebarEyebrow}
                 </p>
               </div>
             )}
@@ -150,6 +151,11 @@ const DashboardSidebar = ({
           >
             <X size={16} weight="bold" />
           </button>
+        </div>
+
+        {/* Tenant switcher — só aparece se user tem >1 membership */}
+        <div className="px-2 py-2 border-b border-line">
+          <TenantSwitcher collapsed={collapsed} />
         </div>
 
         <button

@@ -1,9 +1,16 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { CircleNotch, Plus, PencilSimple, Trash } from "@phosphor-icons/react";
+import { CircleNotch, Plus, PencilSimple, Trash, UserCheck } from "@phosphor-icons/react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { useUsers, useCreateUser, useUpdateUser, useDeleteUser, type ApiUser } from "@/hooks/useUsers";
+import {
+  useUsers,
+  useCreateUser,
+  useUpdateUser,
+  useDeleteUser,
+  useUserLookup,
+  type ApiUser,
+} from "@/hooks/useUsers";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useAssessors } from "@/hooks/useAssessors";
 import { useSquads } from "@/hooks/useSquads";
@@ -74,6 +81,25 @@ const AdminUsers = () => {
   const [cPassword, setCPassword] = useState("");
   const [cRole, setCRole] = useState<"ADMIN" | "MANAGER">("ADMIN");
 
+  // Debounce do email pra evitar chamar lookup a cada keystroke
+  const [debouncedEmail, setDebouncedEmail] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedEmail(cEmail.trim()), 350);
+    return () => clearTimeout(t);
+  }, [cEmail]);
+
+  const lookup = useUserLookup(debouncedEmail, createOpen);
+  const existingUser =
+    lookup.data?.exists && lookup.data.user ? lookup.data.user : null;
+  const alreadyInTenant = existingUser?.hasMembershipInCurrentTenant ?? false;
+
+  // Quando detecta user existente, auto-preenche o nome se ainda vazio
+  useEffect(() => {
+    if (existingUser && !cName.trim()) {
+      setCName(existingUser.name);
+    }
+  }, [existingUser, cName]);
+
   // Edit form
   const [eName, setEName] = useState("");
   const [eEmail, setEEmail] = useState("");
@@ -82,6 +108,7 @@ const AdminUsers = () => {
 
   function openCreate() {
     setCName(""); setCEmail(""); setCPassword(""); setCRole("ADMIN");
+    setDebouncedEmail("");
     setCreateOpen(true);
   }
 
@@ -92,8 +119,18 @@ const AdminUsers = () => {
 
   async function handleCreate() {
     try {
-      await createUser.mutateAsync({ name: cName.trim(), email: cEmail.trim(), password: cPassword, role: cRole });
-      toast.success("Usuário criado");
+      await createUser.mutateAsync({
+        name: cName.trim(),
+        email: cEmail.trim(),
+        // Password só vai pro backend se for user novo
+        password: existingUser ? undefined : cPassword,
+        role: cRole,
+      });
+      toast.success(
+        existingUser
+          ? `${existingUser.name} agora tem acesso a essa mesa`
+          : "Usuário criado",
+      );
       setCreateOpen(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao criar");
@@ -364,27 +401,86 @@ const AdminUsers = () => {
         </Table>
       </div>
 
-      {/* Create Dialog */}
+      {/* Create Dialog — adapta UX se o email já tem conta no sistema */}
       <Dialog open={createOpen} onOpenChange={(v) => !v && setCreateOpen(false)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Novo usuário</DialogTitle>
+            <DialogTitle>
+              {existingUser ? "Adicionar acesso a essa mesa" : "Novo usuário"}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div>
-              <Label className="text-xs">Nome</Label>
-              <Input value={cName} onChange={(e) => setCName(e.target.value)} className="mt-1" />
-            </div>
-            <div>
               <Label className="text-xs">E-mail</Label>
-              <Input type="email" value={cEmail} onChange={(e) => setCEmail(e.target.value)} className="mt-1" />
+              <div className="relative mt-1">
+                <Input
+                  type="email"
+                  value={cEmail}
+                  onChange={(e) => setCEmail(e.target.value)}
+                  autoFocus
+                />
+                {lookup.isFetching && (
+                  <CircleNotch
+                    size={14}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-3 animate-spin"
+                  />
+                )}
+              </div>
+
+              {/* Banner: user existente já tem membership na mesa atual */}
+              {alreadyInTenant && (
+                <div className="mt-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                  Esse usuário já tem acesso a essa mesa.
+                </div>
+              )}
+
+              {/* Banner: user existente sem membership na mesa atual — caso Roberto */}
+              {existingUser && !alreadyInTenant && (
+                <div className="mt-2 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs text-emerald-900 flex gap-2">
+                  <UserCheck size={14} weight="bold" className="shrink-0 mt-0.5" />
+                  <div>
+                    <strong>{existingUser.name}</strong> já tem conta no sistema
+                    {existingUser.otherMemberships.length > 0 && (
+                      <>
+                        {" "}(em{" "}
+                        {existingUser.otherMemberships
+                          .map((m) => m.tenantName)
+                          .join(", ")}
+                        )
+                      </>
+                    )}
+                    . Vamos só adicionar acesso a essa mesa — a senha atual
+                    dele continua valendo.
+                  </div>
+                </div>
+              )}
             </div>
+
             <div>
-              <Label className="text-xs">Senha (mínimo 8 caracteres)</Label>
-              <Input type="password" value={cPassword} onChange={(e) => setCPassword(e.target.value)} className="mt-1" />
+              <Label className="text-xs">Nome</Label>
+              <Input
+                value={cName}
+                onChange={(e) => setCName(e.target.value)}
+                className="mt-1"
+                disabled={Boolean(existingUser)}
+              />
             </div>
+
+            {/* Senha só pra usuários novos */}
+            {!existingUser && (
+              <div>
+                <Label className="text-xs">Senha (mínimo 8 caracteres)</Label>
+                <Input
+                  type="password"
+                  value={cPassword}
+                  onChange={(e) => setCPassword(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+            )}
+
             <div>
-              <Label className="text-xs">Role</Label>
+              <Label className="text-xs">Role nessa mesa</Label>
               <Select value={cRole} onValueChange={(v) => setCRole(v as "ADMIN" | "MANAGER")}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -395,10 +491,24 @@ const AdminUsers = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreate} disabled={!cName.trim() || !cEmail.trim() || cPassword.length < 8 || createUser.isPending}>
-              {createUser.isPending && <CircleNotch size={16} className="animate-spin mr-2" />}
-              Criar
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleCreate}
+              disabled={
+                !cName.trim() ||
+                !cEmail.trim() ||
+                alreadyInTenant ||
+                (!existingUser && cPassword.length < 8) ||
+                createUser.isPending ||
+                lookup.isFetching
+              }
+            >
+              {createUser.isPending && (
+                <CircleNotch size={16} className="animate-spin mr-2" />
+              )}
+              {existingUser ? "Adicionar acesso" : "Criar"}
             </Button>
           </DialogFooter>
         </DialogContent>
