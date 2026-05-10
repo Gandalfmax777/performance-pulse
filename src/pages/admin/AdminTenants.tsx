@@ -397,7 +397,7 @@ const AdminTenants = () => {
                   <input
                     ref={logoInputRef}
                     type="file"
-                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    accept="image/png,image/jpeg,image/webp"
                     className="hidden"
                     onChange={(e) => {
                       const f = e.target.files?.[0];
@@ -405,7 +405,7 @@ const AdminTenants = () => {
                     }}
                   />
                 </div>
-                <p className="text-xs text-ink-3">PNG, JPEG, WebP ou SVG · max 1MB</p>
+                <p className="text-xs text-ink-3">PNG, JPEG ou WebP · max 1MB</p>
               </div>
 
               {(isSuperAdmin && !editTarget.isAdminOrg) && (
