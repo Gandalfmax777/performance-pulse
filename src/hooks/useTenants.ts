@@ -46,7 +46,7 @@ export function useCreateTenant() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (input: CreateTenantInput) =>
-      apiFetch<Tenant>("/admin/tenants", { method: "POST", body: JSON.stringify(input) }),
+      apiFetch<Tenant>("/admin/tenants", { method: "POST", body: input }),
     onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEY }),
   });
 }
@@ -57,7 +57,7 @@ export function useUpdateTenant() {
     mutationFn: ({ id, ...input }: UpdateTenantInput & { id: string }) =>
       apiFetch<Tenant>(`/admin/tenants/${id}`, {
         method: "PATCH",
-        body: JSON.stringify(input),
+        body: input,
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: QUERY_KEY });
