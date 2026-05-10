@@ -54,29 +54,6 @@ export function isTenantSlug(slug: string): slug is TenantSlug {
   return slug in TENANT_FALLBACKS;
 }
 
-/**
- * Mapa hostname → tenant slug.
- *
- * Usado por rotas públicas (/tv, /login) que rodam sem JWT — não dá pra
- * resolver o tenant via `useCurrentUser`. Cai pra "eqi" se nenhum pattern
- * casar (default da plataforma, compat com URL antiga).
- *
- * Padrões deliberadamente largos (substring case-insensitive) pra cobrir
- * subdomínios, previews e variações: `performance-pulse.bdntech.com.br`,
- * `bdn-pulse.vercel.app`, etc.
- */
-const HOST_PATTERNS: Array<{ pattern: RegExp; slug: TenantSlug }> = [
-  { pattern: /bdntech/i, slug: "bdn" },
-  { pattern: /(^|\.)bdn[.-]/i, slug: "bdn" },
-];
-
-export function resolveTenantFromHost(hostname: string): TenantSlug {
-  for (const { pattern, slug } of HOST_PATTERNS) {
-    if (pattern.test(hostname)) return slug;
-  }
-  return "eqi";
-}
-
 export function resolveTenantConfig(
   slug: string | undefined,
   brandConfig?: Record<string, unknown>,

@@ -6,7 +6,7 @@ import { useAssessors } from "@/hooks/useAssessors";
 import { useRankingStream } from "@/hooks/useRankingStream";
 import { useTournamentFinishedStream } from "@/hooks/useTournamentFinishedStream";
 import { useSystemNotifications } from "@/hooks/useSystemNotifications";
-import { isTenantSlug, resolveTenantFromHost, type TenantSlug } from "@/config/tenants";
+import { isTenantSlug, type TenantSlug } from "@/config/tenants";
 
 const TV_INTERVALS = [10, 15, 20, 30, 45, 60];
 
@@ -32,15 +32,14 @@ const TvPage = () => {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Tenant resolvido por:
-  //   1. Query param explícito `?tenant=eqi|bdn` (override útil em dev/preview)
-  //   2. Hostname (`bdntech.com.br` → "bdn", default "eqi")
-  // /tv é público (sem JWT), por isso não usa useCurrentUser.
+  // Tenant via query param `?tenant=eqi|bdn`. /tv é público (sem JWT), por
+  // isso não usa useCurrentUser. A plataforma roda em domínio único (BDN
+  // hospeda), então a diferenciação é só pelo slug na URL. Default eqi
+  // pra compat com URL antiga.
   const tenantSlug: TenantSlug = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
-    const queryParam = params.get("tenant") ?? "";
-    if (isTenantSlug(queryParam)) return queryParam;
-    return resolveTenantFromHost(window.location.hostname);
+    const slug = params.get("tenant") ?? "";
+    return isTenantSlug(slug) ? slug : "eqi";
   }, []);
 
   // Aplica data-tenant no <html> pra ativar tema CSS escopado.
