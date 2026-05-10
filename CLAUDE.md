@@ -129,7 +129,7 @@ npm run preview      # serve o dist localmente
 | `src/api/client.ts:55-58` | `isPublicTvRoute()` — bypass auth quando pathname é `/tv` ou `/tv/*`. |
 | `src/api/client.ts:109-114` | Em 401 (não-TV): `clearAuthToken()` + `window.location.href = "/login"`. |
 | `src/components/providers/TenantProvider.tsx` | `useEffect` aplica `<html data-tenant={slug}>` quando `useCurrentUser` resolve. |
-| `src/config/tenants.ts` | `TENANT_FALLBACKS` (EQI/BDN) e `resolveTenantConfig(slug, brandConfig)` faz merge `{...fallback, ...brandConfig, slug}`. |
+| `src/config/tenants.ts` | `TENANT_FALLBACKS` (EQI/BDN), `resolveTenantConfig(slug, brandConfig)` faz merge `{...fallback, ...brandConfig, slug}`, e `resolveTenantFromHost(hostname)` mapeia domínio → slug pra rotas públicas (/tv). |
 | `src/hooks/useCurrentUser.ts` | `/auth/me` + `useSwitchTenant` (`POST /auth/switch-tenant`). Retorna `{ user, tenant, tenantConfig, memberships, isAdmin, isSuperAdmin, hasMultipleMemberships }`. |
 | `src/hooks/useRankingStream.ts:52-63` | SSE invalida 6 query keys em cascata. |
 | `src/components/layouts/RequireAdmin.tsx` | Role guard com loader (evita flash de redirect antes da role chegar). |
@@ -196,11 +196,21 @@ Pipeline:
 
 `resolveTenantConfig(slug, brandConfig)` faz merge `{...TENANT_FALLBACKS[safeSlug], ...brandConfig, slug}` — o fallback garante que UI nunca quebra se o admin esquecer campos no painel `/admin/tenants`. Slug desconhecido cai pra `eqi`.
 
-**Adicionar tenant novo** (3 passos):
+### Rotas públicas (`/tv`) — detecção por hostname
+
+`/tv` não tem JWT → não pode usar `useCurrentUser`. Resolve o tenant em 2 passos (`src/pages/Tv.tsx:37-46`):
+
+1. Query param explícito `?tenant=eqi|bdn` (override útil em dev/preview).
+2. `resolveTenantFromHost(window.location.hostname)` em `src/config/tenants.ts` — match case-insensitive contra `HOST_PATTERNS` (`/bdntech/`, `/(^|\.)bdn[.-]/`). Fallback `"eqi"`.
+
+`HOST_PATTERNS` espelha o array equivalente no backend (`src/lib/tenant.ts`). **Mantenha os dois em sincronia** ao adicionar tenant novo com domínio próprio.
+
+**Adicionar tenant novo** (4 passos):
 
 1. Criar bloco `[data-tenant="<slug>"] { --background: ...; ... }` em `src/index.css` (copiar do bloco BDN como template).
 2. Adicionar entry em `TENANT_FALLBACKS` (`src/config/tenants.ts`) e atualizar tipo `TenantSlug`.
-3. Criar tenant via UI `/admin/tenants` (ou script direto no backend).
+3. Adicionar pattern em `HOST_PATTERNS` (em `src/config/tenants.ts` e backend `src/lib/tenant.ts`) se o tenant tem domínio próprio.
+4. Criar tenant via UI `/admin/tenants` (ou script direto no backend).
 
 `TenantSwitcher` (`src/components/shared/TenantSwitcher.tsx`) só aparece se `memberships.length > 1`. Renderiza dropdown na sidebar com indicador `isAdminOrg`.
 
@@ -316,5 +326,5 @@ describe("KpiTile", () => {
 - **Nova rota admin** → mesmo + entrar no nested `/admin` route + adicionar ao `AdminSubnav`.
 - **Novo widget do dashboard** → `src/components/dashboard/<Widget>.tsx`, importar onde fizer sentido (Index, PorDia, Ranking, ...). Reutilizar `KpiTile`/`SectionCard`/`StatDelta` de `shared/`.
 - **Nova entidade tempo-real** (muda quando métrica é registrada) → adicionar `qc.invalidateQueries({ queryKey: ["<entity>"] })` em `useRankingStream` cascade.
-- **Novo tenant** → 3 passos descritos em "Multi-tenant em runtime".
+- **Novo tenant** → 4 passos descritos em "Multi-tenant em runtime" (inclui adicionar pattern em `HOST_PATTERNS` se tiver domínio próprio).
 - **Novo upload** → seguir pattern FormData de `useKpis.useUploadKpiSound`.
