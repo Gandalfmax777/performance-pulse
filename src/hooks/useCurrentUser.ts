@@ -83,7 +83,7 @@ export function useSwitchTenant() {
     mutationFn: (tenantId: string) =>
       apiFetch<SwitchTenantResponse>("/auth/switch-tenant", {
         method: "POST",
-        body: JSON.stringify({ tenantId }),
+        body: { tenantId },
       }),
     onSuccess: (data) => {
       setAuthToken(data.token);
