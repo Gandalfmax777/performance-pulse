@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import { Play, Pause, SkipForward, Timer, X, ArrowRight } from "@phosphor-icons/react";
+import { Play, Pause, SkipForward, Timer, X } from "@phosphor-icons/react";
 import { TvSlides, TV_SLIDES } from "@/components/dashboard/TvSlides";
 import TournamentFinishedOverlay from "@/components/dashboard/TournamentFinishedOverlay";
 import { useAssessors } from "@/hooks/useAssessors";
@@ -10,7 +9,6 @@ import { useSystemNotifications } from "@/hooks/useSystemNotifications";
 import {
   DEFAULT_TENANT_SLUG,
   isTenantSlug,
-  TENANT_FALLBACKS,
   type TenantSlug,
 } from "@/config/tenants";
 
@@ -50,55 +48,35 @@ const TvPage = () => {
 };
 
 /**
- * Tela de erro pra /tv sem slug válido — visual NotFound (`pages/NotFound.tsx`).
- * Cai no fallback `DEFAULT_TENANT_SLUG` (BDN) pro tema CSS aplicar, mas sem
- * carregar dados de nenhum tenant — só renderiza a tela estática.
+ * Tela genérica pra /tv sem slug válido — visual NotFound (`pages/NotFound.tsx`).
+ *
+ * Mensagem propositalmente neutra (sem listar tenants conhecidos) pra não
+ * precisar manutenção quando novas mesas forem onboardadas. Aplica o tenant
+ * default no <html> só pro tema CSS renderizar.
  */
 const TvMissingTenant = () => {
-  // Aplica o tenant default no <html> pro CSS escopado funcionar visualmente.
   useEffect(() => {
     document.documentElement.setAttribute("data-tenant", DEFAULT_TENANT_SLUG);
   }, []);
-
-  const knownTenants = useMemo(
-    () => Object.values(TENANT_FALLBACKS),
-    [],
-  );
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-12">
       <div className="text-center max-w-[560px]">
         <p className="num text-[11px] uppercase tracking-[0.22em] text-primary mb-4">
-          Erro 400 · tenant não especificado
+          Modo TV indisponível
         </p>
         <p
           className="num font-display font-extrabold text-primary leading-none mb-2"
           style={{ fontSize: 140, letterSpacing: "-0.06em" }}
         >
-          400
+          404
         </p>
         <h1 className="font-display text-4xl font-bold tracking-tight leading-tight mb-3 text-ink">
-          Especifique o tenant na URL.
+          Não existe Modo TV pra esta URL.
         </h1>
-        <p className="text-[15px] leading-relaxed text-ink-3 mb-8">
-          /tv não tem fallback automático. Adicione{" "}
-          <code className="font-mono text-[13px] px-1.5 py-0.5 rounded bg-surface-2">
-            ?tenant=&lt;slug&gt;
-          </code>{" "}
-          na URL pra escolher a mesa que vai aparecer.
+        <p className="text-[15px] leading-relaxed text-ink-3">
+          Verifique o link com o administrador da sua mesa.
         </p>
-        <div className="flex flex-wrap gap-2 justify-center">
-          {knownTenants.map((t) => (
-            <Link
-              key={t.slug}
-              to={`/tv?tenant=${t.slug}`}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-[8px] bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors"
-            >
-              {t.name}
-              <ArrowRight size={14} weight="bold" />
-            </Link>
-          ))}
-        </div>
       </div>
     </div>
   );
