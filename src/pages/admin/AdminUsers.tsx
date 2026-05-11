@@ -554,19 +554,22 @@ const AdminUsers = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete AlertDialog */}
+      {/* Remove-from-tenant AlertDialog. Backend remove SÓ a membership
+          desse user no tenant ativo — o User permanece no sistema porque
+          pode ter memberships em outras mesas. Copy reflete isso. */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remover "{deleteTarget?.name}"?</AlertDialogTitle>
+            <AlertDialogTitle>Remover "{deleteTarget?.name}" desta mesa?</AlertDialogTitle>
             <AlertDialogDescription>
-              O usuário perderá acesso ao sistema imediatamente. Essa ação não pode ser desfeita.
+              O usuário perderá acesso a esta mesa imediatamente. Se ele tiver acesso a outras
+              mesas, continuará podendo logar nelas normalmente. Essa ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Remover
+              Remover da mesa
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
