@@ -24,12 +24,22 @@ export interface LevelThreshold {
   minPoints: number;
 }
 
+export type LegacyLevel = "BRONZE" | "SILVER" | "GOLD";
+
+/**
+ * Mapping de cada um dos 10 LevelSlug pro bucket legacy. Editado em
+ * /admin/scoring. Determina a cor do ring no AssessorAvatar e o que
+ * componentes que ainda esperam o enum legacy (BRONZE/SILVER/GOLD) recebem.
+ */
+export type LevelLegacyMap = Record<LevelSlug, LegacyLevel>;
+
 export interface ScoringConfig {
   penaltyPointsPerIdleDay: number;
   penaltyConsecutiveIdleDays: number;
   penaltyBusinessDays: BusinessDay[];
   tieBreakOrder: TieBreakKey[];
   levelThresholds: LevelThreshold[];
+  levelLegacyMap: LevelLegacyMap;
 }
 
 const QUERY_KEY = ["admin", "scoring-config"] as const;

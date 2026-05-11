@@ -97,7 +97,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Login do gestor — retorna JWT */
+        /** @description Login do gestor — retorna JWT, tenant ativo (1ª membership) e lista de memberships */
         post: {
             parameters: {
                 query?: never;
@@ -129,6 +129,96 @@ export interface paths {
                                 name: string;
                                 role: string;
                             };
+                            tenant: {
+                                id: string;
+                                slug: string;
+                                name: string;
+                                fullName: string;
+                                /** @default {} */
+                                brandConfig: {
+                                    [key: string]: unknown;
+                                };
+                                isAdminOrg: boolean;
+                                active: boolean;
+                            };
+                            memberships: {
+                                tenantId: string;
+                                tenantSlug: string;
+                                tenantName: string;
+                                tenantFullName: string;
+                                isAdminOrg: boolean;
+                                role: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/switch-tenant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Troca o tenant ATIVO do JWT. Valida que o user tem membership no tenant alvo. Retorna novo token. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        tenantId: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            token: string;
+                            user: {
+                                id: string;
+                                email: string;
+                                name: string;
+                                role: string;
+                            };
+                            tenant: {
+                                id: string;
+                                slug: string;
+                                name: string;
+                                fullName: string;
+                                /** @default {} */
+                                brandConfig: {
+                                    [key: string]: unknown;
+                                };
+                                isAdminOrg: boolean;
+                                active: boolean;
+                            };
+                            memberships: {
+                                tenantId: string;
+                                tenantSlug: string;
+                                tenantName: string;
+                                tenantFullName: string;
+                                isAdminOrg: boolean;
+                                role: string;
+                            }[];
                         };
                     };
                 };
@@ -147,7 +237,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Retorna o usuário autenticado */
+        /** @description Retorna o usuário autenticado, tenant ativo e memberships */
         get: {
             parameters: {
                 query?: never;
@@ -164,10 +254,32 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            email: string;
-                            name: string;
-                            role: string;
+                            user: {
+                                id: string;
+                                email: string;
+                                name: string;
+                                role: string;
+                            };
+                            tenant: {
+                                id: string;
+                                slug: string;
+                                name: string;
+                                fullName: string;
+                                /** @default {} */
+                                brandConfig: {
+                                    [key: string]: unknown;
+                                };
+                                isAdminOrg: boolean;
+                                active: boolean;
+                            };
+                            memberships: {
+                                tenantId: string;
+                                tenantSlug: string;
+                                tenantName: string;
+                                tenantFullName: string;
+                                isAdminOrg: boolean;
+                                role: string;
+                            }[];
                         };
                     };
                 };
@@ -188,11 +300,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Lista assessores */
+        /** @description Lista assessores. PUBLIC — consumido pela rota /tv. Shape já não expõe email/telefone. */
         get: {
             parameters: {
                 query?: {
                     active?: "true" | "false";
+                    tenant?: string;
                 };
                 header?: never;
                 path?: never;
@@ -212,8 +325,13 @@ export interface paths {
                             initials: string;
                             photoUrl: string | null;
                             /** @enum {string} */
-                            level: "BRONZE" | "SILVER" | "GOLD";
+                            level: "BRONZE" | "SILVER" | "GOLD" | "EM_FORMACAO" | "EM_TRACAO" | "ALTA_PERFORMANCE" | "PROFETA_DO_FORCASH" | "MONSTRO_SAGRADO" | "PONTO_DE_ATENCAO" | "RITMO_ABAIXO" | "PIPELINE_EM_RISCO" | "INIMIGO_DA_META" | "PROCURADOR_DE_EMPREGO";
+                            /** @enum {string} */
+                            legacyLevel: "BRONZE" | "SILVER" | "GOLD";
                             active: boolean;
+                            totalLeads: number;
+                            totalClients: number;
+                            vacationUntil: string | null;
                             hiredAt: string;
                             createdAt: string;
                             updatedAt: string;
@@ -254,8 +372,13 @@ export interface paths {
                             initials: string;
                             photoUrl: string | null;
                             /** @enum {string} */
-                            level: "BRONZE" | "SILVER" | "GOLD";
+                            level: "BRONZE" | "SILVER" | "GOLD" | "EM_FORMACAO" | "EM_TRACAO" | "ALTA_PERFORMANCE" | "PROFETA_DO_FORCASH" | "MONSTRO_SAGRADO" | "PONTO_DE_ATENCAO" | "RITMO_ABAIXO" | "PIPELINE_EM_RISCO" | "INIMIGO_DA_META" | "PROCURADOR_DE_EMPREGO";
+                            /** @enum {string} */
+                            legacyLevel: "BRONZE" | "SILVER" | "GOLD";
                             active: boolean;
+                            totalLeads: number;
+                            totalClients: number;
+                            vacationUntil: string | null;
                             hiredAt: string;
                             createdAt: string;
                             updatedAt: string;
@@ -301,8 +424,13 @@ export interface paths {
                             initials: string;
                             photoUrl: string | null;
                             /** @enum {string} */
-                            level: "BRONZE" | "SILVER" | "GOLD";
+                            level: "BRONZE" | "SILVER" | "GOLD" | "EM_FORMACAO" | "EM_TRACAO" | "ALTA_PERFORMANCE" | "PROFETA_DO_FORCASH" | "MONSTRO_SAGRADO" | "PONTO_DE_ATENCAO" | "RITMO_ABAIXO" | "PIPELINE_EM_RISCO" | "INIMIGO_DA_META" | "PROCURADOR_DE_EMPREGO";
+                            /** @enum {string} */
+                            legacyLevel: "BRONZE" | "SILVER" | "GOLD";
                             active: boolean;
+                            totalLeads: number;
+                            totalClients: number;
+                            vacationUntil: string | null;
                             hiredAt: string;
                             createdAt: string;
                             updatedAt: string;
@@ -337,8 +465,13 @@ export interface paths {
                             initials: string;
                             photoUrl: string | null;
                             /** @enum {string} */
-                            level: "BRONZE" | "SILVER" | "GOLD";
+                            level: "BRONZE" | "SILVER" | "GOLD" | "EM_FORMACAO" | "EM_TRACAO" | "ALTA_PERFORMANCE" | "PROFETA_DO_FORCASH" | "MONSTRO_SAGRADO" | "PONTO_DE_ATENCAO" | "RITMO_ABAIXO" | "PIPELINE_EM_RISCO" | "INIMIGO_DA_META" | "PROCURADOR_DE_EMPREGO";
+                            /** @enum {string} */
+                            legacyLevel: "BRONZE" | "SILVER" | "GOLD";
                             active: boolean;
+                            totalLeads: number;
+                            totalClients: number;
+                            vacationUntil: string | null;
                             hiredAt: string;
                             createdAt: string;
                             updatedAt: string;
@@ -367,6 +500,9 @@ export interface paths {
                         /** @enum {string} */
                         level?: "BRONZE" | "SILVER" | "GOLD";
                         active?: boolean;
+                        totalLeads?: number;
+                        totalClients?: number;
+                        vacationUntil?: string | null;
                     };
                 };
             };
@@ -383,8 +519,13 @@ export interface paths {
                             initials: string;
                             photoUrl: string | null;
                             /** @enum {string} */
-                            level: "BRONZE" | "SILVER" | "GOLD";
+                            level: "BRONZE" | "SILVER" | "GOLD" | "EM_FORMACAO" | "EM_TRACAO" | "ALTA_PERFORMANCE" | "PROFETA_DO_FORCASH" | "MONSTRO_SAGRADO" | "PONTO_DE_ATENCAO" | "RITMO_ABAIXO" | "PIPELINE_EM_RISCO" | "INIMIGO_DA_META" | "PROCURADOR_DE_EMPREGO";
+                            /** @enum {string} */
+                            legacyLevel: "BRONZE" | "SILVER" | "GOLD";
                             active: boolean;
+                            totalLeads: number;
+                            totalClients: number;
+                            vacationUntil: string | null;
                             hiredAt: string;
                             createdAt: string;
                             updatedAt: string;
@@ -428,8 +569,13 @@ export interface paths {
                             initials: string;
                             photoUrl: string | null;
                             /** @enum {string} */
-                            level: "BRONZE" | "SILVER" | "GOLD";
+                            level: "BRONZE" | "SILVER" | "GOLD" | "EM_FORMACAO" | "EM_TRACAO" | "ALTA_PERFORMANCE" | "PROFETA_DO_FORCASH" | "MONSTRO_SAGRADO" | "PONTO_DE_ATENCAO" | "RITMO_ABAIXO" | "PIPELINE_EM_RISCO" | "INIMIGO_DA_META" | "PROCURADOR_DE_EMPREGO";
+                            /** @enum {string} */
+                            legacyLevel: "BRONZE" | "SILVER" | "GOLD";
                             active: boolean;
+                            totalLeads: number;
+                            totalClients: number;
+                            vacationUntil: string | null;
                             hiredAt: string;
                             createdAt: string;
                             updatedAt: string;
@@ -444,6 +590,52 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/assessors/{id}/level-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Histórico de mudanças de nível do assessor (timeline). Retorna ordenado do mais recente pro mais antigo. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            /** @enum {string} */
+                            level: "BRONZE" | "SILVER" | "GOLD" | "EM_FORMACAO" | "EM_TRACAO" | "ALTA_PERFORMANCE" | "PROFETA_DO_FORCASH" | "MONSTRO_SAGRADO" | "PONTO_DE_ATENCAO" | "RITMO_ABAIXO" | "PIPELINE_EM_RISCO" | "INIMIGO_DA_META" | "PROCURADOR_DE_EMPREGO";
+                            /** @enum {string|null} */
+                            previousLevel: "BRONZE" | "SILVER" | "GOLD" | "EM_FORMACAO" | "EM_TRACAO" | "ALTA_PERFORMANCE" | "PROFETA_DO_FORCASH" | "MONSTRO_SAGRADO" | "PONTO_DE_ATENCAO" | "RITMO_ABAIXO" | "PIPELINE_EM_RISCO" | "INIMIGO_DA_META" | "PROCURADOR_DE_EMPREGO" | null;
+                            points: number;
+                            achievedAt: string;
+                        }[];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/kpis": {
         parameters: {
             query?: never;
@@ -451,7 +643,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Lista KPIs com a goal ativa embutida */
+        /** @description Lista KPIs com a goal ativa embutida. PUBLIC — consumido pela rota /tv. */
         get: {
             parameters: {
                 query?: {
@@ -490,13 +682,114 @@ export interface paths {
                                 validFrom: string;
                                 validTo: string | null;
                             } | null;
+                            scoringRule: {
+                                /** @enum {string} */
+                                ruleType: "LINEAR" | "THRESHOLD_PERCENT";
+                                divisor: number | null;
+                                pointsPerBucket: number | null;
+                                thresholdPct: number | null;
+                                thresholdPoints: number | null;
+                                active: boolean;
+                            } | null;
+                            sound: {
+                                url: string;
+                                enabled: boolean;
+                                broadcast: boolean;
+                            } | null;
                         }[];
                     };
                 };
             };
         };
         put?: never;
-        post?: never;
+        /** @description Cria novo KPI. Opcionalmente já cria a goal ativa. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        key: string;
+                        label: string;
+                        /** @default  */
+                        unit?: string;
+                        /**
+                         * @default ABSOLUTE
+                         * @enum {string}
+                         */
+                        inputMode?: "ABSOLUTE" | "PERCENT" | "QUANTITY_OVER_BASE";
+                        baseSource?: string | null;
+                        /** @default 1 */
+                        defaultTarget?: number;
+                        /** @default 99 */
+                        sortOrder?: number;
+                        goal?: {
+                            value: number;
+                            /** @enum {string} */
+                            period: "DAILY" | "WEEKLY" | "MONTHLY";
+                        };
+                        scoringRule?: {
+                            /** @enum {string} */
+                            ruleType: "LINEAR" | "THRESHOLD_PERCENT";
+                            divisor?: number | null;
+                            pointsPerBucket?: number | null;
+                            thresholdPct?: number | null;
+                            thresholdPoints?: number | null;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            key: string;
+                            label: string;
+                            unit: string;
+                            /** @enum {string} */
+                            inputMode: "ABSOLUTE" | "PERCENT" | "QUANTITY_OVER_BASE";
+                            baseSource: string | null;
+                            defaultTarget: number;
+                            isDerived: boolean;
+                            derivedFormula: string | null;
+                            sortOrder: number;
+                            active: boolean;
+                            activeGoal: {
+                                id: string;
+                                value: number;
+                                /** @enum {string} */
+                                period: "DAILY" | "WEEKLY" | "MONTHLY";
+                                validFrom: string;
+                                validTo: string | null;
+                            } | null;
+                            scoringRule: {
+                                /** @enum {string} */
+                                ruleType: "LINEAR" | "THRESHOLD_PERCENT";
+                                divisor: number | null;
+                                pointsPerBucket: number | null;
+                                thresholdPct: number | null;
+                                thresholdPoints: number | null;
+                                active: boolean;
+                            } | null;
+                            sound: {
+                                url: string;
+                                enabled: boolean;
+                                broadcast: boolean;
+                            } | null;
+                        };
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -567,6 +860,300 @@ export interface paths {
                                 period: "DAILY" | "WEEKLY" | "MONTHLY";
                                 validFrom: string;
                                 validTo: string | null;
+                            } | null;
+                            scoringRule: {
+                                /** @enum {string} */
+                                ruleType: "LINEAR" | "THRESHOLD_PERCENT";
+                                divisor: number | null;
+                                pointsPerBucket: number | null;
+                                thresholdPct: number | null;
+                                thresholdPoints: number | null;
+                                active: boolean;
+                            } | null;
+                            sound: {
+                                url: string;
+                                enabled: boolean;
+                                broadcast: boolean;
+                            } | null;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/kpis/{id}/scoring-rule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** @description Cria ou atualiza a regra de pontuação do KPI. Substitui POINTS_RULES hardcoded. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        ruleType: "LINEAR" | "THRESHOLD_PERCENT";
+                        divisor?: number | null;
+                        pointsPerBucket?: number | null;
+                        thresholdPct?: number | null;
+                        thresholdPoints?: number | null;
+                        /** @default true */
+                        active?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            key: string;
+                            label: string;
+                            unit: string;
+                            /** @enum {string} */
+                            inputMode: "ABSOLUTE" | "PERCENT" | "QUANTITY_OVER_BASE";
+                            baseSource: string | null;
+                            defaultTarget: number;
+                            isDerived: boolean;
+                            derivedFormula: string | null;
+                            sortOrder: number;
+                            active: boolean;
+                            activeGoal: {
+                                id: string;
+                                value: number;
+                                /** @enum {string} */
+                                period: "DAILY" | "WEEKLY" | "MONTHLY";
+                                validFrom: string;
+                                validTo: string | null;
+                            } | null;
+                            scoringRule: {
+                                /** @enum {string} */
+                                ruleType: "LINEAR" | "THRESHOLD_PERCENT";
+                                divisor: number | null;
+                                pointsPerBucket: number | null;
+                                thresholdPct: number | null;
+                                thresholdPoints: number | null;
+                                active: boolean;
+                            } | null;
+                            sound: {
+                                url: string;
+                                enabled: boolean;
+                                broadcast: boolean;
+                            } | null;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/kpis/{id}/sound": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Upload multipart de som MP3/WAV pra este KPI. Substitui arquivo anterior. Cria/atualiza registro KpiSound. Broadcast fica false por default — admin ativa via PATCH. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            key: string;
+                            label: string;
+                            unit: string;
+                            /** @enum {string} */
+                            inputMode: "ABSOLUTE" | "PERCENT" | "QUANTITY_OVER_BASE";
+                            baseSource: string | null;
+                            defaultTarget: number;
+                            isDerived: boolean;
+                            derivedFormula: string | null;
+                            sortOrder: number;
+                            active: boolean;
+                            activeGoal: {
+                                id: string;
+                                value: number;
+                                /** @enum {string} */
+                                period: "DAILY" | "WEEKLY" | "MONTHLY";
+                                validFrom: string;
+                                validTo: string | null;
+                            } | null;
+                            scoringRule: {
+                                /** @enum {string} */
+                                ruleType: "LINEAR" | "THRESHOLD_PERCENT";
+                                divisor: number | null;
+                                pointsPerBucket: number | null;
+                                thresholdPct: number | null;
+                                thresholdPoints: number | null;
+                                active: boolean;
+                            } | null;
+                            sound: {
+                                url: string;
+                                enabled: boolean;
+                                broadcast: boolean;
+                            } | null;
+                        };
+                    };
+                };
+            };
+        };
+        /** @description Remove som do KPI — deleta arquivo no R2 (best-effort) e registro KpiSound. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            key: string;
+                            label: string;
+                            unit: string;
+                            /** @enum {string} */
+                            inputMode: "ABSOLUTE" | "PERCENT" | "QUANTITY_OVER_BASE";
+                            baseSource: string | null;
+                            defaultTarget: number;
+                            isDerived: boolean;
+                            derivedFormula: string | null;
+                            sortOrder: number;
+                            active: boolean;
+                            activeGoal: {
+                                id: string;
+                                value: number;
+                                /** @enum {string} */
+                                period: "DAILY" | "WEEKLY" | "MONTHLY";
+                                validFrom: string;
+                                validTo: string | null;
+                            } | null;
+                            scoringRule: {
+                                /** @enum {string} */
+                                ruleType: "LINEAR" | "THRESHOLD_PERCENT";
+                                divisor: number | null;
+                                pointsPerBucket: number | null;
+                                thresholdPct: number | null;
+                                thresholdPoints: number | null;
+                                active: boolean;
+                            } | null;
+                            sound: {
+                                url: string;
+                                enabled: boolean;
+                                broadcast: boolean;
+                            } | null;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** @description Atualiza flags do som (enabled / broadcast) sem reupload. */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        enabled?: boolean;
+                        broadcast?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            key: string;
+                            label: string;
+                            unit: string;
+                            /** @enum {string} */
+                            inputMode: "ABSOLUTE" | "PERCENT" | "QUANTITY_OVER_BASE";
+                            baseSource: string | null;
+                            defaultTarget: number;
+                            isDerived: boolean;
+                            derivedFormula: string | null;
+                            sortOrder: number;
+                            active: boolean;
+                            activeGoal: {
+                                id: string;
+                                value: number;
+                                /** @enum {string} */
+                                period: "DAILY" | "WEEKLY" | "MONTHLY";
+                                validFrom: string;
+                                validTo: string | null;
+                            } | null;
+                            scoringRule: {
+                                /** @enum {string} */
+                                ruleType: "LINEAR" | "THRESHOLD_PERCENT";
+                                divisor: number | null;
+                                pointsPerBucket: number | null;
+                                thresholdPct: number | null;
+                                thresholdPoints: number | null;
+                                active: boolean;
+                            } | null;
+                            sound: {
+                                url: string;
+                                enabled: boolean;
+                                broadcast: boolean;
                             } | null;
                         };
                     };
@@ -711,6 +1298,7 @@ export interface paths {
                             pointsAwarded: number | null;
                             enteredById: string;
                             notes: string | null;
+                            backfilledAt: string | null;
                             createdAt: string;
                             updatedAt: string;
                         }[];
@@ -737,6 +1325,7 @@ export interface paths {
                         rawValue: number;
                         baseValue?: number;
                         notes?: string;
+                        activityId?: string;
                     };
                 };
             };
@@ -760,6 +1349,7 @@ export interface paths {
                             pointsAwarded: number | null;
                             enteredById: string;
                             notes: string | null;
+                            backfilledAt: string | null;
                             createdAt: string;
                             updatedAt: string;
                         };
@@ -784,6 +1374,7 @@ export interface paths {
                             pointsAwarded: number | null;
                             enteredById: string;
                             notes: string | null;
+                            backfilledAt: string | null;
                             createdAt: string;
                             updatedAt: string;
                         };
@@ -807,7 +1398,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** @description Remove uma metric entry (somente ADMIN) */
+        /** @description Remove uma metric entry (somente ADMIN). Hard delete + recompute do ranking. */
         delete: {
             parameters: {
                 query?: never;
@@ -871,6 +1462,7 @@ export interface paths {
                             pointsAwarded: number | null;
                             enteredById: string;
                             notes: string | null;
+                            backfilledAt: string | null;
                             createdAt: string;
                             updatedAt: string;
                         };
@@ -887,7 +1479,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Ranking do dia: lista assessores ativos ordenados por pontos do dia. Default: hoje (BRT). */
+        /** @description Ranking do dia: lista assessores ativos ordenados por pontos do dia. Default: hoje (BRT). PUBLIC — consumido pela rota /tv. */
         get: {
             parameters: {
                 query?: {
@@ -914,7 +1506,7 @@ export interface paths {
                                     initials: string;
                                     photoUrl: string | null;
                                     /** @enum {string} */
-                                    level: "BRONZE" | "SILVER" | "GOLD";
+                                    level: "BRONZE" | "SILVER" | "GOLD" | "EM_FORMACAO" | "EM_TRACAO" | "ALTA_PERFORMANCE" | "PROFETA_DO_FORCASH" | "MONSTRO_SAGRADO" | "PONTO_DE_ATENCAO" | "RITMO_ABAIXO" | "PIPELINE_EM_RISCO" | "INIMIGO_DA_META" | "PROCURADOR_DE_EMPREGO";
                                 };
                                 rollup: {
                                     points: number;
@@ -923,7 +1515,12 @@ export interface paths {
                                     kpiTotals: {
                                         [key: string]: number;
                                     };
+                                    kpiPercents: {
+                                        [key: string]: number;
+                                    };
                                     activeDays: string[];
+                                    penaltyPoints: number;
+                                    penaltyDays: number;
                                 };
                             }[];
                         };
@@ -946,7 +1543,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Ranking da semana: lista assessores ativos ordenados por pontos acumulados na semana (segunda→domingo). Default: semana corrente (BRT). */
+        /** @description Ranking da semana: lista assessores ativos ordenados por pontos acumulados na semana (segunda→domingo). Default: semana corrente (BRT). PUBLIC — consumido pela rota /tv. */
         get: {
             parameters: {
                 query?: {
@@ -974,7 +1571,7 @@ export interface paths {
                                     initials: string;
                                     photoUrl: string | null;
                                     /** @enum {string} */
-                                    level: "BRONZE" | "SILVER" | "GOLD";
+                                    level: "BRONZE" | "SILVER" | "GOLD" | "EM_FORMACAO" | "EM_TRACAO" | "ALTA_PERFORMANCE" | "PROFETA_DO_FORCASH" | "MONSTRO_SAGRADO" | "PONTO_DE_ATENCAO" | "RITMO_ABAIXO" | "PIPELINE_EM_RISCO" | "INIMIGO_DA_META" | "PROCURADOR_DE_EMPREGO";
                                 };
                                 rollup: {
                                     points: number;
@@ -983,7 +1580,207 @@ export interface paths {
                                     kpiTotals: {
                                         [key: string]: number;
                                     };
+                                    kpiPercents: {
+                                        [key: string]: number;
+                                    };
                                     activeDays: string[];
+                                    penaltyPoints: number;
+                                    penaltyDays: number;
+                                };
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/rankings/monthly": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Ranking do mês: assessores ativos ordenados por pontos do mês corrente (ou de monthStart). PUBLIC. */
+        get: {
+            parameters: {
+                query?: {
+                    monthStart?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            periodStart: string;
+                            periodEnd: string;
+                            rankings: {
+                                assessor: {
+                                    id: string;
+                                    name: string;
+                                    initials: string;
+                                    photoUrl: string | null;
+                                    /** @enum {string} */
+                                    level: "BRONZE" | "SILVER" | "GOLD" | "EM_FORMACAO" | "EM_TRACAO" | "ALTA_PERFORMANCE" | "PROFETA_DO_FORCASH" | "MONSTRO_SAGRADO" | "PONTO_DE_ATENCAO" | "RITMO_ABAIXO" | "PIPELINE_EM_RISCO" | "INIMIGO_DA_META" | "PROCURADOR_DE_EMPREGO";
+                                };
+                                rollup: {
+                                    points: number;
+                                    weeklyGoalPercent: number;
+                                    streak: number;
+                                    kpiTotals: {
+                                        [key: string]: number;
+                                    };
+                                    kpiPercents: {
+                                        [key: string]: number;
+                                    };
+                                    activeDays: string[];
+                                    penaltyPoints: number;
+                                    penaltyDays: number;
+                                };
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/rankings/semester": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Ranking do semestre: 6 meses (jan-jun ou jul-dez baseado em semesterStart ou hoje). PUBLIC. */
+        get: {
+            parameters: {
+                query?: {
+                    semesterStart?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            periodStart: string;
+                            periodEnd: string;
+                            rankings: {
+                                assessor: {
+                                    id: string;
+                                    name: string;
+                                    initials: string;
+                                    photoUrl: string | null;
+                                    /** @enum {string} */
+                                    level: "BRONZE" | "SILVER" | "GOLD" | "EM_FORMACAO" | "EM_TRACAO" | "ALTA_PERFORMANCE" | "PROFETA_DO_FORCASH" | "MONSTRO_SAGRADO" | "PONTO_DE_ATENCAO" | "RITMO_ABAIXO" | "PIPELINE_EM_RISCO" | "INIMIGO_DA_META" | "PROCURADOR_DE_EMPREGO";
+                                };
+                                rollup: {
+                                    points: number;
+                                    weeklyGoalPercent: number;
+                                    streak: number;
+                                    kpiTotals: {
+                                        [key: string]: number;
+                                    };
+                                    kpiPercents: {
+                                        [key: string]: number;
+                                    };
+                                    activeDays: string[];
+                                    penaltyPoints: number;
+                                    penaltyDays: number;
+                                };
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/rankings/quarterly": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Ranking do trimestre fixo (Q1-Q4) que contém quarterStart ou hoje. PUBLIC. */
+        get: {
+            parameters: {
+                query?: {
+                    quarterStart?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            periodStart: string;
+                            periodEnd: string;
+                            rankings: {
+                                assessor: {
+                                    id: string;
+                                    name: string;
+                                    initials: string;
+                                    photoUrl: string | null;
+                                    /** @enum {string} */
+                                    level: "BRONZE" | "SILVER" | "GOLD" | "EM_FORMACAO" | "EM_TRACAO" | "ALTA_PERFORMANCE" | "PROFETA_DO_FORCASH" | "MONSTRO_SAGRADO" | "PONTO_DE_ATENCAO" | "RITMO_ABAIXO" | "PIPELINE_EM_RISCO" | "INIMIGO_DA_META" | "PROCURADOR_DE_EMPREGO";
+                                };
+                                rollup: {
+                                    points: number;
+                                    weeklyGoalPercent: number;
+                                    streak: number;
+                                    kpiTotals: {
+                                        [key: string]: number;
+                                    };
+                                    kpiPercents: {
+                                        [key: string]: number;
+                                    };
+                                    activeDays: string[];
+                                    penaltyPoints: number;
+                                    penaltyDays: number;
                                 };
                             }[];
                         };
@@ -1500,7 +2297,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Lista squads com membros ativos embutidos */
+        /** @description Lista squads com membros ativos embutidos. PUBLIC — consumido pela rota /tv. */
         get: {
             parameters: {
                 query?: {
@@ -1521,7 +2318,7 @@ export interface paths {
                         "application/json": {
                             id: string;
                             name: string;
-                            emoji: string;
+                            logoUrl: string | null;
                             color: string;
                             leaderId: string;
                             active: boolean;
@@ -1555,7 +2352,6 @@ export interface paths {
                 content: {
                     "application/json": {
                         name: string;
-                        emoji: string;
                         color: string;
                         leaderId: string;
                         memberIds: string[];
@@ -1572,7 +2368,7 @@ export interface paths {
                         "application/json": {
                             id: string;
                             name: string;
-                            emoji: string;
+                            logoUrl: string | null;
                             color: string;
                             leaderId: string;
                             active: boolean;
@@ -1627,7 +2423,7 @@ export interface paths {
                         "application/json": {
                             id: string;
                             name: string;
-                            emoji: string;
+                            logoUrl: string | null;
                             color: string;
                             leaderId: string;
                             active: boolean;
@@ -1671,7 +2467,7 @@ export interface paths {
                         "application/json": {
                             id: string;
                             name: string;
-                            emoji: string;
+                            logoUrl: string | null;
                             color: string;
                             leaderId: string;
                             active: boolean;
@@ -1708,7 +2504,6 @@ export interface paths {
                 content: {
                     "application/json": {
                         name?: string;
-                        emoji?: string;
                         color?: string;
                         leaderId?: string;
                         active?: boolean;
@@ -1725,7 +2520,7 @@ export interface paths {
                         "application/json": {
                             id: string;
                             name: string;
-                            emoji: string;
+                            logoUrl: string | null;
                             color: string;
                             leaderId: string;
                             active: boolean;
@@ -1784,7 +2579,7 @@ export interface paths {
                         "application/json": {
                             id: string;
                             name: string;
-                            emoji: string;
+                            logoUrl: string | null;
                             color: string;
                             leaderId: string;
                             active: boolean;
@@ -1843,7 +2638,7 @@ export interface paths {
                         "application/json": {
                             id: string;
                             name: string;
-                            emoji: string;
+                            logoUrl: string | null;
                             color: string;
                             leaderId: string;
                             active: boolean;
@@ -1869,6 +2664,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/squads/{id}/logo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Upload de logo do squad (resize automático 256x256 cover). Espelha POST /api/assessors/:id/photo. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            name: string;
+                            logoUrl: string | null;
+                            color: string;
+                            leaderId: string;
+                            active: boolean;
+                            createdAt: string;
+                            updatedAt: string;
+                            members: {
+                                assessorId: string;
+                                name: string;
+                                initials: string;
+                                photoUrl: string | null;
+                                /** @enum {string} */
+                                level: "BRONZE" | "SILVER" | "GOLD";
+                                isLeader: boolean;
+                                joinedAt: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/bets": {
         parameters: {
             query?: never;
@@ -1876,7 +2728,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Lista bets (filtro opcional por status) */
+        /** @description Lista bets (filtro opcional por status). PUBLIC — consumido pela rota /tv. */
         get: {
             parameters: {
                 query?: {
@@ -1908,7 +2760,7 @@ export interface paths {
                             winnerSquad: {
                                 id: string;
                                 name: string;
-                                emoji: string;
+                                logoUrl: string | null;
                             } | null;
                             winnerCriteriaJson: {
                                 /** @enum {string} */
@@ -1929,7 +2781,7 @@ export interface paths {
                                 squadId: string;
                                 finalScore: number | null;
                                 squadName: string;
-                                squadEmoji: string;
+                                squadLogoUrl: string | null;
                             }[];
                         }[];
                     };
@@ -1991,7 +2843,7 @@ export interface paths {
                             winnerSquad: {
                                 id: string;
                                 name: string;
-                                emoji: string;
+                                logoUrl: string | null;
                             } | null;
                             winnerCriteriaJson: {
                                 /** @enum {string} */
@@ -2012,7 +2864,7 @@ export interface paths {
                                 squadId: string;
                                 finalScore: number | null;
                                 squadName: string;
-                                squadEmoji: string;
+                                squadLogoUrl: string | null;
                             }[];
                         };
                     };
@@ -2066,7 +2918,7 @@ export interface paths {
                             winnerSquad: {
                                 id: string;
                                 name: string;
-                                emoji: string;
+                                logoUrl: string | null;
                             } | null;
                             winnerCriteriaJson: {
                                 /** @enum {string} */
@@ -2087,7 +2939,7 @@ export interface paths {
                                 squadId: string;
                                 finalScore: number | null;
                                 squadName: string;
-                                squadEmoji: string;
+                                squadLogoUrl: string | null;
                             }[];
                         };
                     };
@@ -2141,7 +2993,7 @@ export interface paths {
                             winnerSquad: {
                                 id: string;
                                 name: string;
-                                emoji: string;
+                                logoUrl: string | null;
                             } | null;
                             winnerCriteriaJson: {
                                 /** @enum {string} */
@@ -2162,7 +3014,7 @@ export interface paths {
                                 squadId: string;
                                 finalScore: number | null;
                                 squadName: string;
-                                squadEmoji: string;
+                                squadLogoUrl: string | null;
                             }[];
                         };
                     };
@@ -2182,7 +3034,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Saldo do cofre: soma DEPOSIT − PAYOUT + ADJUSTMENT (pode ser negativo). Também retorna quanto cada squad ganhou (PAYOUTs vinculados a bets vencidas). */
+        /** @description Saldo do cofre: soma DEPOSIT − PAYOUT + ADJUSTMENT (pode ser negativo). Também retorna quanto cada squad ganhou (PAYOUTs vinculados a bets vencidas). PUBLIC — consumido pela rota /tv. */
         get: {
             parameters: {
                 query?: never;
@@ -2206,7 +3058,7 @@ export interface paths {
                             bySquad: {
                                 squadId: string;
                                 squadName: string;
-                                squadEmoji: string;
+                                squadLogoUrl: string | null;
                                 totalWon: number;
                                 winCount: number;
                             }[];
@@ -2327,7 +3179,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Lista definições de badges ativos */
+        /** @description Lista definições de badges ativos. PUBLIC — consumido pela rota /tv. */
         get: {
             parameters: {
                 query?: never;
@@ -2372,7 +3224,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Lista unlocks de badges (filtros: assessorId, squadId, periodKey) */
+        /** @description Lista unlocks de badges (filtros: assessorId, squadId, periodKey). PUBLIC — consumido pela rota /tv. */
         get: {
             parameters: {
                 query?: {
@@ -2489,7 +3341,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Agregado global no período: byKpi + topPerformers + bottomPerformers */
+        /** @description Agregado global no período: byKpi + topPerformers + bottomPerformers. PUBLIC — consumido pela rota /tv. */
         get: {
             parameters: {
                 query?: {
@@ -2538,6 +3390,19 @@ export interface paths {
                                 initials: string;
                                 points: number;
                                 weeklyGoalPercent: number;
+                            }[];
+                            allPerformers: {
+                                assessorId: string;
+                                name: string;
+                                initials: string;
+                                points: number;
+                                weeklyGoalPercent: number;
+                            }[];
+                            byAssessor: {
+                                assessorId: string;
+                                kpis: {
+                                    [key: string]: number;
+                                };
                             }[];
                         };
                     };
@@ -2622,6 +3487,11 @@ export interface paths {
                                 scope: "INDIVIDUAL" | "SQUAD";
                                 periodKey: string;
                                 unlockedAt: string;
+                            }[];
+                            observations: {
+                                date: string;
+                                notes: string;
+                                kpiLabel: string;
                             }[];
                         };
                     };
@@ -2718,12 +3588,14 @@ export interface paths {
                         "application/json": {
                             id: string;
                             /** @enum {string} */
-                            type: "metric" | "badge_unlock";
+                            type: "metric" | "badge_unlock" | "observation" | "meeting" | "meeting_area";
                             timestamp: string;
                             assessorId: string;
                             assessorName: string;
                             description: string;
                             icon: string;
+                            backfilled?: boolean;
+                            metricDate?: string;
                         }[];
                     };
                 };
@@ -2958,6 +3830,56 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/users/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Verifica se um email já tem conta. Usado pelo form de criação pra detectar caso 'Roberto já tem conta em outra mesa' antes do submit. */
+        get: {
+            parameters: {
+                query: {
+                    email: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            exists: boolean;
+                            user: {
+                                id: string;
+                                email: string;
+                                name: string;
+                                hasMembershipInCurrentTenant: boolean;
+                                otherMemberships: {
+                                    tenantSlug: string;
+                                    tenantName: string;
+                                }[];
+                            } | null;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/users": {
         parameters: {
             query?: never;
@@ -2965,7 +3887,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Lista usuários do sistema (somente ADMIN) */
+        /** @description Lista usuários com membership no tenant ativo (somente ADMIN) */
         get: {
             parameters: {
                 query?: never;
@@ -2995,7 +3917,7 @@ export interface paths {
             };
         };
         put?: never;
-        /** @description Cria um novo usuário com senha hashada (ADMIN) */
+        /** @description Cria um novo usuário (ou adiciona membership a user existente) no tenant ativo (ADMIN) */
         post: {
             parameters: {
                 query?: never;
@@ -3009,7 +3931,7 @@ export interface paths {
                         /** Format: email */
                         email: string;
                         name: string;
-                        password: string;
+                        password?: string;
                         /** @enum {string} */
                         role?: "ADMIN" | "MANAGER";
                     };
@@ -3048,7 +3970,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Busca um usuário por id (ADMIN) */
+        /** @description Busca um usuário do tenant ativo (ADMIN) */
         get: {
             parameters: {
                 query?: never;
@@ -3081,7 +4003,7 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        /** @description Deleta usuário (ADMIN). Proteção: não pode deletar a si mesmo. */
+        /** @description Remove a membership do user no tenant ativo (ADMIN). Não deleta o User — ele pode ter outras memberships. */
         delete: {
             parameters: {
                 query?: never;
@@ -3106,7 +4028,7 @@ export interface paths {
         };
         options?: never;
         head?: never;
-        /** @description Atualiza usuário (ADMIN). Senha opcional — só atualiza se vier no body. Email tem check de unicidade. */
+        /** @description Atualiza usuário (campos User) + role da membership no tenant ativo (ADMIN) */
         patch: {
             parameters: {
                 query?: never;
@@ -3241,6 +4163,166 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/insights/team": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Gera insight de IA pra o TIME inteiro (visão geral). Cache por inputHash. Rate limit 1/min. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @default WEEK
+                         * @enum {string}
+                         */
+                        period?: "DAY" | "WEEK" | "MONTH";
+                        periodKey?: string;
+                        force?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            textMarkdown: string;
+                            summary: string;
+                            tags: string[];
+                            model: string;
+                            cached: boolean;
+                            createdAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/insights/assessor/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Lista insights anteriores de um assessor (cronológico desc). Filtra opcionalmente por periodKind. Limit default 10, max 50. */
+        get: {
+            parameters: {
+                query?: {
+                    periodKind?: "DAY" | "WEEK" | "MONTH";
+                    limit?: number;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: {
+                                id: string;
+                                textMarkdown: string;
+                                summary: string;
+                                tags: string[];
+                                model: string;
+                                /** @enum {string} */
+                                periodKind: "DAY" | "WEEK" | "MONTH";
+                                periodKey: string;
+                                createdAt: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/insights/team/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Lista insights do TIME (assessorId=null, squadId=null) cronológico desc. Filtra opcionalmente por periodKind. Limit default 10, max 50. */
+        get: {
+            parameters: {
+                query?: {
+                    periodKind?: "DAY" | "WEEK" | "MONTH";
+                    limit?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: {
+                                id: string;
+                                textMarkdown: string;
+                                summary: string;
+                                tags: string[];
+                                model: string;
+                                /** @enum {string} */
+                                periodKind: "DAY" | "WEEK" | "MONTH";
+                                periodKey: string;
+                                createdAt: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/stream/rankings": {
         parameters: {
             query?: never;
@@ -3248,7 +4330,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description SSE stream de ranking updates. Conecte via EventSource. Aceita token via query param ?token=xxx (EventSource não suporta headers). */
+        /** @description SSE stream de ranking updates. PUBLIC — sem auth. Conecte via EventSource. Emite 'ranking:update' com timestamp; cliente deve re-fetch. */
         get: {
             parameters: {
                 query?: {
@@ -3266,6 +4348,1870 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/prizes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Lista premiações individuais */
+        get: {
+            parameters: {
+                query?: {
+                    assessorId?: string;
+                    period?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            assessorId: string;
+                            assessorName: string;
+                            title: string;
+                            description: string | null;
+                            period: string;
+                            awardedById: string;
+                            awardedByName: string;
+                            createdAt: string;
+                        }[];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** @description Cria uma premiação individual (ADMIN) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        assessorId: string;
+                        title: string;
+                        description?: string | null;
+                        period: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            assessorId: string;
+                            assessorName: string;
+                            title: string;
+                            description: string | null;
+                            period: string;
+                            awardedById: string;
+                            awardedByName: string;
+                            createdAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/prizes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description Remove uma premiação (ADMIN) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": "null" | null;
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/directions/{date}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Busca o direcionamento pra uma data específica. PUBLIC — consumido pela /tv. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    date: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            date: string;
+                            text: string;
+                            /** @enum {string} */
+                            period: "DAILY" | "WEEKLY" | "MONTHLY";
+                            periodStart: string | null;
+                            periodEnd: string | null;
+                            targetKpiKeys: string[];
+                            /** @enum {string} */
+                            status: "PENDING" | "ACHIEVED" | "PARTIAL" | "MISSED";
+                            reviewNote: string | null;
+                            reviewedAt: string | null;
+                            reviewedById: string | null;
+                            reviewedByName: string | null;
+                            createdById: string;
+                            createdByName: string;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": "null" | null;
+                    };
+                };
+            };
+        };
+        /** @description Cria ou atualiza direcionamento pra uma data. Suporta period (DAILY/WEEKLY/MONTHLY), periodStart/End, targetKpiKeys. Texto vazio remove. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    date: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        text: string;
+                        /** @enum {string} */
+                        period?: "DAILY" | "WEEKLY" | "MONTHLY";
+                        periodStart?: string;
+                        periodEnd?: string;
+                        targetKpiKeys?: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            date: string;
+                            text: string;
+                            /** @enum {string} */
+                            period: "DAILY" | "WEEKLY" | "MONTHLY";
+                            periodStart: string | null;
+                            periodEnd: string | null;
+                            targetKpiKeys: string[];
+                            /** @enum {string} */
+                            status: "PENDING" | "ACHIEVED" | "PARTIAL" | "MISSED";
+                            reviewNote: string | null;
+                            reviewedAt: string | null;
+                            reviewedById: string | null;
+                            reviewedByName: string | null;
+                            createdById: string;
+                            createdByName: string;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": "null" | null;
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/directions/{id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description Admin marca status de cumprimento (ACHIEVED/PARTIAL/MISSED) + nota opcional. */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        status: "PENDING" | "ACHIEVED" | "PARTIAL" | "MISSED";
+                        reviewNote?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            date: string;
+                            text: string;
+                            /** @enum {string} */
+                            period: "DAILY" | "WEEKLY" | "MONTHLY";
+                            periodStart: string | null;
+                            periodEnd: string | null;
+                            targetKpiKeys: string[];
+                            /** @enum {string} */
+                            status: "PENDING" | "ACHIEVED" | "PARTIAL" | "MISSED";
+                            reviewNote: string | null;
+                            reviewedAt: string | null;
+                            reviewedById: string | null;
+                            reviewedByName: string | null;
+                            createdById: string;
+                            createdByName: string;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/directions/compliance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Lista directions ordenadas por data desc com cumprimento dos targetKpiKeys (delta vs período anterior). */
+        get: {
+            parameters: {
+                query?: {
+                    from?: string;
+                    to?: string;
+                    period?: "DAILY" | "WEEKLY" | "MONTHLY";
+                    limit?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            date: string;
+                            text: string;
+                            /** @enum {string} */
+                            period: "DAILY" | "WEEKLY" | "MONTHLY";
+                            periodStart: string | null;
+                            periodEnd: string | null;
+                            targetKpiKeys: string[];
+                            /** @enum {string} */
+                            status: "PENDING" | "ACHIEVED" | "PARTIAL" | "MISSED";
+                            reviewNote: string | null;
+                            reviewedAt: string | null;
+                            reviewedById: string | null;
+                            reviewedByName: string | null;
+                            createdById: string;
+                            createdByName: string;
+                            createdAt: string;
+                            updatedAt: string;
+                            compliance: {
+                                kpiKey: string;
+                                realized: number;
+                                baseline: number;
+                                deltaPct: number | null;
+                            }[];
+                        }[];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/announcements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Lista avisos manuais. Default: só ativos e não expirados. ?includeInactive=true retorna todos (pra admin). PUBLIC — consumido pela rota /tv. */
+        get: {
+            parameters: {
+                query?: {
+                    includeInactive?: "true" | "false";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            message: string;
+                            active: boolean;
+                            expiresAt: string | null;
+                            sortOrder: number;
+                            createdById: string;
+                            createdByName: string;
+                            createdAt: string;
+                            updatedAt: string;
+                        }[];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** @description Cria novo aviso pra rolar no ticker. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @default true */
+                        active?: boolean;
+                        /** Format: date-time */
+                        expiresAt?: string | null;
+                        /** @default 0 */
+                        sortOrder?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            message: string;
+                            active: boolean;
+                            expiresAt: string | null;
+                            sortOrder: number;
+                            createdById: string;
+                            createdByName: string;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/announcements/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description Remove um aviso. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": "null" | null;
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** @description Atualiza um aviso (texto, active, expiração, ordem). */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        message?: string;
+                        active?: boolean;
+                        /** Format: date-time */
+                        expiresAt?: string | null;
+                        sortOrder?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            message: string;
+                            active: boolean;
+                            expiresAt: string | null;
+                            sortOrder: number;
+                            createdById: string;
+                            createdByName: string;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/tournaments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Lista torneios (filtro opcional por status). PUBLIC — consumido pela rota /tv e por admin. */
+        get: {
+            parameters: {
+                query?: {
+                    status?: "ACTIVE" | "FINISHED" | "CANCELED";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            roundLabel: string;
+                            /** @enum {string} */
+                            scope: "INDIVIDUAL" | "SQUAD";
+                            goalKpiKey: string;
+                            goalTargetValue: number | null;
+                            startDate: string;
+                            endDate: string;
+                            /** @enum {string} */
+                            status: "ACTIVE" | "FINISHED" | "CANCELED";
+                            maxWinners: number;
+                            progressivePayoutJson: {
+                                [key: string]: number;
+                            } | null;
+                            totalPrizePool: number;
+                            createdAt: string;
+                            finishedAt: string | null;
+                            participants: {
+                                id: string;
+                                squadId: string | null;
+                                assessorId: string | null;
+                                displayName: string;
+                                finalScore: number | null;
+                                rank: number | null;
+                                photoUrl: string | null;
+                                initials: string | null;
+                            }[];
+                        }[];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** @description Cria torneio. Auto-enrolla participantes ativos (INDIVIDUAL: assessores, SQUAD: squads). */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        roundLabel: string;
+                        /** @enum {string} */
+                        scope: "INDIVIDUAL" | "SQUAD";
+                        goalKpiKey: string;
+                        goalTargetValue?: number;
+                        startDate: string;
+                        endDate: string;
+                        /** @default 1 */
+                        maxWinners?: number;
+                        progressivePayoutJson: {
+                            [key: string]: number;
+                        };
+                        participantIds?: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            roundLabel: string;
+                            /** @enum {string} */
+                            scope: "INDIVIDUAL" | "SQUAD";
+                            goalKpiKey: string;
+                            goalTargetValue: number | null;
+                            startDate: string;
+                            endDate: string;
+                            /** @enum {string} */
+                            status: "ACTIVE" | "FINISHED" | "CANCELED";
+                            maxWinners: number;
+                            progressivePayoutJson: {
+                                [key: string]: number;
+                            } | null;
+                            totalPrizePool: number;
+                            createdAt: string;
+                            finishedAt: string | null;
+                            participants: {
+                                id: string;
+                                squadId: string | null;
+                                assessorId: string | null;
+                                displayName: string;
+                                finalScore: number | null;
+                                rank: number | null;
+                                photoUrl: string | null;
+                                initials: string | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tournaments/{id}/finish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Finaliza torneio: computa top N, atualiza ranks e finalScores, cria N CofreEntry PAYOUTs. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            roundLabel: string;
+                            /** @enum {string} */
+                            scope: "INDIVIDUAL" | "SQUAD";
+                            goalKpiKey: string;
+                            goalTargetValue: number | null;
+                            startDate: string;
+                            endDate: string;
+                            /** @enum {string} */
+                            status: "ACTIVE" | "FINISHED" | "CANCELED";
+                            maxWinners: number;
+                            progressivePayoutJson: {
+                                [key: string]: number;
+                            } | null;
+                            totalPrizePool: number;
+                            createdAt: string;
+                            finishedAt: string | null;
+                            participants: {
+                                id: string;
+                                squadId: string | null;
+                                assessorId: string | null;
+                                displayName: string;
+                                finalScore: number | null;
+                                rank: number | null;
+                                photoUrl: string | null;
+                                initials: string | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tournaments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description Exclui torneio permanentemente (ACTIVE ou CANCELED). FINISHED retorna 409 — use cancel/finish. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": "null" | null;
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tournaments/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Cancela torneio ACTIVE (sem criar payouts). */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            roundLabel: string;
+                            /** @enum {string} */
+                            scope: "INDIVIDUAL" | "SQUAD";
+                            goalKpiKey: string;
+                            goalTargetValue: number | null;
+                            startDate: string;
+                            endDate: string;
+                            /** @enum {string} */
+                            status: "ACTIVE" | "FINISHED" | "CANCELED";
+                            maxWinners: number;
+                            progressivePayoutJson: {
+                                [key: string]: number;
+                            } | null;
+                            totalPrizePool: number;
+                            createdAt: string;
+                            finishedAt: string | null;
+                            participants: {
+                                id: string;
+                                squadId: string | null;
+                                assessorId: string | null;
+                                displayName: string;
+                                finalScore: number | null;
+                                rank: number | null;
+                                photoUrl: string | null;
+                                initials: string | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/scoring-config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Lê o config global de scoring (penalty, desempate, thresholds de nível). */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            penaltyPointsPerIdleDay: number;
+                            penaltyConsecutiveIdleDays: number;
+                            penaltyBusinessDays: ("MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN")[];
+                            tieBreakOrder: ("points" | "weeklyGoalPercent" | "streak" | "name")[];
+                            levelThresholds: {
+                                /** @enum {string} */
+                                level: "EM_FORMACAO" | "EM_TRACAO" | "ALTA_PERFORMANCE" | "PROFETA_DO_FORCASH" | "MONSTRO_SAGRADO" | "PONTO_DE_ATENCAO" | "RITMO_ABAIXO" | "PIPELINE_EM_RISCO" | "INIMIGO_DA_META" | "PROCURADOR_DE_EMPREGO";
+                                minPoints: number;
+                            }[];
+                            levelLegacyMap: {
+                                /** @enum {string} */
+                                EM_FORMACAO: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                EM_TRACAO: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                ALTA_PERFORMANCE: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                PROFETA_DO_FORCASH: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                MONSTRO_SAGRADO: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                PONTO_DE_ATENCAO: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                RITMO_ABAIXO: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                PIPELINE_EM_RISCO: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                INIMIGO_DA_META: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                PROCURADOR_DE_EMPREGO: "BRONZE" | "SILVER" | "GOLD";
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description Atualiza parcialmente o config de scoring. Dispara recompute total dos pontos em background. */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        penaltyPointsPerIdleDay?: number;
+                        penaltyConsecutiveIdleDays?: number;
+                        penaltyBusinessDays?: ("MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN")[];
+                        tieBreakOrder?: ("points" | "weeklyGoalPercent" | "streak" | "name")[];
+                        levelThresholds?: {
+                            /** @enum {string} */
+                            level: "EM_FORMACAO" | "EM_TRACAO" | "ALTA_PERFORMANCE" | "PROFETA_DO_FORCASH" | "MONSTRO_SAGRADO" | "PONTO_DE_ATENCAO" | "RITMO_ABAIXO" | "PIPELINE_EM_RISCO" | "INIMIGO_DA_META" | "PROCURADOR_DE_EMPREGO";
+                            minPoints: number;
+                        }[];
+                        levelLegacyMap?: {
+                            /** @enum {string} */
+                            EM_FORMACAO: "BRONZE" | "SILVER" | "GOLD";
+                            /** @enum {string} */
+                            EM_TRACAO: "BRONZE" | "SILVER" | "GOLD";
+                            /** @enum {string} */
+                            ALTA_PERFORMANCE: "BRONZE" | "SILVER" | "GOLD";
+                            /** @enum {string} */
+                            PROFETA_DO_FORCASH: "BRONZE" | "SILVER" | "GOLD";
+                            /** @enum {string} */
+                            MONSTRO_SAGRADO: "BRONZE" | "SILVER" | "GOLD";
+                            /** @enum {string} */
+                            PONTO_DE_ATENCAO: "BRONZE" | "SILVER" | "GOLD";
+                            /** @enum {string} */
+                            RITMO_ABAIXO: "BRONZE" | "SILVER" | "GOLD";
+                            /** @enum {string} */
+                            PIPELINE_EM_RISCO: "BRONZE" | "SILVER" | "GOLD";
+                            /** @enum {string} */
+                            INIMIGO_DA_META: "BRONZE" | "SILVER" | "GOLD";
+                            /** @enum {string} */
+                            PROCURADOR_DE_EMPREGO: "BRONZE" | "SILVER" | "GOLD";
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            penaltyPointsPerIdleDay: number;
+                            penaltyConsecutiveIdleDays: number;
+                            penaltyBusinessDays: ("MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN")[];
+                            tieBreakOrder: ("points" | "weeklyGoalPercent" | "streak" | "name")[];
+                            levelThresholds: {
+                                /** @enum {string} */
+                                level: "EM_FORMACAO" | "EM_TRACAO" | "ALTA_PERFORMANCE" | "PROFETA_DO_FORCASH" | "MONSTRO_SAGRADO" | "PONTO_DE_ATENCAO" | "RITMO_ABAIXO" | "PIPELINE_EM_RISCO" | "INIMIGO_DA_META" | "PROCURADOR_DE_EMPREGO";
+                                minPoints: number;
+                            }[];
+                            levelLegacyMap: {
+                                /** @enum {string} */
+                                EM_FORMACAO: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                EM_TRACAO: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                ALTA_PERFORMANCE: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                PROFETA_DO_FORCASH: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                MONSTRO_SAGRADO: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                PONTO_DE_ATENCAO: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                RITMO_ABAIXO: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                PIPELINE_EM_RISCO: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                INIMIGO_DA_META: "BRONZE" | "SILVER" | "GOLD";
+                                /** @enum {string} */
+                                PROCURADOR_DE_EMPREGO: "BRONZE" | "SILVER" | "GOLD";
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/bonus-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Lista tipos de bônus cadastrados (ativos primeiro). */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            slug: string;
+                            label: string;
+                            notePrefix: string;
+                            points: number;
+                            active: boolean;
+                            createdAt: string;
+                            updatedAt: string;
+                        }[];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** @description Cria novo tipo de bônus. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        slug: string;
+                        label: string;
+                        notePrefix: string;
+                        points: number;
+                        /** @default true */
+                        active?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            slug: string;
+                            label: string;
+                            notePrefix: string;
+                            points: number;
+                            active: boolean;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bonus-types/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description Remove tipo de bônus (hard delete — observações antigas mantêm pontos já gravados). */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": "null" | null;
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** @description Atualiza tipo de bônus (label, notePrefix, points, active). */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        label?: string;
+                        notePrefix?: string;
+                        points?: number;
+                        active?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            slug: string;
+                            label: string;
+                            notePrefix: string;
+                            points: number;
+                            active: boolean;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/admin/penalty-proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Lista propostas de penalidade. Sem filtro = todas. Com ?status=PENDING = só pendentes (default da tela). */
+        get: {
+            parameters: {
+                query?: {
+                    status?: "PENDING" | "APPROVED" | "REJECTED" | "AUTO_APPROVED";
+                    limit?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            assessorId: string;
+                            assessorName: string;
+                            assessorInitials: string;
+                            date: string;
+                            pointsProposed: number;
+                            /** @enum {string} */
+                            status: "PENDING" | "APPROVED" | "REJECTED" | "AUTO_APPROVED";
+                            reviewedById: string | null;
+                            reviewedByName: string | null;
+                            reviewedAt: string | null;
+                            justification: string | null;
+                            ageDays: number;
+                            createdAt: string;
+                        }[];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/penalty-proposals/count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Contagem de PENDING (usado no badge do menu admin). */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            pending: number;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/penalty-proposals/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description Apaga proposta de penalidade definitivamente. Funciona em qualquer status (PENDING/APPROVED/REJECTED/AUTO_APPROVED). Cuidado: irreversível. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": "null" | null;
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** @description Aprova ou rejeita uma proposta. */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        status: "APPROVED" | "REJECTED";
+                        justification?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            assessorId: string;
+                            assessorName: string;
+                            assessorInitials: string;
+                            date: string;
+                            pointsProposed: number;
+                            /** @enum {string} */
+                            status: "PENDING" | "APPROVED" | "REJECTED" | "AUTO_APPROVED";
+                            reviewedById: string | null;
+                            reviewedByName: string | null;
+                            reviewedAt: string | null;
+                            justification: string | null;
+                            ageDays: number;
+                            createdAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/admin/penalty-proposals/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description Aprova ou rejeita múltiplas propostas de uma vez (até 100). */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        ids: string[];
+                        /** @enum {string} */
+                        status: "APPROVED" | "REJECTED";
+                        justification?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            updated: number;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/admin/penalty-proposals/{id}/edit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description Edita campos de uma proposta (date, pointsProposed, justification) sem alterar o status. Use o PATCH /:id pra review. */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        date?: string;
+                        pointsProposed?: number;
+                        justification?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            assessorId: string;
+                            assessorName: string;
+                            assessorInitials: string;
+                            date: string;
+                            pointsProposed: number;
+                            /** @enum {string} */
+                            status: "PENDING" | "APPROVED" | "REJECTED" | "AUTO_APPROVED";
+                            reviewedById: string | null;
+                            reviewedByName: string | null;
+                            reviewedAt: string | null;
+                            justification: string | null;
+                            ageDays: number;
+                            createdAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/dashboard/risk-alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Lista assessores em risco. 3 critérios deduplicados: penalty PENDING, %meta < 70% na semana, caiu de nível nas últimas 2 semanas. Felipe decide intervenção. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            generatedAt: string;
+                            alerts: {
+                                assessorId: string;
+                                assessorName: string;
+                                assessorInitials: string;
+                                photoUrl: string | null;
+                                reasons: ("pending_penalty" | "below_meta" | "level_drop")[];
+                                details: {
+                                    pendingPenalties: number;
+                                    weeklyGoalPercent: number | null;
+                                    droppedLevelInLast2Weeks: boolean;
+                                };
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dashboard/evolution": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Evolução de pontos por assessor: semana atual vs anterior + tendência das últimas N semanas pra sparkline. */
+        get: {
+            parameters: {
+                query?: {
+                    trendWeeks?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            generatedAt: string;
+                            assessors: {
+                                assessorId: string;
+                                assessorName: string;
+                                assessorInitials: string;
+                                photoUrl: string | null;
+                                pointsCurrentWeek: number;
+                                pointsPreviousWeek: number;
+                                deltaPercent: number | null;
+                                trend: {
+                                    weekStart: string;
+                                    points: number;
+                                }[];
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/tenants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Lista tenants. Super admin vê todos. Admin normal vê só o próprio. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            slug: string;
+                            name: string;
+                            fullName: string;
+                            brandConfig: {
+                                [key: string]: unknown;
+                            };
+                            isAdminOrg: boolean;
+                            active: boolean;
+                            createdAt: string;
+                            updatedAt: string;
+                        }[];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** @description Cria novo tenant + admin user inicial. Apenas super admin (org admin). */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        slug: string;
+                        name: string;
+                        fullName: string;
+                        brandConfig?: {
+                            primaryColor?: string;
+                            displayFont?: string;
+                            /** Format: uri */
+                            logoUrl?: string;
+                            gradientFrom?: string;
+                            gradientTo?: string;
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        /** @default false */
+                        isAdminOrg?: boolean;
+                        /** Format: email */
+                        adminEmail: string;
+                        adminName: string;
+                        adminPassword: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            slug: string;
+                            name: string;
+                            fullName: string;
+                            brandConfig: {
+                                [key: string]: unknown;
+                            };
+                            isAdminOrg: boolean;
+                            active: boolean;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/tenants/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Busca um tenant. Admin normal só consegue o próprio. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            slug: string;
+                            name: string;
+                            fullName: string;
+                            brandConfig: {
+                                [key: string]: unknown;
+                            };
+                            isAdminOrg: boolean;
+                            active: boolean;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description Atualiza name/fullName/brandConfig/active. Admin normal não pode desativar próprio tenant nem mudar isAdminOrg. */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        fullName?: string;
+                        brandConfig?: {
+                            primaryColor?: string;
+                            displayFont?: string;
+                            /** Format: uri */
+                            logoUrl?: string;
+                            gradientFrom?: string;
+                            gradientTo?: string;
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        active?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            slug: string;
+                            name: string;
+                            fullName: string;
+                            brandConfig: {
+                                [key: string]: unknown;
+                            };
+                            isAdminOrg: boolean;
+                            active: boolean;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/admin/tenants/{id}/logo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Upload de logo do tenant (PNG/JPEG/SVG/WebP, max 1MB). */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            logoUrl: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/tenants/{slug}/brand": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Info pública de branding (logo, cores, nome) por slug. SEM auth. Usado por páginas pre-JWT (/tv, /login) pra renderizar marca real do tenant. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            slug: string;
+                            name: string;
+                            fullName: string;
+                            isAdminOrg: boolean;
+                            brandConfig: {
+                                [key: string]: unknown;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
                 };
             };
         };

@@ -34,6 +34,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   useScoringConfig,
   useUpdateScoringConfig,
+  type LegacyLevel,
+  type LevelLegacyMap,
   type BusinessDay,
   type TieBreakKey,
   type LevelThreshold,
@@ -103,6 +105,7 @@ const AdminScoring = () => {
       <PenaltySection config={config} />
       <TieBreakSection config={config} />
       <LevelThresholdsSection config={config} />
+      <LevelLegacyMapSection config={config} />
     </div>
   );
 };
@@ -644,6 +647,149 @@ function ThresholdRow({
           />
         )}
         <span className="text-xs text-ink-3">pts</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Level Legacy Map ──────────────────────────────────────────────────────
+// Componentes antigos (AssessorAvatar ring colorido, Pódio) ainda esperam o
+// enum legacy de 3 valores (BRONZE/SILVER/GOLD). Aqui Felipe escolhe pra
+// CADA um dos 10 níveis P3 em qual bucket ele entra — define a cor do anel
+// nos avatares. Backend usa esse mapping ao serializar Assessor/Squad/Report.
+
+const LEGACY_LEVEL_OPTIONS: ReadonlyArray<{ value: LegacyLevel; label: string }> = [
+  { value: "GOLD", label: "Gold" },
+  { value: "SILVER", label: "Silver" },
+  { value: "BRONZE", label: "Bronze" },
+];
+
+const LEGACY_BADGE_TONE: Record<LegacyLevel, string> = {
+  GOLD: "bg-gold/15 text-gold-deep border-gold/40",
+  SILVER: "bg-silver/15 text-silver border-silver/40",
+  BRONZE: "bg-bronze/15 text-bronze border-bronze/40",
+};
+
+function LevelLegacyMapSection({
+  config,
+}: {
+  config: ReturnType<typeof useScoringConfig>["data"];
+}) {
+  const updateMut = useUpdateScoringConfig();
+  const [map, setMap] = useState<LevelLegacyMap | null>(config?.levelLegacyMap ?? null);
+
+  useEffect(() => {
+    setMap(config?.levelLegacyMap ?? null);
+  }, [config]);
+
+  if (!map) return null;
+
+  const updateBucket = (level: LevelSlug, bucket: LegacyLevel) => {
+    setMap((prev) => (prev ? { ...prev, [level]: bucket } : prev));
+  };
+
+  const handleSave = async () => {
+    try {
+      await updateMut.mutateAsync({ levelLegacyMap: map });
+      toast.success("Mapping de níveis salvo");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro");
+    }
+  };
+
+  const positives = (Object.keys(LEVEL_LABELS) as LevelSlug[])
+    .filter((l) => LEVEL_LABELS[l].type === "positive");
+  const negatives = (Object.keys(LEVEL_LABELS) as LevelSlug[])
+    .filter((l) => LEVEL_LABELS[l].type === "negative");
+
+  return (
+    <section className="rounded-[14px] border border-line bg-card p-5 space-y-4">
+      <header>
+        <h2 className="text-base font-extrabold tracking-tight text-ink flex items-center gap-2">
+          <Trophy size={16} weight="fill" className="text-bronze" />
+          Bucket legacy por nível (cor do avatar)
+        </h2>
+        <p className="text-xs text-ink-3 mt-1">
+          Componentes antigos (anel do avatar, pódio) usam 3 cores: Gold, Silver, Bronze.
+          Escolha em qual bucket cada um dos 10 níveis cai. Sem esse mapping, o backend
+          rejeita serialização e a tela quebra. Default sugerido: MONSTRO_SAGRADO → Gold,
+          PROFETA/ALTA_PERFORMANCE → Silver, restante → Bronze.
+        </p>
+      </header>
+
+      <div className="space-y-3">
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-eqi font-bold mb-2">Positivos</p>
+          <div className="space-y-2">
+            {positives.map((level) => (
+              <LegacyMapRow
+                key={level}
+                level={level}
+                bucket={map[level]}
+                onChange={(v) => updateBucket(level, v)}
+              />
+            ))}
+          </div>
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-destructive font-bold mb-2 mt-4">
+            Negativos
+          </p>
+          <div className="space-y-2">
+            {negatives.map((level) => (
+              <LegacyMapRow
+                key={level}
+                level={level}
+                bucket={map[level]}
+                onChange={(v) => updateBucket(level, v)}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end pt-2 border-t border-line/30">
+        <Button onClick={handleSave} disabled={updateMut.isPending}>
+          {updateMut.isPending && <CircleNotch size={16} className="animate-spin mr-2" />}
+          Salvar
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+function LegacyMapRow({
+  level,
+  bucket,
+  onChange,
+}: {
+  level: LevelSlug;
+  bucket: LegacyLevel;
+  onChange: (value: LegacyLevel) => void;
+}) {
+  const meta = LEVEL_LABELS[level];
+  return (
+    <div className="flex items-center justify-between gap-3 p-2 rounded bg-surface border border-line">
+      <div className="flex-1">
+        <span className="text-sm font-semibold text-ink">{meta.label}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span
+          className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${LEGACY_BADGE_TONE[bucket]}`}
+        >
+          {bucket}
+        </span>
+        <select
+          value={bucket}
+          onChange={(e) => onChange(e.target.value as LegacyLevel)}
+          className="h-8 px-2 rounded-md border border-line bg-surface text-sm font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          {LEGACY_LEVEL_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );
