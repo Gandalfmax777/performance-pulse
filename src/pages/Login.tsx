@@ -183,11 +183,14 @@ const Login = () => {
               <div
                 className="w-14 h-14 rounded-xl flex items-center justify-center font-display overflow-hidden"
                 style={{
-                  background: logoUrl ? "rgba(255,255,255,0.06)" : brand.accentBg,
+                  // Logo no painel escuro: fundo branco neutro pra qualquer
+                  // logo (preto, colorido) ficar visível com bom contraste.
+                  background: logoUrl ? "#fff" : brand.accentBg,
                   color: brand.accentText,
                   fontSize: 22,
                   fontWeight: 800,
                   letterSpacing: "-0.04em",
+                  padding: logoUrl ? 4 : 0,
                 }}
                 aria-hidden
               >
@@ -195,7 +198,7 @@ const Login = () => {
                   <img
                     src={logoUrl}
                     alt={fullName}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 ) : (
                   brand.initial
@@ -258,11 +261,14 @@ const Login = () => {
               <div
                 className="w-10 h-10 rounded-lg flex items-center justify-center font-display overflow-hidden"
                 style={{
+                  // Mobile brand mark fica em fundo claro (form). Logo precisa
+                  // de fundo neutro pra contraste; sem logo, brand color escuro.
                   background: logoUrl ? "rgba(0,0,0,0.04)" : brand.gradientFrom,
                   color: brand.accentBg,
                   fontSize: 16,
                   fontWeight: 800,
                   letterSpacing: "-0.04em",
+                  padding: logoUrl ? 3 : 0,
                 }}
                 aria-hidden
               >
@@ -270,7 +276,7 @@ const Login = () => {
                   <img
                     src={logoUrl}
                     alt={fullName}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 ) : (
                   brand.initial

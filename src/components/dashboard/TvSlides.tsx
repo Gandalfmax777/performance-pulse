@@ -325,7 +325,9 @@ function Chrome({ tenant, logoUrl, rangeLabel, slideTitle, slideIdx, slideCount,
               width: 28,
               height: 28,
               borderRadius: 6,
-              background: logoUrl ? "rgba(255,255,255,0.06)" : "var(--tv-accent)",
+              // Logo: fundo branco neutro (TvSlides tem bg escuro var(--tv-bg)),
+              // garante contraste pra logos pretos. Sem logo, var(--tv-accent).
+              background: logoUrl ? "#fff" : "var(--tv-accent)",
               color: "var(--tv-bg)",
               display: "flex",
               alignItems: "center",
@@ -335,13 +337,14 @@ function Chrome({ tenant, logoUrl, rangeLabel, slideTitle, slideIdx, slideCount,
               fontSize: 13,
               letterSpacing: "-0.04em",
               overflow: "hidden",
+              padding: logoUrl ? 2 : 0,
             }}
           >
             {logoUrl ? (
               <img
                 src={logoUrl}
                 alt={t.label}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                style={{ width: "100%", height: "100%", objectFit: "contain" }}
               />
             ) : (
               t.label[0]

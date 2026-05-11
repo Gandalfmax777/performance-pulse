@@ -132,12 +132,20 @@ const DashboardSidebar = ({
             senão cai no ícone Pulse genérico. */}
         <div className="px-4 py-[18px] pb-[14px] border-b border-line flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 shrink-0 rounded-lg bg-primary flex items-center justify-center overflow-hidden">
+            {/* Wrapper neutro quando há logo (logos costumam ser pretos/coloridos
+                em fundo transparente — contraste com bg-primary é imprevisível).
+                Sem logo, fundo `bg-primary` + ícone branco. */}
+            <div
+              className={cn(
+                "w-8 h-8 shrink-0 rounded-lg flex items-center justify-center overflow-hidden",
+                tenantConfig.logoUrl ? "bg-surface-2 p-0.5" : "bg-primary",
+              )}
+            >
               {tenantConfig.logoUrl ? (
                 <img
                   src={tenantConfig.logoUrl}
                   alt={tenantConfig.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               ) : (
                 <Pulse weight="bold" size={16} className="text-primary-foreground" />
