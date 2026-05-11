@@ -74,16 +74,28 @@ export function useDailyRanking(date?: string) {
   });
 }
 
+interface RankingOptions {
+  /** Start date opcional (string). Default = current period. */
+  start?: string;
+  /** Se false, query fica desabilitada (não dispara fetch). Default true.
+   *  Útil em telas que tem switcher entre períodos (Presentation, etc) —
+   *  só busca o período selecionado. */
+  enabled?: boolean;
+}
+
 /**
  * Ranking semanal — refresh menos frequente (15s) já que muda mais devagar.
  */
-export function useWeeklyRanking(weekStart?: string) {
+export function useWeeklyRanking(opts?: RankingOptions | string) {
+  // Backwards-compat: signature antiga aceitava `weekStart?: string`.
+  const config = typeof opts === "string" ? { start: opts } : opts ?? {};
   return useQuery({
-    queryKey: [...QUERY_KEY, "weekly", weekStart ?? "current"],
+    queryKey: [...QUERY_KEY, "weekly", config.start ?? "current"],
     queryFn: () => {
-      const qs = weekStart ? `?weekStart=${weekStart}` : "";
+      const qs = config.start ? `?weekStart=${config.start}` : "";
       return apiFetch<ApiWeeklyRanking>(`/rankings/weekly${qs}`);
     },
+    enabled: config.enabled ?? true,
     refetchInterval: 15_000,
     staleTime: 10_000,
   });
@@ -93,13 +105,15 @@ export function useWeeklyRanking(weekStart?: string) {
  * Ranking mensal — endpoint dedicado (antes era fallback no overview).
  * Refresh 30s já que a granularidade é maior.
  */
-export function useMonthlyRanking(monthStart?: string) {
+export function useMonthlyRanking(opts?: RankingOptions | string) {
+  const config = typeof opts === "string" ? { start: opts } : opts ?? {};
   return useQuery({
-    queryKey: [...QUERY_KEY, "monthly", monthStart ?? "current"],
+    queryKey: [...QUERY_KEY, "monthly", config.start ?? "current"],
     queryFn: () => {
-      const qs = monthStart ? `?monthStart=${monthStart}` : "";
+      const qs = config.start ? `?monthStart=${config.start}` : "";
       return apiFetch<ApiPeriodRanking>(`/rankings/monthly${qs}`);
     },
+    enabled: config.enabled ?? true,
     refetchInterval: 30_000,
     staleTime: 20_000,
   });
@@ -108,13 +122,15 @@ export function useMonthlyRanking(monthStart?: string) {
 /**
  * Ranking semestral (jan-jun ou jul-dez). Refresh 60s.
  */
-export function useSemesterRanking(semesterStart?: string) {
+export function useSemesterRanking(opts?: RankingOptions | string) {
+  const config = typeof opts === "string" ? { start: opts } : opts ?? {};
   return useQuery({
-    queryKey: [...QUERY_KEY, "semester", semesterStart ?? "current"],
+    queryKey: [...QUERY_KEY, "semester", config.start ?? "current"],
     queryFn: () => {
-      const qs = semesterStart ? `?semesterStart=${semesterStart}` : "";
+      const qs = config.start ? `?semesterStart=${config.start}` : "";
       return apiFetch<ApiPeriodRanking>(`/rankings/semester${qs}`);
     },
+    enabled: config.enabled ?? true,
     refetchInterval: 60_000,
     staleTime: 30_000,
   });

@@ -93,13 +93,22 @@ export interface QuarterlyRankingResponse {
 
 const QUARTERLY_KEY = ["rankings", "quarterly"] as const;
 
-export function useQuarterlyRanking(quarterStart?: string) {
+interface QuarterlyOptions {
+  start?: string;
+  /** Se false, query fica desabilitada (não dispara fetch). Default true. */
+  enabled?: boolean;
+}
+
+export function useQuarterlyRanking(opts?: QuarterlyOptions | string) {
+  // Backwards-compat: signature antiga aceitava `quarterStart?: string`.
+  const config = typeof opts === "string" ? { start: opts } : opts ?? {};
   return useQuery({
-    queryKey: [...QUARTERLY_KEY, quarterStart ?? "current"],
+    queryKey: [...QUARTERLY_KEY, config.start ?? "current"],
     queryFn: () => {
-      const qs = quarterStart ? `?quarterStart=${quarterStart}` : "";
+      const qs = config.start ? `?quarterStart=${config.start}` : "";
       return apiFetch<QuarterlyRankingResponse>(`/rankings/quarterly${qs}`);
     },
+    enabled: config.enabled ?? true,
     refetchInterval: 5 * 60_000,
     staleTime: 60_000,
   });
