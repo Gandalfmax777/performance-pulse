@@ -56,11 +56,11 @@ export function TenantSwitcher({ collapsed = false }: { collapsed?: boolean }) {
           title={`Mesa atual: ${tenant.fullName}`}
         >
           {tenantConfig.logoUrl ? (
-            <div className="w-4 h-4 shrink-0 rounded overflow-hidden">
+            <div className="w-4 h-4 shrink-0 rounded overflow-hidden bg-surface-2 p-px">
               <img
                 src={tenantConfig.logoUrl}
                 alt={tenant.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             </div>
           ) : tenant.isAdminOrg ? (
