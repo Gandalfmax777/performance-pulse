@@ -226,7 +226,13 @@ Sempre que o tenant tem `brandConfig.logoUrl` (subido via `/admin/tenants` → R
 - **`TenantSwitcher`** — botão trigger do dropdown na sidebar. Mostra a imagem em 16x16 quando há logo; senão ícone `<ShieldStar>` (admin org) ou `<Buildings>`. Items do dropdown continuam com ícone (não temos logo das OUTRAS memberships).
 - **`Login.tsx`** — quadrado da marca (desktop 56x56 e mobile 40x40). Pre-auth não acessa `tenantConfig`, então lê do cache `localStorage["pp_last_tenant_logo"]`. Primeira visita sempre cai na inicial (`LOGIN_BRANDS[slug].initial`); a partir do segundo login a imagem real aparece.
 
-Padrão de fallback é sempre o mesmo: `{logoUrl ? <img/> : <FallbackVisual/>}` — adicionar em outros lugares basta seguir esse padrão. Pra TvSlides (rota pública sem JWT e sem cache de logo), exigiria um endpoint público backend tipo `/api/public/tenants/:slug/brand` — fora do escopo atual.
+Padrão de fallback é sempre o mesmo: `{logoUrl ? <img/> : <FallbackVisual/>}` — adicionar em outros lugares basta seguir esse padrão.
+
+**TvSlides** (rota pública, sem JWT, sem cache de last login) usa o hook `usePublicTenantBrand(slug)` em `src/hooks/usePublicTenantBrand.ts`, que consome o endpoint público `GET /api/public/tenants/:slug/brand` (PR backend separada). Caminho:
+- `Tv.tsx` lê `?tenant=<slug>` da URL → chama `usePublicTenantBrand(slug)` → extrai `data.brandConfig.logoUrl`
+- Passa `logoUrl` como prop pra `<TvSlides>` → propaga pro `Chrome` interno
+- Chrome chrome header renderiza `<img>` quando presente, senão `t.label[0]` (letra inicial)
+- Cache Tanstack: 5min (alinhado com `Cache-Control` do backend), `retry: false` (404 é resposta válida)
 
 **Adicionar tenant novo** (3 passos):
 

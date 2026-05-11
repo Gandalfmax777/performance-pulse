@@ -3,6 +3,7 @@ import { Play, Pause, SkipForward, Timer, X } from "@phosphor-icons/react";
 import { TvSlides, TV_SLIDES } from "@/components/dashboard/TvSlides";
 import TournamentFinishedOverlay from "@/components/dashboard/TournamentFinishedOverlay";
 import { useAssessors } from "@/hooks/useAssessors";
+import { usePublicTenantBrand } from "@/hooks/usePublicTenantBrand";
 import { useRankingStream } from "@/hooks/useRankingStream";
 import { useTournamentFinishedStream } from "@/hooks/useTournamentFinishedStream";
 import { useSystemNotifications } from "@/hooks/useSystemNotifications";
@@ -99,6 +100,15 @@ const TvPageContent = ({ tenantSlug }: { tenantSlug: TenantSlug }) => {
 
   const { assessors } = useAssessors();
 
+  // Brand público (logo R2 + nome) via endpoint sem auth. Usado pra mostrar
+  // a marca real do tenant no chrome header do TvSlides — sem isso, cai
+  // pra letra inicial do nome do tenant (TENANT_TOKENS).
+  const brandQuery = usePublicTenantBrand(tenantSlug);
+  const tenantLogoUrl =
+    typeof brandQuery.data?.brandConfig?.logoUrl === "string"
+      ? (brandQuery.data.brandConfig.logoUrl as string)
+      : null;
+
   // Auto-hide controls on idle (3s sem movimento de mouse). Visíveis em
   // qualquer mousemove ou quando o popover de Settings está aberto.
   useEffect(() => {
@@ -165,7 +175,12 @@ const TvPageContent = ({ tenantSlug }: { tenantSlug: TenantSlug }) => {
     <div className="min-h-screen w-screen overflow-hidden relative" style={{ background: "#000b14" }}>
       {/* Slide ocupa tela inteira — TvSlides tem seu próprio Chrome */}
       <div className="absolute inset-0">
-        <TvSlides slideIdx={slideIdx} assessors={assessors} tenant={tenantSlug} />
+        <TvSlides
+          slideIdx={slideIdx}
+          assessors={assessors}
+          tenant={tenantSlug}
+          logoUrl={tenantLogoUrl}
+        />
       </div>
 
       {/* Controles flutuantes — auto-hide após 3s idle. Posicionados
