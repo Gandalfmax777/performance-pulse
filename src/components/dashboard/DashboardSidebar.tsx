@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useTheme } from "next-themes";
 import {
   Pulse,
   Stack as Layers,
@@ -11,8 +10,6 @@ import {
   Crown,
   Television as Tv,
   Presentation,
-  Sun,
-  Moon,
   SpeakerHigh,
   SpeakerSimpleSlash,
   ShieldCheck,
@@ -78,7 +75,6 @@ const DashboardSidebar = ({
 }: Props) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { theme, setTheme } = useTheme();
   const { isAdmin, user, tenantConfig } = useCurrentUser();
   const [muted, setMuted] = useSoundMuted();
 
@@ -330,14 +326,6 @@ const DashboardSidebar = ({
             >
               {muted ? <SpeakerSimpleSlash size={13} /> : <SpeakerHigh size={13} />}
               {!collapsed && <span>Som</span>}
-            </button>
-            <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              title={theme === "dark" ? "Modo claro" : "Modo escuro"}
-              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-[7px] bg-surface-2 border border-line text-ink-3 hover:text-ink hover:bg-surface text-[11px] font-semibold transition-colors"
-            >
-              {theme === "dark" ? <Sun size={13} /> : <Moon size={13} />}
-              {!collapsed && <span>Tema</span>}
             </button>
           </div>
 

@@ -167,7 +167,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
   return (
     <div className="rounded-[14px] border border-line bg-card p-5">
       <div className="flex items-center gap-2 mb-2">
-        <Target size={14} weight="bold" className="text-eqi-green" />
+        <Target size={14} weight="bold" className="text-brand-primary" />
         <h2 className="text-sm font-extrabold tracking-tight text-ink">Registrar Resultados</h2>
         {upsert.isPending && <CircleNotch size={12} className="animate-spin text-ink-3" />}
       </div>
@@ -207,7 +207,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                 title="Observação / Reunião de venda"
                 className={`w-7 h-7 rounded-md flex items-center justify-center transition-all ${
                   noteOpen === a.id
-                    ? "bg-eqi/20 text-eqi"
+                    ? "bg-primary/20 text-primary"
                     : "bg-muted/30 text-ink-3 hover:text-ink hover:bg-muted/50"
                 }`}
               >
@@ -223,7 +223,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                     onClick={() => setNoteType("observation")}
                     className={`flex-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-all ${
                       noteType === "observation"
-                        ? "bg-eqi/20 text-eqi border border-eqi/40"
+                        ? "bg-primary/20 text-primary border border-primary/40"
                         : "bg-muted/30 text-ink-3 border border-line/30 hover:text-ink"
                     }`}
                   >
@@ -260,7 +260,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                       ? "Qual área? (ex: Seguros, Consórcio, Câmbio)"
                       : "Ex: Ausente hoje (consulta médica), Fez home office, etc."
                   }
-                  className="w-full px-3 py-2 rounded-lg bg-muted/30 border border-line/30 text-xs text-ink placeholder:text-ink-3/50 focus:outline-none focus:border-eqi/50 resize-none"
+                  className="w-full px-3 py-2 rounded-lg bg-muted/30 border border-line/30 text-xs text-ink placeholder:text-ink-3/50 focus:outline-none focus:border-primary/50 resize-none"
                   rows={2}
                 />
                 <button
@@ -290,7 +290,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                     } catch {}
                   }}
                   disabled={!noteText.trim()}
-                  className="px-3 py-1 rounded-md text-[10px] font-semibold bg-primary text-eqi-foreground hover:bg-eqi/90 disabled:bg-muted disabled:text-ink-3 disabled:cursor-not-allowed transition-colors"
+                  className="px-3 py-1 rounded-md text-[10px] font-semibold bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-ink-3 disabled:cursor-not-allowed transition-colors"
                 >
                   {noteType === "meeting"
                     ? "Registrar reunião (+10 pts)"
@@ -339,7 +339,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                           onChange={(e) => setValueLocal(a.id, kpi.key, parseInt(e.target.value) || 0)}
                           onBlur={() => commit(a.id, kpi.key, val)}
                           placeholder="Qtd"
-                          className="w-12 h-7 rounded-md bg-muted/30 border border-line/30 text-center text-sm font-mono font-semibold text-ink focus:outline-none focus:border-eqi/50"
+                          className="w-12 h-7 rounded-md bg-muted/30 border border-line/30 text-center text-sm font-mono font-semibold text-ink focus:outline-none focus:border-primary/50"
                         />
                         <span className="text-[10px] text-ink-3">/</span>
                         <span
@@ -356,7 +356,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                         >
                           {assessorListSize}
                         </span>
-                        <span className="text-xs font-mono font-bold text-eqi min-w-[32px] text-right">
+                        <span className="text-xs font-mono font-bold text-primary min-w-[32px] text-right">
                           {pct}%
                         </span>
                       </div>
@@ -380,7 +380,7 @@ const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks
                           value={val}
                           onChange={(e) => setValueLocal(a.id, kpi.key, parseInt(e.target.value) || 0)}
                           onBlur={() => commit(a.id, kpi.key, val)}
-                          className="w-14 h-7 rounded-md bg-muted/30 border border-line/30 text-center text-sm font-mono font-semibold text-ink focus:outline-none focus:border-eqi/50"
+                          className="w-14 h-7 rounded-md bg-muted/30 border border-line/30 text-center text-sm font-mono font-semibold text-ink focus:outline-none focus:border-primary/50"
                         />
 
                         <button

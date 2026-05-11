@@ -17,7 +17,7 @@ Versões reais do `package.json`:
 - Tanstack Query **5.83** (server-state cache + invalidation)
 - react-hook-form **7.61** + `@hookform/resolvers` 3.10 + Zod **3.25**
 - recharts **2.15** (charts), framer-motion **12** (animação), Phosphor Icons **2.1**
-- next-themes 0.3 (light fixo, dark desligado), sonner 1.7 (toasts), cmdk, vaul, embla-carousel
+- next-themes 0.3 (light fixo no app; dark é só `/tv`, aplicado direto via `classList.add("dark")`), sonner 1.7 (toasts), cmdk, vaul, embla-carousel
 - date-fns **3.6**, react-markdown 10, react-day-picker, input-otp
 - Vitest **3.2** + Testing Library 16 + jsdom 20 + Playwright 1.57 (dev-only)
 - Deploy oficial: Docker+nginx (`Dockerfile` + `nginx.conf`) → GHCR → Coolify VPS via `.github/workflows/deploy.yml`. `vercel.json` existe mas o workflow não o usa.
@@ -33,7 +33,7 @@ components/
   layouts/             AppShellLayout (sidebar+topbar), RequireAdmin (role guard)
   providers/           TenantProvider (aplica data-tenant em runtime)
   ErrorBoundary.tsx, NavLink.tsx, icons.ts
-config/                tenants.ts (TENANT_FALLBACKS estático de EQI/BDN + resolveTenantConfig)
+config/                tenants.ts (TENANTS registry consolidado: brand + tv + login sub-objects)
 hooks/                 33 hooks — useCurrentUser, useAssessors, useKpis, useRankingStream, ...
 lib/                   helpers puros — utils.ts (cn), kpi-meta, levelMeta, biweekly, meetingBonus, sounds, imageResize
 pages/                 14 top-level (Login, Index, PorDia, Ranking, Kpis, SquadBet, Torneio, Assessores, Relatorio, RelatorioAssessor, Tv, Presentation, NotFound)
@@ -115,7 +115,7 @@ npm run preview      # serve o dist localmente
   Não "consertar" tipos pensando que é bug. ESLint também desliga `@typescript-eslint/no-unused-vars` e `@typescript-eslint/no-empty-object-type` (`eslint.config.js:23-25`).
 - **Rotas lazy**: cada page é `lazy()` em `App.tsx:16-40` — cada rota vira chunk próprio. Adicionar rota nova segue o mesmo padrão; também considere se precisa virar entry de manualChunks no `vite.config.ts`.
 - **Toasters**: dois convivem. **Sempre `sonner` em código novo** (`toast.success/error` direto do import `sonner`). Radix `useToast` é legado.
-- **Theme**: `next-themes` em light fixo (`<ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>` em `App.tsx:54`). Dark mode existe nas CSS vars do `index.css` mas não está ativo.
+- **Theme**: `next-themes` em light fixo no app (`<ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>` em `App.tsx:54`). **Dark mode é exclusivo do `/tv`** (DESIGN.md § Elevation): `Tv.tsx` aplica `<html class="dark" data-tenant="<slug>">` no mount + remove no cleanup. Bypassa next-themes intencionalmente — TV está fora do AppShell. CSS vars dark tenant-scoped vivem em `.dark[data-tenant="eqi"]` (deep forest + verde médio brilhante) e `.dark[data-tenant="bdn"]` (midnight navy + beacon cyan) em `src/index.css`. Não há toggle de dark mode em nenhuma outra rota — fora de TV, dark é design choice fora do escopo.
 
 ## Pontos de entrada críticos
 
@@ -129,14 +129,17 @@ npm run preview      # serve o dist localmente
 | `src/api/client.ts:55-58` | `isPublicTvRoute()` — bypass auth quando pathname é `/tv` ou `/tv/*`. |
 | `src/api/client.ts:109-114` | Em 401 (não-TV): `clearAuthToken()` + `window.location.href = "/login"`. |
 | `src/components/providers/TenantProvider.tsx` | `useEffect` aplica `<html data-tenant={slug}>` quando `useCurrentUser` resolve. |
-| `src/config/tenants.ts` | `TENANT_FALLBACKS` (EQI/BDN), `resolveTenantConfig(slug, brandConfig)` faz merge `{...fallback, ...brandConfig, slug}`, e `DEFAULT_TENANT_SLUG = "bdn"` é o fallback quando nada mais resolve. |
+| `src/config/tenants.ts` | `TENANTS` (registry central EQI/BDN; alias deprecated `TENANT_FALLBACKS` mantido pra compat). Cada entry carrega brand + sub-objects `tv` (label, fullName, displayWeight/Letter pro Modo TV) e `login` (gradients + accents do painel /login pre-auth). `resolveTenantConfig(slug, brandConfig)` faz merge `{...TENANTS[safeSlug], ...brandConfig, slug}`. `DEFAULT_TENANT_SLUG = "bdn"` é o fallback. |
 | `src/hooks/useCurrentUser.ts` | `/auth/me` + `useSwitchTenant` (`POST /auth/switch-tenant`). Retorna `{ user, tenant, tenantConfig, memberships, isAdmin, isSuperAdmin, hasMultipleMemberships }`. |
 | `src/hooks/useRankingStream.ts:52-63` | SSE invalida 6 query keys em cascata. |
 | `src/components/layouts/RequireAdmin.tsx` | Role guard com loader (evita flash de redirect antes da role chegar). |
 | `src/components/layouts/AppShellLayout.tsx` | Shell editorial das rotas internas — sidebar 248px sticky + topbar via render prop. |
 | `index.html:2` | `<html data-tenant="eqi">` (default no boot, sobrescrito em runtime). |
-| `src/index.css:106-184` | `:root` = paleta EQI default (light). |
-| `src/index.css:191-238` | Bloco `[data-tenant="bdn"]`. |
+| `src/index.css:106-184` | `:root` = paleta EQI default (light) + `--brand-primary/light/deep/soft` (4 shades tenant-scoped). |
+| `src/index.css:188-240` | Bloco `[data-tenant="bdn"]` (BDN light, ativo desde 2026-05-10). |
+| `src/index.css:243-432` | Bloco `.dark` (fallback EQI dark) + `.dark[data-tenant="eqi"]` + `.dark[data-tenant="bdn"]` (DESIGN.md § Tenant Mirror Rule). |
+| `src/pages/Tv.tsx:97-107` | Aplica `data-tenant` + `.dark` no `<html>` no mount, remove `.dark` no cleanup. |
+| `src/components/dashboard/TvSlides.tsx:25-67` | `tenantStyle()` adapter: aliases `--tv-*` agora lêem `hsl(var(--*))` do tenant ativo. Paleta vive no CSS, não hardcoded aqui. |
 | `vite.config.ts:6-19` | Server porta 8080, alias `@/`, dedupe de react/react-query. |
 | `vite.config.ts:24-37` | `manualChunks` — vendor-react/charts/motion/markdown/query/dates. |
 
@@ -197,7 +200,7 @@ Pipeline:
 4. CSS vars do bloco `[data-tenant="<slug>"]` em `src/index.css` ativam toda a paleta.
 5. Componentes que leem `tenantConfig.primaryColor`, `displayFont`, `logoUrl` (via `useCurrentUser`) renderizam com brand do tenant.
 
-`resolveTenantConfig(slug, brandConfig)` faz merge `{...TENANT_FALLBACKS[safeSlug], ...brandConfig, slug}` — o fallback garante que UI nunca quebra se o admin esquecer campos no painel `/admin/tenants`. Slug desconhecido cai pra `eqi`.
+`resolveTenantConfig(slug, brandConfig)` faz merge `{...TENANTS[safeSlug], ...brandConfig, slug}` — o fallback garante que UI nunca quebra se o admin esquecer campos no painel `/admin/tenants`. Slug desconhecido cai pra `DEFAULT_TENANT_SLUG = "bdn"`.
 
 ### Rotas públicas (`/tv`) — slug obrigatório via query string
 
@@ -212,11 +215,11 @@ Pipeline:
 `/login` também é pre-auth → não pode resolver tenant via JWT. Adota padrão "last login" das apps modernas:
 
 - `getLastTenant()` (em `src/api/client.ts`) lê `localStorage["pp_last_tenant"]` — slug do último tenant ativo.
-- Slug válido → aplica `data-tenant=<slug>` no `<html>` + usa `LOGIN_BRANDS[<slug>]` no painel esquerdo (gradient, inicial, accent color).
+- Slug válido → aplica `data-tenant=<slug>` no `<html>` + usa `TENANTS[<slug>].login` no painel esquerdo (gradient, inicial, accent color).
 - Sem last login (primeira visita, localStorage limpo, slug desconhecido) → fallback `DEFAULT_TENANT_SLUG = "bdn"` (definido em `src/config/tenants.ts`). BDN é a org admin da plataforma, então é o default natural.
 - Persistência: `setLastTenant(slug)` é chamado em (a) `Login.handleSubmit` no sucesso do `/auth/login`, (b) `useSwitchTenant.onSuccess`, e (c) `useCurrentUser` sempre que `tenant.slug` chega de `/auth/me`. **Não é limpo no logout** (`clearAuthToken` não toca a chave) — propósito é exatamente sobreviver entre sessões.
 
-Pra adicionar tenant novo no /login: criar entry em `LOGIN_BRANDS` (em `src/pages/Login.tsx`) com `gradientFrom/gradientTo/accentBg/accentText/accentHighlight/accentBlob/initial`. Sem essa entry, cai no fallback BDN.
+Pra adicionar tenant novo no /login: editar `TENANTS` em `src/config/tenants.ts` adicionando sub-object `login` (`initial`, `gradientFrom/To`, `accentBg/Text/Highlight/Blob`). Single source of truth — não há registry separado em `Login.tsx`.
 
 ### Logo do tenant nos brand-marks
 
@@ -224,7 +227,7 @@ Sempre que o tenant tem `brandConfig.logoUrl` (subido via `/admin/tenants` → R
 
 - **`DashboardSidebar`** — quadrado da marca no topo da sidebar. Se `tenantConfig.logoUrl` está presente, renderiza `<img>`; senão, ícone `<Pulse>` genérico.
 - **`TenantSwitcher`** — botão trigger do dropdown na sidebar. Mostra a imagem em 16x16 quando há logo; senão ícone `<ShieldStar>` (admin org) ou `<Buildings>`. Items do dropdown continuam com ícone (não temos logo das OUTRAS memberships).
-- **`Login.tsx`** — quadrado da marca (desktop 56x56 e mobile 40x40). Pre-auth não acessa `tenantConfig`, então lê do cache `localStorage["pp_last_tenant_logo"]`. Primeira visita sempre cai na inicial (`LOGIN_BRANDS[slug].initial`); a partir do segundo login a imagem real aparece.
+- **`Login.tsx`** — quadrado da marca (desktop 56x56 e mobile 40x40). Pre-auth não acessa `tenantConfig`, então lê do cache `localStorage["pp_last_tenant_logo"]`. Primeira visita sempre cai na inicial (`TENANTS[slug].login.initial`); a partir do segundo login a imagem real aparece.
 
 Padrão de fallback é sempre o mesmo: `{logoUrl ? <img/> : <FallbackVisual/>}` — adicionar em outros lugares basta seguir esse padrão.
 
@@ -234,11 +237,11 @@ Padrão de fallback é sempre o mesmo: `{logoUrl ? <img/> : <FallbackVisual/>}` 
 - Chrome chrome header renderiza `<img>` quando presente, senão `t.label[0]` (letra inicial)
 - Cache Tanstack: 5min (alinhado com `Cache-Control` do backend), `retry: false` (404 é resposta válida)
 
-**Adicionar tenant novo** (3 passos):
+**Adicionar tenant novo** (2 arquivos + cadastro):
 
-1. Criar bloco `[data-tenant="<slug>"] { --background: ...; ... }` em `src/index.css` (copiar do bloco BDN como template).
-2. Adicionar entry em `TENANT_FALLBACKS` (`src/config/tenants.ts`) e atualizar tipo `TenantSlug`.
-3. Criar tenant via UI `/admin/tenants` (ou script direto no backend).
+1. Editar `src/config/tenants.ts` adicionando entry em `TENANTS` com slug + brand + sub-objects `tv` (label, fullName, displayWeight, displayLetter) e `login` (initial + gradients + accents). O tipo `TenantSlug` expande automaticamente.
+2. Adicionar em `src/index.css`: bloco `[data-tenant="<slug>"]` (light) + `.dark[data-tenant="<slug>"]` (dark) com `--background`, `--primary`, `--brand-primary/light/deep/soft`, ink scale, etc. (copiar bloco BDN como template). Os 4 `--brand-*` shades são tenant-neutros: mesmo nome em todos os tenants, valores diferentes.
+3. Criar tenant via UI `/admin/tenants` (ou script direto no backend) + upload do logo R2.
 
 `TenantSwitcher` (`src/components/shared/TenantSwitcher.tsx`) só aparece se `memberships.length > 1`. Renderiza dropdown na sidebar com indicador `isAdminOrg`.
 
@@ -255,8 +258,9 @@ Padrão de fallback é sempre o mesmo: `{logoUrl ? <img/> : <FallbackVisual/>}` 
 
 - **Porta dev é 8080**, não 3000. Está em `vite.config.ts:8`.
 - `index.html:2` fixa `<html data-tenant="eqi">` no boot — o `TenantProvider` sobrescreve depois que `/auth/me` resolve. Não confunda; o atributo no HTML é só fallback inicial pra evitar FOUC.
-- Comentário "INATIVA em runtime" no bloco `[data-tenant="bdn"]` de `src/index.css:186-190` está **obsoleto** desde 2026-05-10 (multi-tenant ativo). Atualizar quando passar perto.
-- `:root` (`src/index.css:106`) **é** a paleta EQI default — não tem bloco `[data-tenant="eqi"]` separado; EQI é o fallback CSS. Se quiser tema EQI explícito, copiar `:root` pra `[data-tenant="eqi"]`.
+- `:root` (`src/index.css:106`) **é** a paleta EQI default — não tem bloco `[data-tenant="eqi"]` separado em light; EQI é o fallback CSS. Em dark, EQI tem bloco explícito (`.dark[data-tenant="eqi"]`) pra resistir a edits no `.dark` base.
+- **`--brand-primary/light/deep/soft`** são as 4 shades tenant-neutras do brand (substituiram os legados `--eqi-green/mint/forest/soft` em 2026-05-11). Cada bloco de tenant remapeia esses 4 slots. Em EQI são tons de verde; em BDN são tons de cyan/navy. Sempre use `hsl(var(--brand-*))` em código novo, nunca hardcode hex de cor de brand.
+- **Dark mode é só `/tv`**. Aplicar `.dark` em qualquer outra rota não foi testado e provavelmente quebra (componentes têm hardcodes `text-white`/`bg-ink` que assumem light). DESIGN.md § Elevation é explícito que dark = TV.
 - **FormData uploads** não usam `apiFetch` (que força Content-Type JSON). Pattern: `fetch` cru + `Authorization` manual. Mantenha consistência (ex: `useKpis.ts:96-118`, `useTenants.ts:69-95`).
 - **Dois toasters convivem**: Sonner (novo, em `src/components/ui/sonner.tsx`) + Radix Toaster (legado, em `src/components/ui/toaster.tsx` + `useToast`). Sempre Sonner em código novo.
 - **`toLegacyAssessor`** em `src/hooks/useAssessors.ts:57-86` adapta `ApiAssessor` (backend, com `level` + `legacyLevel`) → `Assessor` (legacy em `src/types/assessor.ts`, com `level: "bronze" | "silver" | "gold"` lowercase). Componentes novos (`LevelBadge`, perfil) leem `ApiAssessor.level` real; componentes antigos usam `Assessor.level`. Não confundir os dois shapes.

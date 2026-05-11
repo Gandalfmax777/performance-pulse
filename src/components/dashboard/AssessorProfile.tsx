@@ -234,7 +234,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                       fontSize: 56,
                       color:
                         overallPct >= 100
-                          ? "hsl(var(--eqi-green))"
+                          ? "hsl(var(--brand-primary))"
                           : overallPct >= 70
                           ? "hsl(var(--ink))"
                           : "hsl(var(--destructive))",
@@ -251,7 +251,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                         background:
                           overallPct >= 100
                             ? "hsl(var(--success))"
-                            : "hsl(var(--eqi-green))",
+                            : "hsl(var(--brand-primary))",
                       }}
                     />
                   </div>
@@ -319,7 +319,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                 >
                   <div className="flex items-center justify-between">
                     <p className="text-[10px] uppercase tracking-wider text-ink-3 font-semibold">{label}</p>
-                    <span className={`text-[10px] font-mono ${(r?.rollup.weeklyGoalPercent ?? 0) >= 80 ? "text-eqi-green" : (r?.rollup.weeklyGoalPercent ?? 0) >= 50 ? "text-gold-deep" : "text-ink-3"}`}>
+                    <span className={`text-[10px] font-mono ${(r?.rollup.weeklyGoalPercent ?? 0) >= 80 ? "text-brand-primary" : (r?.rollup.weeklyGoalPercent ?? 0) >= 50 ? "text-gold-deep" : "text-ink-3"}`}>
                       {r?.rollup.weeklyGoalPercent ?? 0}%
                     </span>
                   </div>
@@ -356,7 +356,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                       <span
                         className={`text-lg font-mono font-bold ${
                           pct >= 80
-                            ? "text-eqi-green"
+                            ? "text-brand-primary"
                             : pct >= 50
                             ? "text-gold-deep"
                             : "text-destructive"
@@ -373,7 +373,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                     <div className="w-full h-1.5 bg-line rounded-full mt-2 overflow-hidden">
                       <div
                         className={`h-full rounded-full ${
-                          pct >= 80 ? "bg-eqi-green" : "bg-eqi"
+                          pct >= 80 ? "bg-brand-primary" : "bg-primary"
                         }`}
                         style={{ width: `${pct}%` }}
                       />
@@ -555,7 +555,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                           )}
                           <span className="text-[10px] font-mono text-ink-3 ml-auto">
                             {format(new Date(entry.achievedAt), "dd/MM/yyyy")} ·{" "}
-                            <span className={entry.points >= 0 ? "text-eqi" : "text-destructive"}>
+                            <span className={entry.points >= 0 ? "text-primary" : "text-destructive"}>
                               {entry.points >= 0 ? "+" : ""}
                               {Math.round(entry.points)} pts
                             </span>
@@ -661,7 +661,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                         key={i}
                         className={`flex items-start gap-3 p-2.5 rounded-[7px] border ${
                           meetingVenda
-                            ? "bg-eqi-green/10 border-eqi-green/30"
+                            ? "bg-brand-primary/10 border-brand-primary/30"
                             : meetingArea
                             ? "bg-blue-500/10 border-blue-500/30"
                             : "bg-surface-2 border-line"
@@ -672,7 +672,7 @@ const AssessorProfile = ({ assessor, onClose }: AssessorProfileProps) => {
                         </span>
                         <div className="flex-1 min-w-0">
                           {meetingVenda && (
-                            <span className="inline-block mb-1 px-1.5 py-0.5 rounded bg-eqi-green/20 text-eqi-green text-[9px] font-bold">
+                            <span className="inline-block mb-1 px-1.5 py-0.5 rounded bg-brand-primary/20 text-brand-primary text-[9px] font-bold">
                               REUNIÃO DE VENDA +{MEETING_BONUS_POINTS} PTS
                             </span>
                           )}
