@@ -57,6 +57,17 @@ function isPublicTvRoute(): boolean {
   return window.location.pathname === "/tv" || window.location.pathname.startsWith("/tv/");
 }
 
+/**
+ * Lê `?tenant=<slug>` da URL atual. Usado em /tv pra forwardar o slug
+ * pras chamadas de API públicas — o backend `resolveTenantForPublicRoute`
+ * sem JWT e sem query param cai em "eqi" fallback. Plataforma roda em
+ * domínio único (BDN hospeda todos), então a URL é a fonte única de verdade.
+ */
+export function getTenantQueryParam(): string | null {
+  if (typeof window === "undefined") return null;
+  return new URLSearchParams(window.location.search).get("tenant");
+}
+
 export async function apiFetch<T>(
   path: string,
   options: ApiFetchOptions = {},
@@ -69,6 +80,16 @@ export async function apiFetch<T>(
   if (searchParams) {
     for (const [key, value] of Object.entries(searchParams)) {
       if (value !== undefined) url.searchParams.append(key, String(value));
+    }
+  }
+
+  // No /tv (sem JWT), forwarda o slug da URL pro backend via ?tenant=. Sem
+  // isso, `resolveTenantForPublicRoute` cai no fallback "eqi" e a TV mostra
+  // dados do tenant errado mesmo que o brand local esteja correto.
+  if (skipAuth && !url.searchParams.has("tenant")) {
+    const tenantSlug = getTenantQueryParam();
+    if (tenantSlug) {
+      url.searchParams.set("tenant", tenantSlug);
     }
   }
 

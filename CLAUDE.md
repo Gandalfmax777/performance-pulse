@@ -146,6 +146,7 @@ npm run preview      # serve o dist localmente
 - **Token**: `localStorage["pp_token"]` (constante `TOKEN_STORAGE_KEY` em `src/api/client.ts:12`). `apiFetch` injeta `Authorization: Bearer <token>` automaticamente. Login usa `skipAuth: true` (`src/pages/Login.tsx:41`).
 - **401**: `apiFetch` limpa o token e redireciona pra `/login`, **exceto** em `/tv` (rota pública).
 - **`/tv` é rota pública**: `apiFetch` detecta `window.location.pathname` e bypassa auth tanto pra anexar token quanto pra redirecionar em 401. Os endpoints consumidos pela TV são públicos no backend. Check é por-chamada (não module-load) pra funcionar com navegação client-side.
+- **Forwarding de tenant em `/tv`**: como /tv não tem JWT, o backend `resolveTenantForPublicRoute` cai em "eqi" fallback se não receber `?tenant=`. Pra evitar BDN mostrar dados EQI, `apiFetch` injeta automaticamente `?tenant=<slug>` da URL atual quando estiver em /tv (`src/api/client.ts`, função `getTenantQueryParam`). As hooks não precisam adicionar manualmente — funciona pra qualquer endpoint público.
 - **SSE**: `EventSource` em `/api/stream/rankings` (e `/api/stream/tournament-finished`). EventSource **não aceita header custom** — token vai por query param `?token=`. Backend lê do query (compat com middleware legado; stream em si é público agora).
   - Eventos: `ranking:update`, `sound:play`, `connected`, `tournament:finished`.
   - **Debounce 300ms** em `useRankingStream` evita refetch tempestade quando Felipe digita métricas rápido.
