@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAssessors } from "@/hooks/useAssessors";
+import { useOpenTv } from "@/hooks/useOpenTv";
 import { useSquads } from "@/hooks/useSquads";
 
 const AssessorManager = lazy(
@@ -65,9 +66,7 @@ const Assessores = () => {
     return rows;
   }, [assessors, squadFilter, squadByAssessor, search]);
 
-  const openTv = useCallback(() => {
-    window.open("/tv", "_blank", "noopener,noreferrer");
-  }, []);
+  const openTv = useOpenTv();
 
   const openPresentation = useCallback(() => {
     window.open("/presentation", "_blank", "noopener,noreferrer");

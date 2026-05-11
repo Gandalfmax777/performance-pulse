@@ -4,6 +4,7 @@ import DashboardTopbar from "@/components/dashboard/DashboardTopbar";
 import DayView from "@/components/dashboard/DayView";
 import { AppShellLayout } from "@/components/layouts/AppShellLayout";
 import { useAssessors } from "@/hooks/useAssessors";
+import { useOpenTv } from "@/hooks/useOpenTv";
 
 /**
  * /por-dia — drilldown diário (lançamento de métricas + ranking do dia
@@ -17,9 +18,7 @@ const PorDia = () => {
   const navigate = useNavigate();
   const { assessors } = useAssessors();
 
-  const openTv = useCallback(() => {
-    window.open("/tv", "_blank", "noopener,noreferrer");
-  }, []);
+  const openTv = useOpenTv();
 
   const openPresentation = useCallback(() => {
     window.open("/presentation", "_blank", "noopener,noreferrer");

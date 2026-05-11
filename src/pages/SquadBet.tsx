@@ -5,6 +5,7 @@ import SquadBetView from "@/components/dashboard/SquadBet";
 import { AppShellLayout } from "@/components/layouts/AppShellLayout";
 import { useAssessors } from "@/hooks/useAssessors";
 import { useBets } from "@/hooks/useBets";
+import { useOpenTv } from "@/hooks/useOpenTv";
 
 /**
  * /squad-bet — squads contra squads (apostas, ranking ao vivo, criação
@@ -19,9 +20,7 @@ const SquadBet = () => {
   const { data: bets = [] } = useBets();
   const hasActiveBet = bets.some((b) => b.status === "ACTIVE");
 
-  const openTv = useCallback(() => {
-    window.open("/tv", "_blank", "noopener,noreferrer");
-  }, []);
+  const openTv = useOpenTv();
 
   const openPresentation = useCallback(() => {
     window.open("/presentation", "_blank", "noopener,noreferrer");
