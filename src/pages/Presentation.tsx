@@ -238,11 +238,18 @@ export default Presentation;
 
 // ─── Slides ──────────────────────────────────────────────────────────────────
 
+/**
+ * Hook que escolhe ranking pelo período. Antes chamava os 4 useXRanking()
+ * juntos — todos com refetchInterval, somando ~100 requests/min com risco
+ * de cair no rate-limit global (429). Agora cada hook tem `enabled` ligado
+ * só ao período ATIVO: 3 ficam inertes, 1 fetcha. Switching entre períodos
+ * reusa o cache do Tanstack (mesma queryKey).
+ */
 function usePeriodRanking(period: Period) {
-  const weekly = useWeeklyRanking();
-  const monthly = useMonthlyRanking();
-  const quarterly = useQuarterlyRanking();
-  const semester = useSemesterRanking();
+  const weekly = useWeeklyRanking({ enabled: period === "weekly" });
+  const monthly = useMonthlyRanking({ enabled: period === "monthly" });
+  const quarterly = useQuarterlyRanking({ enabled: period === "quarterly" });
+  const semester = useSemesterRanking({ enabled: period === "semester" });
   if (period === "weekly") return weekly.data?.rankings ?? null;
   if (period === "monthly") return monthly.data?.rankings ?? null;
   if (period === "quarterly") return quarterly.data?.rankings ?? null;
