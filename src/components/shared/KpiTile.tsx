@@ -18,7 +18,7 @@ interface KpiTileProps extends HTMLAttributes<HTMLDivElement> {
   /** Progresso 0-100. Quando definido renderiza .kpi-bar abaixo. */
   progress?: number;
   progressColor?: ProgressColor;
-  /** Borda esquerda accent (variante hero do design). */
+  /** Variante hero: bg primary + texto invertido. Use UMA vez por tela no KPI principal. */
   accent?: boolean;
   /** Tamanho do valor — default ~30px (KPI grid), `lg` ~36px (hero). */
   size?: "default" | "lg";
@@ -54,36 +54,64 @@ export const KpiTile = ({
 }: KpiTileProps) => {
   const valueClass =
     size === "lg"
-      ? "font-display font-extrabold text-[36px] leading-none tracking-[-0.03em] text-ink"
-      : "font-display font-extrabold text-[30px] leading-none tracking-[-0.03em] text-ink";
+      ? "font-display font-extrabold text-[36px] leading-none tracking-[-0.03em] tabular-nums"
+      : "font-display font-extrabold text-[30px] leading-none tracking-[-0.03em] tabular-nums";
 
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-[var(--radius)] border border-line bg-card p-5",
+        "relative overflow-hidden rounded-[var(--radius)] border p-5",
         "shadow-[0_1px_2px_hsl(240_12%_16%/0.05),0_4px_16px_hsl(240_12%_16%/0.04)]",
-        accent && "border-l-[3px] border-l-primary",
+        accent
+          ? "bg-primary border-primary text-primary-foreground"
+          : "bg-card border-line text-ink",
         className,
       )}
       {...rest}
     >
-      <Eyebrow className="mb-3">{label}</Eyebrow>
+      <Eyebrow
+        className={cn("mb-3", accent && "!text-primary-foreground/70")}
+      >
+        {label}
+      </Eyebrow>
       <div className="flex items-end justify-between gap-3">
-        <div className={cn("num", valueClass)}>
+        <div className={valueClass}>
           {value}
           {unit && (
-            <span className="ml-1.5 text-[18px] font-medium text-ink-3">
+            <span
+              className={cn(
+                "ml-1.5 text-[18px] font-medium",
+                accent ? "text-primary-foreground/70" : "text-ink-3",
+              )}
+            >
               {unit}
             </span>
           )}
         </div>
         {trailing && <div className="shrink-0">{trailing}</div>}
       </div>
-      {sub && <div className="mt-2.5 text-[12px] text-ink-3">{sub}</div>}
+      {sub && (
+        <div
+          className={cn(
+            "mt-2.5 text-[12px]",
+            accent ? "text-primary-foreground/70" : "text-ink-3",
+          )}
+        >
+          {sub}
+        </div>
+      )}
       {typeof progress === "number" && (
-        <div className="mt-3 h-1 rounded-[2px] bg-surface-2 overflow-hidden">
+        <div
+          className={cn(
+            "mt-3 h-1 rounded-[2px] overflow-hidden",
+            accent ? "bg-primary-foreground/20" : "bg-surface-2",
+          )}
+        >
           <div
-            className={cn("h-full rounded-[2px]", PROGRESS_COLOR[progressColor])}
+            className={cn(
+              "h-full rounded-[2px]",
+              accent ? "bg-primary-foreground" : PROGRESS_COLOR[progressColor],
+            )}
             style={{ width: `${Math.max(0, Math.min(100, progress))}%` }}
           />
         </div>

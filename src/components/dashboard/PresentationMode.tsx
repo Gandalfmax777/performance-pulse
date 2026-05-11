@@ -20,13 +20,14 @@ import {
   Sparkle,
   Sword as Swords,
   Medal,
-  ChartBar,
 } from "@phosphor-icons/react";
 import Markdown from "react-markdown";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subMonths, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { Assessor } from "@/types/assessor";
 import { AssessorAvatar } from "@/components/ui/AssessorAvatar";
+import { Eyebrow, KpiTile } from "@/components/shared";
+import { cn } from "@/lib/utils";
 import { useKpis } from "@/hooks/useKpis";
 import { useOverviewReport } from "@/hooks/useReports";
 import { useGenerateTeamInsight, type ApiInsight } from "@/hooks/useInsight";
@@ -151,7 +152,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
           <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto pt-8">
             <div className="bg-card border border-line rounded-[14px] p-6">
               <p className="text-xs uppercase text-ink-3 tracking-wider mb-2">Total Pontos</p>
-              <p className="font-display text-5xl font-black text-eqi">{totalPoints}</p>
+              <p className="font-display text-5xl font-black text-primary">{totalPoints}</p>
             </div>
             <div className="bg-card border border-line rounded-[14px] p-6">
               <p className="text-xs uppercase text-ink-3 tracking-wider mb-2">% Meta Médio</p>
@@ -181,7 +182,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
         return (
           <div className="space-y-8">
             <h2 className="text-4xl font-display font-bold text-ink text-center">
-              <TrendUp size={32} weight="bold" className="inline-block mr-2 text-eqi align-middle" />Destaques do Período
+              <TrendUp size={32} weight="bold" className="inline-block mr-2 text-primary align-middle" />Destaques do Período
             </h2>
             <p className="text-center text-ink-3 text-lg">
               Comparativo com {prevLabel}
@@ -239,47 +240,80 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
       icon: Crown,
       render: () => {
         const top3 = ranked.slice(0, 3);
-        const order = [top3[1], top3[0], top3[2]].filter(Boolean);
-        const heights = [180, 240, 140];
-        const labels = ["2º", "1º", "3º"];
-        const colors = [
-          "from-silver/30 to-silver/5 border-silver/40",
-          "from-eqi/30 to-eqi/5 border-eqi/40",
-          "from-bronze/30 to-bronze/5 border-bronze/40",
-        ];
+        if (top3.length === 0) {
+          return (
+            <div className="text-center py-20 space-y-3">
+              <Eyebrow size="lg">Top 3 do Período</Eyebrow>
+              <p className="text-lg text-ink-3">
+                Nenhum dado no período. O pódio aparece quando houver pontos.
+              </p>
+            </div>
+          );
+        }
+        // Editorial triptych: 2º · 1º · 3º. Ordem física na esquerda→direita
+        // do design tradicional de pódio, mas SEM barras de altura variável
+        // gradient (proibido pelo The Mesa Bloomberg Rule).
+        // Ranking é comunicado via tipografia e bg amber soft no 1º, não via
+        // "altura física" 3D.
+        const entries = [
+          top3[1] && { rank: 2, label: "2º", positionClass: "text-silver", a: top3[1] },
+          top3[0] && { rank: 1, label: "1º", positionClass: "text-[hsl(var(--gold-deep))]", a: top3[0] },
+          top3[2] && { rank: 3, label: "3º", positionClass: "text-bronze", a: top3[2] },
+        ].filter(Boolean) as Array<{ rank: number; label: string; positionClass: string; a: typeof top3[0] }>;
         return (
-          <div className="space-y-8">
-            <h2 className="text-4xl font-display font-bold text-ink text-center">
-              <Trophy size={32} weight="bold" className="inline-block mr-2 text-gold align-middle" />Top 3 do Período
-            </h2>
-            <div className="flex items-end justify-center gap-6 pt-8">
-              {order.map((a, i) => (
-                <motion.div
-                  key={a.id}
-                  initial={{ opacity: 0, y: 60 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.2, duration: 0.6 }}
-                  className="flex flex-col items-center"
-                >
-                  <AssessorAvatar
-                    initials={a.avatar}
-                    photoUrl={a.photoUrl}
-                    level={a.level}
-                    size={96}
-                    className="mb-3"
-                  />
-                  <p className="text-xl font-bold text-ink mb-1">{a.name}</p>
-                  <p className="text-sm text-ink-3 mb-3">{a.points} pts</p>
-                  <div
-                    style={{ height: heights[i] }}
-                    className={`w-32 rounded-t-2xl bg-gradient-to-t ${colors[i]} border-2 flex items-start justify-center pt-4`}
+          <div className="space-y-10">
+            <div className="text-center space-y-2">
+              <Eyebrow size="lg">Top 3 do Período</Eyebrow>
+              <h2 className="font-display font-extrabold text-[40px] leading-tight tracking-[-0.02em] text-ink">
+                Pódio
+              </h2>
+            </div>
+            <div className="grid grid-cols-3 gap-px bg-line max-w-4xl mx-auto rounded-[var(--radius)] overflow-hidden border border-line">
+              {entries.map(({ rank, label, positionClass, a }, i) => {
+                const isFirst = rank === 1;
+                return (
+                  <motion.div
+                    key={a.id}
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.12, duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
+                    className={cn(
+                      "flex flex-col items-center py-10 px-6",
+                      isFirst ? "bg-[hsl(var(--gold-soft))]" : "bg-card",
+                    )}
                   >
-                    <span className="text-3xl font-display font-black text-ink">
-                      {labels[i]}
+                    <span
+                      className={cn(
+                        "font-mono font-bold text-[14px] tracking-[0.22em] uppercase mb-6 tabular-nums",
+                        positionClass,
+                      )}
+                    >
+                      {label}
                     </span>
-                  </div>
-                </motion.div>
-              ))}
+                    <AssessorAvatar
+                      initials={a.avatar}
+                      photoUrl={a.photoUrl}
+                      level={a.level}
+                      size={isFirst ? 112 : 88}
+                      className="mb-4"
+                    />
+                    <p className="text-[18px] font-semibold text-ink text-center mb-3 leading-snug">
+                      {a.name}
+                    </p>
+                    <p
+                      className={cn(
+                        "font-display font-extrabold leading-none tracking-[-0.03em] tabular-nums",
+                        isFirst
+                          ? "text-[44px] text-[hsl(var(--gold-deep))]"
+                          : "text-[36px] text-ink",
+                      )}
+                    >
+                      {a.points.toLocaleString("pt-BR")}
+                    </p>
+                    <Eyebrow className="mt-2">pontos</Eyebrow>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         );
@@ -290,31 +324,37 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
       title: "KPIs",
       icon: Target,
       render: () => (
-        <div className="space-y-6">
-          <h2 className="text-4xl font-display font-bold text-ink text-center">
-<ChartBar size={32} weight="bold" className="inline-block mr-2 text-eqi align-middle" />KPIs do Período
-          </h2>
-          <div className="grid grid-cols-3 gap-4 max-w-5xl mx-auto">
+        <div className="space-y-8">
+          <div className="text-center space-y-2">
+            <Eyebrow size="lg">KPIs do Período</Eyebrow>
+            <h2 className="font-display font-extrabold text-[40px] leading-tight tracking-[-0.02em] text-ink">
+              Indicadores
+            </h2>
+          </div>
+          {/* Grid editorial: tiles separados por 1px de --line (técnica
+              gap:1px+bg:line), como nas células do Dashboard.html. Não
+              cards individuais com shadow — isso seria identical-card-grid. */}
+          <div className="grid grid-cols-3 gap-px bg-line max-w-5xl mx-auto rounded-[var(--radius)] overflow-hidden border border-line">
             {kpis.slice(0, 6).map((kpi) => {
               const byKpi = overview?.byKpi.find((k) => k.key === kpi.key);
               const value = Math.round(byKpi?.actual ?? 0);
               const target = byKpi?.target ?? 1;
               const pct = target > 0 ? Math.min(150, Math.round((value / target) * 100)) : 0;
+              const progressColor: "primary" | "warning" | "danger" =
+                pct >= 80 ? "primary" : pct >= 50 ? "warning" : "danger";
               return (
-                <div key={kpi.id} className="bg-card border border-line rounded-[14px] p-6">
-                  <p className="text-sm text-ink-3 mb-2">{kpi.label}</p>
-                  <p className="font-display text-4xl font-black text-ink mb-2">
-                    {value}
-                    <span className="text-lg text-ink-3"> / {target}</span>
-                  </p>
-                  <div className="h-2 bg-muted/40 rounded-full overflow-hidden">
-                    <div
-                      style={{ width: `${Math.min(100, pct)}%` }}
-                      className={`h-full rounded-full ${pct >= 80 ? "bg-success" : pct >= 50 ? "bg-chart-orange" : "bg-destructive"}`}
-                    />
-                  </div>
-                  <p className="text-xs font-mono text-ink-3 mt-1 text-right">{pct}%</p>
-                </div>
+                <KpiTile
+                  key={kpi.id}
+                  label={kpi.label}
+                  value={value.toLocaleString("pt-BR")}
+                  unit={`/ ${target.toLocaleString("pt-BR")}`}
+                  sub={`Meta ${pct}%`}
+                  progress={Math.min(100, pct)}
+                  progressColor={progressColor}
+                  // Anula shadow + border + radius — cada KpiTile vira célula
+                  // do grid 1px-gap, não card autônomo.
+                  className="!shadow-none border-0 rounded-none"
+                />
               );
             })}
           </div>
@@ -345,7 +385,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                   transition={{ delay: Math.min(i * 0.03, 0.4) }}
                   className={`flex items-center gap-3 px-3 py-2 rounded-[14px] border ${
                     i === 0
-                      ? "bg-eqi/10 border-eqi/40"
+                      ? "bg-primary/10 border-primary/40"
                       : i === 1
                         ? "bg-silver/5 border-silver/30"
                         : i === 2
@@ -356,7 +396,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                   <span
                     className={`w-9 h-9 shrink-0 rounded-lg flex items-center justify-center font-display font-black text-sm ${
                       i === 0
-                        ? "bg-eqi/20 text-eqi"
+                        ? "bg-primary/20 text-primary"
                         : i === 1
                           ? "bg-silver/15 text-silver"
                           : i === 2
@@ -381,7 +421,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                     )}
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-display text-lg font-bold text-eqi leading-none">
+                    <p className="font-display text-lg font-bold text-primary leading-none">
                       {a.points} <span className="text-xs font-normal text-ink-3">pts</span>
                     </p>
                     <p className="text-[10px] text-ink-3">{a.weeklyGoalPercent}% meta</p>
@@ -406,7 +446,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
         return (
           <div className="space-y-8 max-w-5xl mx-auto">
             <h2 className="text-4xl font-display font-bold text-ink text-center">
-<Swords size={32} weight="bold" className="inline-block mr-2 text-eqi align-middle" />Torneios do Período
+<Swords size={32} weight="bold" className="inline-block mr-2 text-primary align-middle" />Torneios do Período
             </h2>
 
             {hasNothing && (
@@ -442,12 +482,12 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
                           {t.scope === "INDIVIDUAL" ? "Individual" : "Squads"}
                         </p>
                         {leader && (
-                          <div className="flex items-center gap-3 p-3 rounded-lg bg-eqi/5 border border-eqi/20">
+                          <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
                             <Crown size={20} weight="fill" className="text-secondary" />
                             <span className="font-semibold text-ink flex-1">
                               Liderando: {leader.displayName}
                             </span>
-                            <span className="font-mono font-black text-eqi">
+                            <span className="font-mono font-black text-primary">
                               {(leader.finalScore ?? 0).toLocaleString("pt-BR")}
                             </span>
                           </div>
@@ -503,7 +543,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
           </h2>
           {generateTeam.isPending && !teamInsight ? (
             <div className="flex items-center justify-center gap-3 text-ink-3 py-12">
-              <CircleNotch size={24} className="animate-spin text-eqi" />
+              <CircleNotch size={24} className="animate-spin text-primary" />
               <span className="text-lg">Gemini Flash analisando…</span>
             </div>
           ) : teamInsight ? (
@@ -536,7 +576,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
       render: () => (
         <div className="space-y-6 max-w-3xl mx-auto">
           <h2 className="text-4xl font-display font-bold text-ink text-center">
-<Target size={32} weight="bold" className="inline-block mr-2 text-eqi align-middle" />Foco da Próxima Semana
+<Target size={32} weight="bold" className="inline-block mr-2 text-primary align-middle" />Foco da Próxima Semana
           </h2>
           <p className="text-center text-ink-3">
             Anchor: segunda{" "}
@@ -548,7 +588,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
           {nextDirection ? (
             <div className="bg-card border border-line rounded-[14px] p-6 space-y-4">
               <div className="flex items-center gap-2 flex-wrap text-sm">
-                <span className="px-2 py-0.5 rounded-full bg-eqi/10 text-eqi font-bold text-xs">
+                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-xs">
                   {nextDirection.period === "DAILY" ? "Foco Diário"
                     : nextDirection.period === "WEEKLY" ? "Foco Semanal"
                     : "Foco Mensal"}
@@ -641,7 +681,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
       {/* Header com controles (escondido em print) */}
       <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-6 py-3 border-b border-line/20 bg-background/80 backdrop-blur-md no-print">
         <div className="flex items-center gap-3">
-          <Sparkle size={20} weight="fill" className="text-eqi" />
+          <Sparkle size={20} weight="fill" className="text-primary" />
           <span className="text-sm font-bold text-ink">Modo Apresentação</span>
           <div className="flex gap-1 bg-muted/20 rounded-lg p-1 ml-3">
             {(["weekly", "monthly"] as Period[]).map((p) => (
@@ -667,7 +707,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
               onClick={() => setSlideIdx(i)}
               className={`px-2 py-1 rounded text-[10px] font-semibold transition-all ${
                 i === slideIdx
-                  ? "bg-eqi/20 text-eqi"
+                  ? "bg-primary/20 text-primary"
                   : "text-ink-3 hover:text-ink"
               }`}
             >
@@ -681,7 +721,7 @@ const PresentationMode = ({ assessors, onClose }: PresentationModeProps) => {
             onClick={() => setAutoPlay((v) => !v)}
             className={`p-2 rounded-lg transition-all ${
               autoPlay
-                ? "bg-eqi/20 text-eqi"
+                ? "bg-primary/20 text-primary"
                 : "bg-muted/30 hover:bg-muted/50 text-ink"
             }`}
             title={autoPlay ? "Pausar auto-advance" : "Auto-advance a cada 12s"}

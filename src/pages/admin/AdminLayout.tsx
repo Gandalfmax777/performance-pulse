@@ -31,7 +31,7 @@ const ADMIN_ROUTES: readonly AdminRoute[] = [
     to: "/admin/scoring",
     label: "Pontuação",
     title: "Pontuação",
-    subtitle: "Regras de scoring por KPI — divisor, pontos por bucket, threshold.",
+    subtitle: "Regras de scoring por KPI: divisor, pontos por bucket, threshold.",
   },
   {
     to: "/admin/penalties",
@@ -59,7 +59,7 @@ const ADMIN_ROUTES: readonly AdminRoute[] = [
     label: "Indique Day",
     title: "Indique Day",
     subtitle:
-      "O Indique Day roda a cada 15 dias. Cada atividade BIWEEKLY tem uma âncora — quartas a N×14 dias dela são ativadas.",
+      "O Indique Day roda a cada 15 dias. Cada atividade BIWEEKLY tem uma âncora; quartas a N×14 dias dela são ativadas.",
   },
   {
     to: "/admin/bets-config",
@@ -93,7 +93,7 @@ const ADMIN_ROUTES: readonly AdminRoute[] = [
     label: "Mesas",
     title: "Mesas",
     subtitle:
-      "Configure mesas (tenants) — branding, logo, ativação. Super admin (BDN) cria novas mesas.",
+      "Configure mesas (tenants): branding, logo, ativação. Super admin (BDN) cria novas mesas.",
   },
 ] as const;
 

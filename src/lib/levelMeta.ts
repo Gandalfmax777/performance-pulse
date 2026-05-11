@@ -48,19 +48,21 @@ export const LEVEL_META: Record<LevelSlug, LevelMeta> = {
   SILVER: { label: "Silver",  type: "legacy", bgClass: "bg-silver/15", textClass: "text-silver",  borderClass: "border-silver/40",  rank: 7 },
   GOLD:   { label: "Gold",    type: "legacy", bgClass: "bg-gold/15",   textClass: "text-gold-deep", borderClass: "border-gold/40",  rank: 9 },
 
-  // Positivos
-  EM_FORMACAO:        { label: "Em Formação",         type: "positive", bgClass: "bg-ink-3/10",      textClass: "text-ink-2",       borderClass: "border-ink-3/30",      rank: 6 },
-  EM_TRACAO:          { label: "Em Tração",           type: "positive", bgClass: "bg-blue-500/15",   textClass: "text-blue-600",    borderClass: "border-blue-500/40",   rank: 7 },
-  ALTA_PERFORMANCE:   { label: "Alta Performance",    type: "positive", bgClass: "bg-eqi/15",        textClass: "text-eqi",         borderClass: "border-eqi/40",        rank: 8 },
-  PROFETA_DO_FORCASH: { label: "Profeta do Forcash",  type: "positive", bgClass: "bg-purple-500/15", textClass: "text-purple-700",  borderClass: "border-purple-500/40", rank: 9 },
-  MONSTRO_SAGRADO:    { label: "Monstro Sagrado",     type: "positive", bgClass: "bg-gold/20",       textClass: "text-gold-deep",   borderClass: "border-gold/50",       rank: 10 },
+  // Positivos — só tokens. `chart-blue` e `chart-purple` existem no tema
+  // pra carregar acentos não-primary que precisam ser tenant-scoped.
+  EM_FORMACAO:        { label: "Em Formação",         type: "positive", bgClass: "bg-ink-3/10",                         textClass: "text-ink-2",                      borderClass: "border-ink-3/30",                       rank: 6 },
+  EM_TRACAO:          { label: "Em Tração",           type: "positive", bgClass: "bg-[hsl(var(--chart-blue)/0.15)]",    textClass: "text-[hsl(var(--chart-blue))]",   borderClass: "border-[hsl(var(--chart-blue)/0.40)]",  rank: 7 },
+  ALTA_PERFORMANCE:   { label: "Alta Performance",    type: "positive", bgClass: "bg-primary/15",                       textClass: "text-primary",                    borderClass: "border-primary/40",                     rank: 8 },
+  PROFETA_DO_FORCASH: { label: "Profeta do Forcash",  type: "positive", bgClass: "bg-[hsl(var(--chart-purple)/0.15)]",  textClass: "text-[hsl(var(--chart-purple))]", borderClass: "border-[hsl(var(--chart-purple)/0.40)]", rank: 9 },
+  MONSTRO_SAGRADO:    { label: "Monstro Sagrado",     type: "positive", bgClass: "bg-gold/20",                          textClass: "text-gold-deep",                  borderClass: "border-gold/50",                        rank: 10 },
 
-  // Negativos
-  PONTO_DE_ATENCAO:      { label: "Ponto de Atenção",     type: "negative", bgClass: "bg-amber-100",    textClass: "text-amber-800",    borderClass: "border-amber-300",    rank: 5 },
-  RITMO_ABAIXO:          { label: "Ritmo Abaixo",         type: "negative", bgClass: "bg-orange-100",   textClass: "text-orange-800",   borderClass: "border-orange-300",   rank: 4 },
-  PIPELINE_EM_RISCO:     { label: "Pipeline em Risco",    type: "negative", bgClass: "bg-red-100",      textClass: "text-red-800",      borderClass: "border-red-300",      rank: 3 },
-  INIMIGO_DA_META:       { label: "Inimigo da Meta",      type: "negative", bgClass: "bg-red-200",      textClass: "text-red-900",      borderClass: "border-red-400",      rank: 2 },
-  PROCURADOR_DE_EMPREGO: { label: "Procurador de Emprego", type: "negative", bgClass: "bg-destructive/20", textClass: "text-destructive", borderClass: "border-destructive/40", rank: 1 },
+  // Negativos — gradiente de severidade via warning (rank 5) → destructive
+  // saturado (rank 1). Mesma sequência hue/opacity em ambos os tenants.
+  PONTO_DE_ATENCAO:      { label: "Ponto de Atenção",      type: "negative", bgClass: "bg-[hsl(var(--warning)/0.15)]",     textClass: "text-[hsl(var(--warning))]",  borderClass: "border-[hsl(var(--warning)/0.40)]", rank: 5 },
+  RITMO_ABAIXO:          { label: "Ritmo Abaixo",          type: "negative", bgClass: "bg-[hsl(var(--warning)/0.25)]",     textClass: "text-[hsl(var(--warning))]",  borderClass: "border-[hsl(var(--warning)/0.55)]", rank: 4 },
+  PIPELINE_EM_RISCO:     { label: "Pipeline em Risco",     type: "negative", bgClass: "bg-destructive/10",                 textClass: "text-destructive",            borderClass: "border-destructive/30",             rank: 3 },
+  INIMIGO_DA_META:       { label: "Inimigo da Meta",       type: "negative", bgClass: "bg-destructive/15",                 textClass: "text-destructive",            borderClass: "border-destructive/45",             rank: 2 },
+  PROCURADOR_DE_EMPREGO: { label: "Procurador de Emprego", type: "negative", bgClass: "bg-destructive/25",                 textClass: "text-destructive",            borderClass: "border-destructive/55",             rank: 1 },
 };
 
 /**

@@ -1,0 +1,224 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-11T00:00:00Z",
+  "title": "Design System: Performance Pulse",
+  "extensions": {
+    "colorMeta": {
+      "warm-cream": {
+        "role": "neutral",
+        "displayName": "Warm Cream",
+        "canonical": "oklch(97% 0.005 95)",
+        "tonalRamp": ["#1f1e19", "#3a382f", "#5a574a", "#7b7768", "#9c9888", "#bdb9a8", "#d9d5c5", "#ebe8d8", "#f7f5f0"]
+      },
+      "mesa-verde": {
+        "role": "primary",
+        "displayName": "Mesa Verde",
+        "canonical": "oklch(38% 0.087 158)",
+        "tonalRamp": ["#04140a", "#08291a", "#0d5132", "#15734a", "#1f9665", "#3eb887", "#79cea9", "#b6e0c8", "#e6f1eb"]
+      },
+      "achievement-amber": {
+        "role": "secondary",
+        "displayName": "Achievement Amber",
+        "canonical": "oklch(78% 0.13 75)",
+        "tonalRamp": ["#241500", "#3f2700", "#65420f", "#8c5a14", "#b3771b", "#db801d", "#ecaa3d", "#f5cf85", "#fbf3df"]
+      },
+      "silver": {
+        "role": "neutral",
+        "displayName": "Silver Ranking",
+        "canonical": "oklch(72% 0.005 270)",
+        "tonalRamp": ["#1d1d20", "#34343a", "#4f5057", "#6c6d75", "#8a8b93", "#b1b1b6", "#c8c8cc", "#dededf", "#f1f1f2"]
+      },
+      "bronze": {
+        "role": "neutral",
+        "displayName": "Bronze Ranking",
+        "canonical": "oklch(56% 0.08 65)",
+        "tonalRamp": ["#15100a", "#2a2014", "#4a3a23", "#6c5634", "#917447", "#bf8333", "#d29c5a", "#e6c293", "#f5e5d0"]
+      },
+      "success-green": {
+        "role": "tertiary",
+        "displayName": "Success Green",
+        "canonical": "oklch(63% 0.13 152)",
+        "tonalRamp": ["#0a1e15", "#103a26", "#1a5b3d", "#1f7d52", "#29a36c", "#4cc189", "#86d6ad", "#bfe7cf", "#e5f4eb"]
+      },
+      "destructive-warm-red": {
+        "role": "tertiary",
+        "displayName": "Destructive Warm Red",
+        "canonical": "oklch(58% 0.19 32)",
+        "tonalRamp": ["#1b0a05", "#33150c", "#5a2614", "#8a371b", "#b73f1d", "#e64a1f", "#ef7c54", "#f6ad8e", "#fbd9c9"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Editorial Ink (EQI)",
+        "canonical": "oklch(24% 0.013 285)",
+        "tonalRamp": ["#101117", "#1a1b22", "#25262f", "#494a55", "#7a7b86", "#9b9ca5", "#b0b1b9", "#cccdd3", "#e6e6ea"]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Editorial Line",
+        "canonical": "oklch(91% 0.003 80)",
+        "tonalRamp": ["#1d1c17", "#33312a", "#4f4d44", "#6a685e", "#86847a", "#a4a297", "#bdbab0", "#d2cfc4", "#e3e0d8"]
+      },
+      "midnight-navy": {
+        "role": "primary",
+        "displayName": "Midnight Navy (BDN)",
+        "canonical": "oklch(13% 0.025 245)",
+        "tonalRamp": ["#000409", "#000b14", "#00264a", "#003e75", "#0058a3", "#0083b1", "#3aa5d0", "#7ec5e0", "#c2e2f0"]
+      },
+      "beacon-cyan": {
+        "role": "secondary",
+        "displayName": "Beacon Cyan",
+        "canonical": "oklch(60% 0.13 220)",
+        "tonalRamp": ["#001520", "#002636", "#004258", "#005d7c", "#0083b1", "#1bccf6", "#5fdaf9", "#a0e8fb", "#d6f5fd"]
+      },
+      "cool-frost": {
+        "role": "neutral",
+        "displayName": "Cool Frost (BDN)",
+        "canonical": "oklch(97% 0.008 240)",
+        "tonalRamp": ["#0a1015", "#1a2330", "#2d3a4a", "#475766", "#637382", "#8794a3", "#aab6c2", "#d3dde6", "#f4f7fa"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Headlines de tela e h1 de relatório. Archivo 800 com letter-spacing negativo." },
+      "headline": { "displayName": "Headline", "purpose": "Títulos de card-head e de seção dentro do dashboard." },
+      "title": { "displayName": "Title", "purpose": "Subtítulos de bloco, headers de tabela e modal." },
+      "body": { "displayName": "Body", "purpose": "Texto corrido, descrições, kpi-sub." },
+      "label": { "displayName": "Eyebrow / Label", "purpose": "Assinatura tipográfica do sistema. JetBrains Mono UPPERCASE 10-11px com letter-spacing largo. Toda tela começa com um." },
+      "number": { "displayName": "Number", "purpose": "KPI value, leaderboard score, delta. JetBrains Mono 700 com tabular-nums obrigatório." },
+      "tv-gigantic": { "displayName": "TV Gigantic", "purpose": "Número principal do Modo-TV pra leitura a 5 metros. Único momento em que tipo toma a tela inteira." }
+    },
+    "shadows": [
+      { "name": "card-subtle", "value": "0 1px 2px rgba(10,15,30,.04), 0 1px 3px rgba(10,15,30,.06)", "purpose": "Elevação default de cards e KPI tiles. Tão sutil que parece só borda." },
+      { "name": "card-lifted", "value": "0 10px 40px rgba(10,15,30,.10)", "purpose": "Popover, dropdown, modal flutuante." },
+      { "name": "glow-primary", "value": "0 1px 3px hsl(var(--primary) / 0.12), 0 0 0 1px hsl(var(--primary) / 0.15)", "purpose": "Destaque sutil em badges/cards conquistados. Único glow sobrevivente do refactor." },
+      { "name": "tv-dark-glass", "value": "0 1px 3px rgba(0,0,0,.3)", "purpose": "Combinado com backdrop-filter blur 16px no .dark .card-glass do Modo TV. Único caso de blur autorizado." }
+    ],
+    "motion": [
+      { "name": "ease-out-quart", "value": "cubic-bezier(0.25, 1, 0.5, 1)", "purpose": "Easing default. Exponencial, sem bounce nem elastic." },
+      { "name": "duration-fast", "value": "150ms", "purpose": "Hover de botão, focus ring, toggle de tab." },
+      { "name": "duration-base", "value": "250ms", "purpose": "Reorder de linha no leaderboard, fade de delta-flash." },
+      { "name": "duration-marquee", "value": "60s", "purpose": "Ticker do Modo TV. Linear infinite, conteúdo duplicado pra loop sem salto." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1400px" },
+      { "name": "tv", "value": "1920px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ação principal. Verde mesa (EQI) ou navy (BDN), texto branco, cantos suavemente arredondados (10px).",
+      "html": "<button class=\"ds-btn-primary\">📺 Modo TV</button>",
+      "css": ".ds-btn-primary { background: #0d5132; color: #ffffff; font-family: 'Inter', system-ui, sans-serif; font-weight: 500; font-size: 14px; line-height: 1.4; letter-spacing: 0; padding: 10px 16px; border: none; border-radius: 10px; cursor: pointer; transition: background 150ms cubic-bezier(0.25, 1, 0.5, 1); } .ds-btn-primary:hover { background: #25262f; } .ds-btn-primary:focus-visible { outline: 2px solid #0d5132; outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button (small)",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Ação secundária da topbar e barras de tab. Sem fundo, hover suave.",
+      "html": "<button class=\"ds-btn-ghost\">📅 04/05 — 10/05</button>",
+      "css": ".ds-btn-ghost { background: #ffffff; color: #25262f; font-family: 'Inter', system-ui, sans-serif; font-weight: 500; font-size: 13px; line-height: 1.4; padding: 6px 12px; border: 1px solid #e3e0d8; border-radius: 10px; cursor: pointer; transition: background 150ms cubic-bezier(0.25, 1, 0.5, 1); } .ds-btn-ghost:hover { background: #f3f1ea; } .ds-btn-ghost:focus-visible { outline: 2px solid #0d5132; outline-offset: 2px; }"
+    },
+    {
+      "name": "KPI Tile",
+      "kind": "card",
+      "refersTo": "kpi-tile",
+      "description": "Tile editorial em grid 1px-gap. Eyebrow mono, número Archivo grande, delta inline, sub-label e progress bar opcional. É a unidade-mor do dashboard.",
+      "html": "<div class=\"ds-kpi-tile\"><div class=\"ds-kpi-eyebrow\">LIGAÇÕES CONECTADAS</div><div class=\"ds-kpi-row\"><div class=\"ds-kpi-value\">1.284</div><span class=\"ds-delta ds-delta-up\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" fill=\"currentColor\"><path d=\"M5 1L9 8H1z\"/></svg>+12,6%</span></div><div class=\"ds-kpi-sub\">Meta 1.200 · 107%</div><div class=\"ds-progress\"><i style=\"width: 100%\"></i></div></div>",
+      "css": ".ds-kpi-tile { background: #ffffff; padding: 18px; border-radius: 6px; font-family: 'Inter', system-ui, sans-serif; } .ds-kpi-eyebrow { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: #7a7b86; margin-bottom: 12px; } .ds-kpi-row { display: flex; justify-content: space-between; align-items: flex-end; } .ds-kpi-value { font-family: 'Archivo', system-ui, sans-serif; font-weight: 800; font-size: 30px; line-height: 1; letter-spacing: -0.02em; color: #25262f; font-variant-numeric: tabular-nums; } .ds-delta { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; } .ds-delta-up { color: #29a36c; } .ds-delta-down { color: #e64a1f; } .ds-kpi-sub { font-family: 'Inter', system-ui, sans-serif; font-size: 13px; color: #7a7b86; margin-top: 6px; } .ds-progress { height: 3px; background: #e3e0d8; border-radius: 2px; margin-top: 12px; overflow: hidden; } .ds-progress > i { display: block; height: 100%; background: #0d5132; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Container editorial padrão. Surface branca, border 1px line, shadow sutilíssima, radius 10px.",
+      "html": "<section class=\"ds-card\"><header class=\"ds-card-head\"><div><div class=\"ds-card-head-title\">KPIs do período</div><div class=\"ds-card-head-sub\">Real vs. meta · variação contra a semana passada</div></div></header><div class=\"ds-card-body\">Conteúdo</div></section>",
+      "css": ".ds-card { background: #ffffff; border: 1px solid #e3e0d8; border-radius: 10px; box-shadow: 0 1px 2px rgba(10,15,30,.04), 0 1px 3px rgba(10,15,30,.06); font-family: 'Inter', system-ui, sans-serif; color: #25262f; } .ds-card-head { padding: 18px 20px 14px; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #e3e0d8; } .ds-card-head-title { font-family: 'Archivo', system-ui, sans-serif; font-weight: 800; font-size: 18px; letter-spacing: -0.01em; color: #25262f; } .ds-card-head-sub { font-size: 13px; color: #7a7b86; margin-top: 2px; } .ds-card-body { padding: 20px; }"
+    },
+    {
+      "name": "Leaderboard Row",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "Linha de tabela do ranking. 1º com bg amber soft + amber deep no número; 2º/3º com cor de texto silver/bronze sem bg. Sem zebra striping.",
+      "html": "<div class=\"ds-leaderboard\"><div class=\"ds-lb-header\"><span>POS</span><span>ASSESSOR</span><span class=\"ds-lb-right\">PONTOS</span></div><div class=\"ds-lb-row ds-lb-first\"><span class=\"ds-lb-pos\">1</span><span>Marina Coelho</span><span class=\"ds-lb-right ds-lb-score\">1.842</span></div><div class=\"ds-lb-row\"><span class=\"ds-lb-pos ds-lb-pos-silver\">2</span><span>Diego Vilar</span><span class=\"ds-lb-right ds-lb-score\">1.794</span></div><div class=\"ds-lb-row\"><span class=\"ds-lb-pos ds-lb-pos-bronze\">3</span><span>Sofia Andrade</span><span class=\"ds-lb-right ds-lb-score\">1.708</span></div></div>",
+      "css": ".ds-leaderboard { background: #ffffff; border: 1px solid #e3e0d8; border-radius: 10px; overflow: hidden; font-family: 'Inter', system-ui, sans-serif; color: #25262f; } .ds-lb-header { display: grid; grid-template-columns: 56px 1fr 120px; gap: 16px; padding: 14px 20px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: #7a7b86; border-bottom: 1px solid #d2cfc4; } .ds-lb-row { display: grid; grid-template-columns: 56px 1fr 120px; gap: 16px; padding: 16px 20px; border-bottom: 1px solid #e3e0d8; font-size: 15px; } .ds-lb-row:last-child { border-bottom: none; } .ds-lb-row:hover { background: #f3f1ea; } .ds-lb-first { background: #fbf3df; } .ds-lb-pos { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-size: 15px; color: #db801d; font-variant-numeric: tabular-nums; } .ds-lb-pos-silver { color: #8a8b93; } .ds-lb-pos-bronze { color: #bf8333; } .ds-lb-right { text-align: right; } .ds-lb-score { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Input padrão de formulário. Border 1px no rest, focus ring mesa-verde com glow sutilíssimo (rgba 15%).",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\">Nome do KPI</label><input class=\"ds-input\" type=\"text\" placeholder=\"Ligações conectadas\" value=\"Ligações conectadas\"/></div>",
+      "css": ".ds-field { font-family: 'Inter', system-ui, sans-serif; max-width: 360px; } .ds-field-label { display: block; font-size: 13px; font-weight: 500; color: #494a55; margin-bottom: 6px; } .ds-input { display: block; width: 100%; background: #ffffff; color: #25262f; font-family: 'Inter', system-ui, sans-serif; font-size: 14px; line-height: 1.4; padding: 10px 12px; border: 1px solid #e3e0d8; border-radius: 10px; transition: border-color 150ms cubic-bezier(0.25, 1, 0.5, 1), box-shadow 150ms cubic-bezier(0.25, 1, 0.5, 1); outline: none; } .ds-input::placeholder { color: #b0b1b9; } .ds-input:hover { border-color: #d2cfc4; } .ds-input:focus { border-color: #0d5132; box-shadow: 0 0 0 3px rgba(13, 81, 50, 0.15); }"
+    },
+    {
+      "name": "Sidebar Nav Item",
+      "kind": "nav",
+      "refersTo": "sidebar-nav-item",
+      "description": "Item da sidebar de 248px. Active recebe bg surface-2 + text mesa-verde + ícone pintado. Sem border-left (PROIBIDO).",
+      "html": "<nav class=\"ds-sidebar\"><div class=\"ds-nav-eyebrow\">NAVEGAÇÃO</div><a class=\"ds-nav-item ds-nav-active\" href=\"#\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><rect x=\"2\" y=\"2\" width=\"5\" height=\"5\"/><rect x=\"9\" y=\"2\" width=\"5\" height=\"5\"/><rect x=\"2\" y=\"9\" width=\"5\" height=\"5\"/><rect x=\"9\" y=\"9\" width=\"5\" height=\"5\"/></svg>Visão Geral</a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M2 13L6 8L9 11L14 4\"/></svg>Por dia</a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M3 14V4M8 14V2M13 14V8\"/></svg>Ranking</a></nav>",
+      "css": ".ds-sidebar { background: #ffffff; border: 1px solid #e3e0d8; border-radius: 10px; padding: 16px 12px; width: 248px; font-family: 'Inter', system-ui, sans-serif; } .ds-nav-eyebrow { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: #7a7b86; padding: 0 12px 8px; } .ds-nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 6px; color: #494a55; font-size: 14px; font-weight: 500; text-decoration: none; transition: background 150ms cubic-bezier(0.25, 1, 0.5, 1), color 150ms cubic-bezier(0.25, 1, 0.5, 1); } .ds-nav-item svg { color: #7a7b86; flex-shrink: 0; } .ds-nav-item:hover { background: #f3f1ea; color: #25262f; } .ds-nav-item:hover svg { color: #494a55; } .ds-nav-active { background: #e6f1eb; color: #0d5132; } .ds-nav-active svg { color: #0d5132; }"
+    },
+    {
+      "name": "Topbar",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "Cabeçalho da página: eyebrow crumb mono UPPERCASE + h1 Archivo display à esquerda, actions à direita.",
+      "html": "<header class=\"ds-topbar\"><div class=\"ds-topbar-title\"><div class=\"ds-crumb\">VISÃO GERAL · SEMANA</div><h1>Olá, Felipe.</h1></div><div class=\"ds-topbar-actions\"><div class=\"ds-tabs\"><button class=\"ds-tab ds-tab-active\">Semanal</button><button class=\"ds-tab\">Mensal</button></div><button class=\"ds-btn-primary-mini\">📺 Modo TV</button></div></header>",
+      "css": ".ds-topbar { display: flex; justify-content: space-between; align-items: center; padding: 24px 0; font-family: 'Inter', system-ui, sans-serif; gap: 24px; } .ds-crumb { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: #7a7b86; margin-bottom: 4px; } .ds-topbar h1 { font-family: 'Archivo', system-ui, sans-serif; font-weight: 800; font-size: 32px; line-height: 1.05; letter-spacing: -0.03em; color: #25262f; margin: 0; } .ds-topbar-actions { display: flex; gap: 8px; align-items: center; } .ds-tabs { display: inline-flex; background: #f3f1ea; border-radius: 10px; padding: 3px; gap: 2px; } .ds-tab { background: transparent; border: none; padding: 6px 14px; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 500; color: #494a55; cursor: pointer; transition: background 150ms cubic-bezier(0.25, 1, 0.5, 1), color 150ms cubic-bezier(0.25, 1, 0.5, 1); } .ds-tab-active { background: #ffffff; color: #25262f; box-shadow: 0 1px 2px rgba(10,15,30,.04); } .ds-btn-primary-mini { background: #0d5132; color: #ffffff; font-family: inherit; font-weight: 500; font-size: 13px; padding: 7px 14px; border: none; border-radius: 10px; cursor: pointer; transition: background 150ms cubic-bezier(0.25, 1, 0.5, 1); } .ds-btn-primary-mini:hover { background: #25262f; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Quiet Scoreboard",
+    "overview": "Performance Pulse é o placar de uma mesa de vendas de assessores de investimentos lido com a postura editorial de um jornal financeiro. O ranking é visível, o delta é honesto, a TV de 50\" trava o ritmo do dia. Mas nada disso é gritado. A interface é um relatório anual da Bloomberg com adrenalina contida, não broadcast esportivo. A gramática visual é dual-tenant em runtime: EQI (Mesa Verde + Warm Cream + Achievement Amber) tem o tom de mesa de pregão; BDN (Midnight Navy + Beacon Cyan + Cool Frost) é o turno noturno. Mesma arquitetura, dois climas. O sistema rejeita, em PT-BR explícito do briefing do Felipe: placar de UFC, site de aposta, casino, gradient dourado, podiums 3D, hero-metric SaaS, painel-de-admin tipo Excel, glassmorphism decorativo.",
+    "keyCharacteristics": [
+      "Editorial trading-desk com momentos celebratórios controlados (só som + motion sutil em conquistas reais).",
+      "Dual-tenant: EQI verde + warm cream + amber; BDN navy + cyan + frost. Mesmo esqueleto, peles diferentes.",
+      "Tipografia tri-fonte com papel definido: Archivo display (números grandes, headlines), Inter body (texto corrido), JetBrains Mono numéricos tabulares e eyebrows.",
+      "Cards retos (radius 10px), shadow sutil de 1-3px, sem blur decorativo. Light mode é default; dark existe só pra TV em ambiente escuro.",
+      "Densidade alta quando faz sentido (tabela de ranking, KPI grid 6-up), espaço respirado quando o número é herói (TV mode, KPI strip principal).",
+      "Motion é tempero (delta-up flash, ranking-row reorder), nunca estrutural."
+    ],
+    "rules": [
+      { "name": "The Mesa Bloomberg Rule", "section": "colors", "body": "Nenhum gradient. Em lugar nenhum, em hipótese alguma, exceto: (1) o fundo do hero da TV pode ter um radial-gradient super-sutil (≤6% opacity) pra dar profundidade sem virar Vegas; (2) progress bars usam fill sólido com transição de opacity, não gradient. Tudo o mais é cor flat." },
+      { "name": "The Achievement-Not-Casino Rule", "section": "colors", "body": "Achievement Amber é a única cor 'quente celebratória' do sistema. Use sólido em badge, ícone de troféu, número de streak. Nunca combine com glow, neon, ou em qualquer composição que mais de 2 elementos amber estejam visíveis ao mesmo tempo. Ouro raro vale mais que ouro abundante." },
+      { "name": "The Tenant Mirror Rule", "section": "colors", "body": "Toda decisão de cor que faz sentido na skin EQI precisa ter um espelho semântico equivalente na skin BDN. Se o admin nav active fica mesa-verde-soft no EQI, no BDN fica cool-frost-cyan-tint. Nunca hardcode hex em componente; sempre hsl(var(--*)) do tenant ativo." },
+      { "name": "The Tabular-Number Rule", "section": "typography", "body": "Todo número que pode mudar (KPI, ranking, score, delta, contagem) usa JetBrains Mono com font-variant-numeric: tabular-nums. Sem exceção. Números proporcionais dançam quando o valor muda; tabulares ficam parados. O Pulse é um produto que assiste números mudarem. Eles não podem dançar." },
+      { "name": "The Eyebrow-Eyebrow Rule", "section": "typography", "body": "Toda tela começa com eyebrow monospace UPPERCASE em ink-3 (#7a7b86). É a 'data publicada' do jornal: você sabe o contexto antes de ler o título. Sem eyebrow, a tela parece um app genérico. Com eyebrow, é editorial." },
+      { "name": "The No-Display-In-Inter Rule", "section": "typography", "body": "Inter nunca aparece acima de 18px. Headlines e display são exclusivos do Archivo. Mistura quebra a hierarquia tipográfica e mata a sensação editorial." },
+      { "name": "The Flat-By-Default Rule", "section": "elevation", "body": "Tudo é flat até prova em contrário. Surface = branco, separação = linha 1px ou shadow ≤3px. Profundidade vem de tipografia e espaço, não de drop-shadow. Quando você pensar 'esse card precisa pular', pergunte primeiro: posso aumentar o KPI value 4px ao invés? A resposta quase sempre é sim." },
+      { "name": "The No-Decorative-Blur Rule", "section": "elevation", "body": "Backdrop-filter blur é proibido em light mode. No dark mode, autorizado apenas em .dark .card-glass no Modo TV porque comunica profundidade real (luz da TV atrás do conteúdo). Qualquer outro uso de blur é cliché 2021 e violaria o North Star." }
+    ],
+    "dos": [
+      "Do usar tabular-nums em todo número que pode mudar. KPI, ranking, score, delta, percentage. Sem exceção.",
+      "Do começar cada tela com eyebrow monospace UPPERCASE em ink-3 (#7a7b86). É a assinatura do sistema.",
+      "Do ler --background, --primary, --ink via hsl(var(--*)) sempre. Nunca hardcode hex em componente; o tenant troca a paleta via data-tenant.",
+      "Do preservar dignidade do último colocado. Cor neutra (ink-3 / silver), sem destaque negativo, sem ícone de derrota. A ausência de Achievement Amber já comunica.",
+      "Do usar Achievement Amber sólido em badges e ouros. Soft (#fbf3df) pra fundo de linha de 1º; deep (#db801d) só pra contraste em texto sobre amber soft.",
+      "Do respeitar prefers-reduced-motion. Marquee do TV, anim de subida no ranking, celebrações: tudo desativável.",
+      "Do manter texto em PT-BR na UI. Inglês fica em código (variáveis, types, props), nunca exposto pro usuário.",
+      "Do usar 1px solid var(--line) como divisor padrão. Cards retos, bordas finas, sombra mínima.",
+      "Do dimensionar pra leitura de 5 metros no Modo TV: KPI principal 120-156px, ranking ≥18px, nada crítico abaixo de 14px."
+    ],
+    "donts": [
+      "Don't usar gradient dourado em lugar nenhum. Nunca. Citado explicitamente no briefing do Felipe: 'sem gradientes dourados, sem podiums 3D'. Ouro é sólido. Pódio é linha de tabela com bg amber soft.",
+      "Don't usar border-left > 1px como acento colorido em cards, alerts, list items, callouts. Banido pela impeccable e pelo absolute ban interno; reescrever com border completa, bg tint, ou número/ícone à esquerda.",
+      "Don't usar background-clip: text com gradient (gradient text). Banido. Solid color com peso ou tamanho diferente faz o destaque.",
+      "Don't usar glassmorphism decorativo. Única exceção autorizada: .dark .card-glass no Modo TV, porque comunica profundidade real.",
+      "Don't estampar 'hero metric template' SaaS (número gigante + label + 3 sub-stats em linha + ícone genérico no canto). É exatamente o que o KPI tile do Pulse deliberadamente NÃO é.",
+      "Don't estampar grids de cards idênticos com ícone + heading + texto repetidos. Esse é o slop test mais óbvio. Use hierarquia tipográfica e separadores de linha pra agrupar.",
+      "Don't usar zebra striping (rows alternados em cor) em tabelas. Visual de planilha do Excel. Border-bottom de line-2 entre rows resolve.",
+      "Don't usar pill buttons (border-radius full). Casino. Cantos do sistema são 6/10/14px; pill nunca.",
+      "Don't usar mascote, confetti, bounce elastic, ou microinteração de jogo casual. O Pulse celebra com som broadcast e motion sutil, não com partículas.",
+      "Don't misturar Inter acima de 18px com Archivo abaixo de 24px. Inter é body; Archivo é display.",
+      "Don't abrir modal como primeira opção. Inline edits, popovers, drawers e command palette (cmdk) existem por algo. Modal só quando interromper o usuário é o ponto.",
+      "Don't confundir Achievement Amber, Warning Amber, e Bronze. Achievement é trofeu (amarelo cromático puro); Warning é zona limítrofe (amarelo-laranja); Bronze é 3º lugar (marrom-amarelado dessaturado).",
+      "Don't desenhar /admin como CRUD genérico. Mesma alma editorial do app principal: eyebrows, hierarquia tipográfica, espaço respirado, defaults inteligentes."
+    ]
+  }
+}

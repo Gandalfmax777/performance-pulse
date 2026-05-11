@@ -145,7 +145,7 @@ const AdminGoals = () => {
       <div className="rounded-[14px] overflow-hidden border border-line bg-card">
         {isLoading ? (
           <div className="p-10 flex items-center justify-center">
-            <CircleNotch size={24} className="text-eqi animate-spin" />
+            <CircleNotch size={24} className="text-primary animate-spin" />
           </div>
         ) : (
           <Table>
@@ -197,7 +197,7 @@ const AdminGoals = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <span className="font-mono font-bold text-sm text-eqi">
+                        <span className="font-mono font-bold text-sm text-primary">
                           {goalValue}
                           {kpi.unit}
                         </span>
@@ -531,11 +531,11 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
                 </div>
               )}
 
-              <div className="p-3 rounded-lg bg-eqi/5 border border-eqi/20">
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
                 <p className="text-[10px] uppercase tracking-wider text-ink-3 mb-1">
                   Regra atual
                 </p>
-                <p className="text-sm font-mono text-eqi">{rulePreview}</p>
+                <p className="text-sm font-mono text-primary">{rulePreview}</p>
                 <p className="text-[10px] text-ink-3 mt-1">
                   Aplica em novos registros. Pra recalcular histórico, rodar
                   <code className="mx-1 px-1 bg-muted/30 rounded">scripts/recompute-all-points.ts</code>.
@@ -579,7 +579,7 @@ function GoalHistoryRow({ kpiId }: { kpiId: string }) {
           <div className="space-y-1 pl-5">
             {(data ?? []).map((g: ApiGoal) => (
               <div key={g.id} className="flex items-center gap-4 text-xs font-mono">
-                <span className="text-eqi font-bold w-12 text-right">
+                <span className="text-primary font-bold w-12 text-right">
                   {g.value}
                 </span>
                 <span className="text-ink-3">{g.period}</span>
@@ -588,7 +588,7 @@ function GoalHistoryRow({ kpiId }: { kpiId: string }) {
                   {g.validTo ? formatYmdBr(g.validTo.slice(0, 10)) : "atual"}
                 </span>
                 {!g.validTo && (
-                  <Badge variant="outline" className="text-[9px] border-eqi/30 text-eqi">
+                  <Badge variant="outline" className="text-[9px] border-primary/30 text-primary">
                     ATIVA
                   </Badge>
                 )}

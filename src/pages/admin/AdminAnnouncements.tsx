@@ -263,7 +263,7 @@ const AdminAnnouncements = () => {
       <div className="rounded-[14px] overflow-hidden border border-line bg-card">
         {isLoading ? (
           <div className="p-10 flex items-center justify-center">
-            <CircleNotch size={24} className="text-eqi animate-spin" />
+            <CircleNotch size={24} className="text-primary animate-spin" />
           </div>
         ) : (announcements ?? []).length === 0 ? (
           <div className="p-10 text-center text-sm text-ink-3">
@@ -353,14 +353,14 @@ const AdminAnnouncements = () => {
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => handleToggleActive(a)}
-                            className="w-7 h-7 rounded-md text-ink-3 hover:text-eqi hover:bg-eqi/10 flex items-center justify-center transition-all"
+                            className="w-7 h-7 rounded-md text-ink-3 hover:text-primary hover:bg-primary/10 flex items-center justify-center transition-all"
                             title={a.active ? "Desativar" : "Ativar"}
                           >
                             {a.active ? <Eye size={13} /> : <EyeSlash size={13} />}
                           </button>
                           <button
                             onClick={() => setDialog({ open: true, editing: a })}
-                            className="w-7 h-7 rounded-md text-ink-3 hover:text-eqi hover:bg-eqi/10 flex items-center justify-center transition-all"
+                            className="w-7 h-7 rounded-md text-ink-3 hover:text-primary hover:bg-primary/10 flex items-center justify-center transition-all"
                             title="Editar"
                           >
                             <PencilSimple size={13} />

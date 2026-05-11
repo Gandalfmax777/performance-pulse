@@ -63,7 +63,7 @@ const AdminBetsConfig = () => {
     if (!criteria) return;
     const month = format(new Date(), "MMMM", { locale: ptBR }).replace(/^\w/, (c) => c.toUpperCase());
     const count = (bets ?? []).filter((b) => b.type === type).length;
-    const roundLabel = label.trim() || (type === "WEEKLY" ? `Semana ${count + 1} — ${month}` : `Mês ${count + 1} — ${month}`);
+    const roundLabel = label.trim() || (type === "WEEKLY" ? `Semana ${count + 1} · ${month}` : `Mês ${count + 1} · ${month}`);
     try {
       await createBet.mutateAsync({
         roundLabel,
@@ -115,7 +115,7 @@ const AdminBetsConfig = () => {
             R$ 5.000
           </p>
           <p className="text-[11px] text-ink-3 mt-1.5">
-            Limite por rodada — ajuste com cautela
+            Limite por rodada, ajuste com cautela
           </p>
         </div>
         <div className="rounded-[var(--radius)] border border-line bg-card p-5">
@@ -134,7 +134,7 @@ const AdminBetsConfig = () => {
       {/* Create form */}
       <div className="rounded-[14px] p-5 border border-line bg-card space-y-4">
         <h2 className="text-[14px] font-extrabold tracking-tight text-ink flex items-center gap-2">
-          <Plus size={14} weight="bold" className="text-eqi" />
+          <Plus size={14} weight="bold" className="text-primary" />
           Nova aposta
         </h2>
         <div className="grid grid-cols-4 gap-3">
@@ -189,7 +189,7 @@ const AdminBetsConfig = () => {
           <div className="rounded-[14px] overflow-hidden border border-line bg-card">
             {isLoading ? (
               <div className="p-10 flex items-center justify-center">
-                <CircleNotch size={24} className="text-eqi animate-spin" />
+                <CircleNotch size={24} className="text-primary animate-spin" />
               </div>
             ) : activeBets.length === 0 ? (
               <p className="text-sm text-ink-3 text-center py-10">Nenhuma aposta ativa.</p>
@@ -212,7 +212,7 @@ const AdminBetsConfig = () => {
                       <TableCell>
                         <Badge variant="outline" className="text-[10px]">{bet.type}</Badge>
                       </TableCell>
-                      <TableCell className="font-mono text-sm text-eqi">R$ {bet.value}</TableCell>
+                      <TableCell className="font-mono text-sm text-primary">R$ {bet.value}</TableCell>
                       <TableCell className="text-xs text-ink-3">
                         {criteriaLabel(bet.winnerCriteriaJson)}
                       </TableCell>

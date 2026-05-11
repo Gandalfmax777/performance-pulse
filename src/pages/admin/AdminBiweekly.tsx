@@ -124,7 +124,7 @@ const AdminBiweekly = () => {
 
       {isLoading ? (
         <div className="rounded-[14px] border border-line bg-card p-10 flex items-center justify-center">
-          <CircleNotch size={24} className="text-eqi animate-spin" />
+          <CircleNotch size={24} className="text-primary animate-spin" />
         </div>
       ) : biweeklyActivities.length === 0 ? (
         <div className="rounded-[14px] border border-line bg-card p-10 text-center">
@@ -133,7 +133,7 @@ const AdminBiweekly = () => {
             Nenhuma activity BIWEEKLY cadastrada nas quartas.
           </p>
           <p className="text-xs text-ink-3 mt-1">
-            Vá em <code className="text-eqi">Cronograma</code> pra criar.
+            Vá em <code className="text-primary">Cronograma</code> pra criar.
           </p>
         </div>
       ) : (
@@ -149,7 +149,7 @@ const AdminBiweekly = () => {
                   <div>
                     <h3 className="text-sm font-bold text-ink flex items-center gap-2">
                       {act.name}
-                      <Badge variant="outline" className="text-[9px] border-eqi/30 text-eqi">
+                      <Badge variant="outline" className="text-[9px] border-primary/30 text-primary">
                         QUINZENAL
                       </Badge>
                     </h3>
@@ -210,7 +210,7 @@ const AdminBiweekly = () => {
                     key={formatYmd(wed)}
                     className={`p-4 rounded-lg border transition-all ${
                       activeActivities.length > 0
-                        ? "border-eqi/30 bg-eqi/5"
+                        ? "border-primary/30 bg-primary/5"
                         : "border-line/20 bg-muted/10"
                     }`}
                   >
@@ -227,7 +227,7 @@ const AdminBiweekly = () => {
                         {activeActivities.map((a) => (
                           <div
                             key={a.id}
-                            className="flex items-center gap-1.5 text-xs text-eqi font-semibold"
+                            className="flex items-center gap-1.5 text-xs text-primary font-semibold"
                           >
                             <Target size={12} weight="bold" />
                             {a.name}
@@ -300,7 +300,7 @@ function AnchorDialog({
     <Dialog open onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Editar — {activity.name}</DialogTitle>
+          <DialogTitle>Editar: {activity.name}</DialogTitle>
           <DialogDescription>
             Altere a data âncora e/ou o horário. A activity será ativada nessa data e a cada 14 dias.
           </DialogDescription>
@@ -332,7 +332,7 @@ function AnchorDialog({
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full mt-1 px-3 py-2 rounded-lg bg-muted/30 border border-line/30 text-sm font-mono text-ink focus:outline-none focus:border-eqi/50"
+                className="w-full mt-1 px-3 py-2 rounded-lg bg-muted/30 border border-line/30 text-sm font-mono text-ink focus:outline-none focus:border-primary/50"
               />
             </div>
             <div className="flex-1">
@@ -341,7 +341,7 @@ function AnchorDialog({
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full mt-1 px-3 py-2 rounded-lg bg-muted/30 border border-line/30 text-sm font-mono text-ink focus:outline-none focus:border-eqi/50"
+                className="w-full mt-1 px-3 py-2 rounded-lg bg-muted/30 border border-line/30 text-sm font-mono text-ink focus:outline-none focus:border-primary/50"
               />
             </div>
           </div>

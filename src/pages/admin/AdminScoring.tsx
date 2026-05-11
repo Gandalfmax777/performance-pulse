@@ -149,12 +149,12 @@ function FormulaBox() {
           <div className="text-[11px] text-ink-3">
             <strong className="text-ink-2 block mb-1">Bônus</strong>
             Observações marcadas por gestor adicionam pontos extras (Sales
-            Performance, MAR atualizado, etc) — ver seção abaixo.
+            Performance, MAR atualizado, etc); ver seção abaixo.
           </div>
           <div className="text-[11px] text-ink-3">
             <strong className="text-ink-2 block mb-1">Penalidades</strong>
             Dias ociosos consecutivos (sem nenhum lançamento) penalizam
-            automaticamente — config abaixo.
+            automaticamente; config abaixo.
           </div>
         </div>
       </div>
@@ -224,7 +224,7 @@ function BonusTypesSection({ bonusTypes }: { bonusTypes: BonusType[] }) {
             <TableRow key={b.id}>
               <TableCell className="font-semibold">{b.label}</TableCell>
               <TableCell className="font-mono text-xs text-ink-2">{b.notePrefix}</TableCell>
-              <TableCell className="text-right font-mono font-bold text-eqi">
+              <TableCell className="text-right font-mono font-bold text-primary">
                 {b.points > 0 ? `+${b.points}` : b.points}
               </TableCell>
               <TableCell>
@@ -591,7 +591,7 @@ function LevelThresholdsSection({ config }: { config: ReturnType<typeof useScori
 
       <div className="space-y-3">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-eqi font-bold mb-2">Positivos</p>
+          <p className="text-[10px] uppercase tracking-wider text-primary font-bold mb-2">Positivos</p>
           <div className="space-y-2">
             {positives.map((t) => (
               <ThresholdRow key={t.level} threshold={t} onChange={(v) => updatePoints(t.level, v)} />
@@ -636,7 +636,7 @@ function ThresholdRow({
         <span className="text-xs text-ink-3">≥</span>
         {isMin ? (
           <span className="font-mono text-xs text-ink-3 w-24 text-right italic">
-            (sempre — fundo do poço)
+            (sempre, fundo do poço)
           </span>
         ) : (
           <Input
@@ -719,7 +719,7 @@ function LevelLegacyMapSection({
 
       <div className="space-y-3">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-eqi font-bold mb-2">Positivos</p>
+          <p className="text-[10px] uppercase tracking-wider text-primary font-bold mb-2">Positivos</p>
           <div className="space-y-2">
             {positives.map((level) => (
               <LegacyMapRow

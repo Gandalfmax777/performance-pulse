@@ -229,7 +229,7 @@ const AdminUsers = () => {
       <div className="rounded-[14px] overflow-hidden border border-line bg-card">
         {isLoading ? (
           <div className="p-10 flex items-center justify-center">
-            <CircleNotch size={24} className="text-eqi animate-spin" />
+            <CircleNotch size={24} className="text-primary animate-spin" />
           </div>
         ) : (
           <Table>
@@ -249,7 +249,7 @@ const AdminUsers = () => {
                   <TableRow key={u.id} className="border-line/20">
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-eqi/20 flex items-center justify-center text-xs font-bold text-eqi">
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
                           {u.name.slice(0, 2).toUpperCase()}
                         </div>
                         <span className="text-sm font-semibold text-ink">
@@ -429,14 +429,14 @@ const AdminUsers = () => {
 
               {/* Banner: user existente já tem membership na mesa atual */}
               {alreadyInTenant && (
-                <div className="mt-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                <div className="mt-2 rounded-md border border-[hsl(var(--warning)/0.40)] bg-[hsl(var(--warning)/0.15)] px-3 py-2 text-xs text-[hsl(var(--warning))]">
                   Esse usuário já tem acesso a essa mesa.
                 </div>
               )}
 
-              {/* Banner: user existente sem membership na mesa atual — caso Roberto */}
+              {/* Banner: user existente sem membership na mesa atual */}
               {existingUser && !alreadyInTenant && (
-                <div className="mt-2 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs text-emerald-900 flex gap-2">
+                <div className="mt-2 rounded-md border border-[hsl(var(--success)/0.40)] bg-[hsl(var(--success)/0.12)] px-3 py-2 text-xs text-[hsl(var(--success))] flex gap-2">
                   <UserCheck size={14} weight="bold" className="shrink-0 mt-0.5" />
                   <div>
                     <strong>{existingUser.name}</strong> já tem conta no sistema
@@ -449,7 +449,7 @@ const AdminUsers = () => {
                         )
                       </>
                     )}
-                    . Vamos só adicionar acesso a essa mesa — a senha atual
+                    . Vamos só adicionar acesso a essa mesa; a senha atual
                     dele continua valendo.
                   </div>
                 </div>
@@ -518,7 +518,7 @@ const AdminUsers = () => {
       <Dialog open={!!editUser} onOpenChange={(v) => !v && setEditUser(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Editar — {editUser?.name}</DialogTitle>
+            <DialogTitle>Editar: {editUser?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div>
