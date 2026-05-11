@@ -10,6 +10,14 @@
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001/api";
 
 export const TOKEN_STORAGE_KEY = "pp_token";
+/** Slug do último tenant logado. Persistido entre sessões pra adaptar o
+ *  layout do /login ao último brand visto (estilo "last login" das apps
+ *  modernas). NÃO é limpo no logout — propósito é exatamente sobreviver. */
+export const LAST_TENANT_STORAGE_KEY = "pp_last_tenant";
+/** URL pública do logo do último tenant logado (R2). Usado pelo /login
+ *  pre-auth renderizar a marca real do tenant (em vez do quadrado-com-letra)
+ *  pra users que já logaram pelo menos uma vez. NÃO é limpo no logout. */
+export const LAST_TENANT_LOGO_STORAGE_KEY = "pp_last_tenant_logo";
 
 export function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -22,6 +30,31 @@ export function setAuthToken(token: string): void {
 
 export function clearAuthToken(): void {
   window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+}
+
+export function getLastTenant(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(LAST_TENANT_STORAGE_KEY);
+}
+
+export function setLastTenant(slug: string): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(LAST_TENANT_STORAGE_KEY, slug);
+}
+
+export function getLastTenantLogo(): string | null {
+  if (typeof window === "undefined") return null;
+  const value = window.localStorage.getItem(LAST_TENANT_LOGO_STORAGE_KEY);
+  return value && value.length > 0 ? value : null;
+}
+
+export function setLastTenantLogo(logoUrl: string | null): void {
+  if (typeof window === "undefined") return;
+  if (logoUrl) {
+    window.localStorage.setItem(LAST_TENANT_LOGO_STORAGE_KEY, logoUrl);
+  } else {
+    window.localStorage.removeItem(LAST_TENANT_LOGO_STORAGE_KEY);
+  }
 }
 
 export class ApiError extends Error {
@@ -57,6 +90,17 @@ function isPublicTvRoute(): boolean {
   return window.location.pathname === "/tv" || window.location.pathname.startsWith("/tv/");
 }
 
+/**
+ * Lê `?tenant=<slug>` da URL atual. Usado em /tv pra forwardar o slug
+ * pras chamadas de API públicas — o backend `resolveTenantForPublicRoute`
+ * sem JWT e sem query param cai em "eqi" fallback. Plataforma roda em
+ * domínio único (BDN hospeda todos), então a URL é a fonte única de verdade.
+ */
+export function getTenantQueryParam(): string | null {
+  if (typeof window === "undefined") return null;
+  return new URLSearchParams(window.location.search).get("tenant");
+}
+
 export async function apiFetch<T>(
   path: string,
   options: ApiFetchOptions = {},
@@ -69,6 +113,16 @@ export async function apiFetch<T>(
   if (searchParams) {
     for (const [key, value] of Object.entries(searchParams)) {
       if (value !== undefined) url.searchParams.append(key, String(value));
+    }
+  }
+
+  // No /tv (sem JWT), forwarda o slug da URL pro backend via ?tenant=. Sem
+  // isso, `resolveTenantForPublicRoute` cai no fallback "eqi" e a TV mostra
+  // dados do tenant errado mesmo que o brand local esteja correto.
+  if (skipAuth && !url.searchParams.has("tenant")) {
+    const tenantSlug = getTenantQueryParam();
+    if (tenantSlug) {
+      url.searchParams.set("tenant", tenantSlug);
     }
   }
 

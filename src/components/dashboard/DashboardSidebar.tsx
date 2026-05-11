@@ -127,11 +127,21 @@ const DashboardSidebar = ({
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         )}
       >
-        {/* Brand — alinha com .sidebar-brand do design */}
+        {/* Brand — alinha com .sidebar-brand do design.
+            Se o tenant tem logo subido em /admin/tenants, usa a imagem;
+            senão cai no ícone Pulse genérico. */}
         <div className="px-4 py-[18px] pb-[14px] border-b border-line flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 shrink-0 rounded-lg bg-primary flex items-center justify-center">
-              <Pulse weight="bold" size={16} className="text-primary-foreground" />
+            <div className="w-8 h-8 shrink-0 rounded-lg bg-primary flex items-center justify-center overflow-hidden">
+              {tenantConfig.logoUrl ? (
+                <img
+                  src={tenantConfig.logoUrl}
+                  alt={tenantConfig.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Pulse weight="bold" size={16} className="text-primary-foreground" />
+              )}
             </div>
             {!collapsed && (
               <div className="min-w-0 leading-tight">

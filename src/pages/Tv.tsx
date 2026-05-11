@@ -3,10 +3,15 @@ import { Play, Pause, SkipForward, Timer, X } from "@phosphor-icons/react";
 import { TvSlides, TV_SLIDES } from "@/components/dashboard/TvSlides";
 import TournamentFinishedOverlay from "@/components/dashboard/TournamentFinishedOverlay";
 import { useAssessors } from "@/hooks/useAssessors";
+import { usePublicTenantBrand } from "@/hooks/usePublicTenantBrand";
 import { useRankingStream } from "@/hooks/useRankingStream";
 import { useTournamentFinishedStream } from "@/hooks/useTournamentFinishedStream";
 import { useSystemNotifications } from "@/hooks/useSystemNotifications";
-import { isTenantSlug, resolveTenantFromHost, type TenantSlug } from "@/config/tenants";
+import {
+  DEFAULT_TENANT_SLUG,
+  isTenantSlug,
+  type TenantSlug,
+} from "@/config/tenants";
 
 const TV_INTERVALS = [10, 15, 20, 30, 45, 60];
 
@@ -21,8 +26,64 @@ const TV_INTERVALS = [10, 15, 20, 30, 45, 60];
  * Controles flutuantes top-right (play/pause/skip/timer/exit). O
  * `TvSlides` em si tem chrome editorial próprio (top header com tenant
  * + range, body central, footer com slide title + index/count).
+ *
+ * Tenant obrigatório via `?tenant=eqi|bdn` — sem fallback silencioso pra
+ * evitar TV mostrar dados do tenant errado. Sem slug válido, renderiza
+ * tela de erro com instruções.
  */
 const TvPage = () => {
+  // Tenant via query param `?tenant=eqi|bdn`. /tv é público (sem JWT), por
+  // isso não usa useCurrentUser. A plataforma roda em domínio único (BDN
+  // hospeda todos os tenants), então a URL é a fonte única de verdade.
+  // Sem slug válido → tela de erro (sem fallback silencioso).
+  const tenantSlug = useMemo<TenantSlug | null>(() => {
+    const slug = new URLSearchParams(window.location.search).get("tenant") ?? "";
+    return isTenantSlug(slug) ? slug : null;
+  }, []);
+
+  if (!tenantSlug) {
+    return <TvMissingTenant />;
+  }
+
+  return <TvPageContent tenantSlug={tenantSlug} />;
+};
+
+/**
+ * Tela genérica pra /tv sem slug válido — visual NotFound (`pages/NotFound.tsx`).
+ *
+ * Mensagem propositalmente neutra (sem listar tenants conhecidos) pra não
+ * precisar manutenção quando novas mesas forem onboardadas. Aplica o tenant
+ * default no <html> só pro tema CSS renderizar.
+ */
+const TvMissingTenant = () => {
+  useEffect(() => {
+    document.documentElement.setAttribute("data-tenant", DEFAULT_TENANT_SLUG);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-12">
+      <div className="text-center max-w-[560px]">
+        <p className="num text-[11px] uppercase tracking-[0.22em] text-primary mb-4">
+          Modo TV indisponível
+        </p>
+        <p
+          className="num font-display font-extrabold text-primary leading-none mb-2"
+          style={{ fontSize: 140, letterSpacing: "-0.06em" }}
+        >
+          404
+        </p>
+        <h1 className="font-display text-4xl font-bold tracking-tight leading-tight mb-3 text-ink">
+          Não existe Modo TV pra esta URL.
+        </h1>
+        <p className="text-[15px] leading-relaxed text-ink-3">
+          Verifique o link com o administrador da sua mesa.
+        </p>
+      </div>
+    </div>
+  );
+};
+
+const TvPageContent = ({ tenantSlug }: { tenantSlug: TenantSlug }) => {
   const [slideIdx, setSlideIdx] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [intervalSec, setIntervalSec] = useState(15);
@@ -32,23 +93,21 @@ const TvPage = () => {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Tenant resolvido por:
-  //   1. Query param explícito `?tenant=eqi|bdn` (override útil em dev/preview)
-  //   2. Hostname (`bdntech.com.br` → "bdn", default "eqi")
-  // /tv é público (sem JWT), por isso não usa useCurrentUser.
-  const tenantSlug: TenantSlug = useMemo(() => {
-    const params = new URLSearchParams(window.location.search);
-    const queryParam = params.get("tenant") ?? "";
-    if (isTenantSlug(queryParam)) return queryParam;
-    return resolveTenantFromHost(window.location.hostname);
-  }, []);
-
   // Aplica data-tenant no <html> pra ativar tema CSS escopado.
   useEffect(() => {
     document.documentElement.setAttribute("data-tenant", tenantSlug);
   }, [tenantSlug]);
 
   const { assessors } = useAssessors();
+
+  // Brand público (logo R2 + nome) via endpoint sem auth. Usado pra mostrar
+  // a marca real do tenant no chrome header do TvSlides — sem isso, cai
+  // pra letra inicial do nome do tenant (TENANT_TOKENS).
+  const brandQuery = usePublicTenantBrand(tenantSlug);
+  const tenantLogoUrl =
+    typeof brandQuery.data?.brandConfig?.logoUrl === "string"
+      ? (brandQuery.data.brandConfig.logoUrl as string)
+      : null;
 
   // Auto-hide controls on idle (3s sem movimento de mouse). Visíveis em
   // qualquer mousemove ou quando o popover de Settings está aberto.
@@ -116,7 +175,12 @@ const TvPage = () => {
     <div className="min-h-screen w-screen overflow-hidden relative" style={{ background: "#000b14" }}>
       {/* Slide ocupa tela inteira — TvSlides tem seu próprio Chrome */}
       <div className="absolute inset-0">
-        <TvSlides slideIdx={slideIdx} assessors={assessors} tenant={tenantSlug} />
+        <TvSlides
+          slideIdx={slideIdx}
+          assessors={assessors}
+          tenant={tenantSlug}
+          logoUrl={tenantLogoUrl}
+        />
       </div>
 
       {/* Controles flutuantes — auto-hide após 3s idle. Posicionados

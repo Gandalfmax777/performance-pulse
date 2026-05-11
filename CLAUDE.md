@@ -129,7 +129,7 @@ npm run preview      # serve o dist localmente
 | `src/api/client.ts:55-58` | `isPublicTvRoute()` — bypass auth quando pathname é `/tv` ou `/tv/*`. |
 | `src/api/client.ts:109-114` | Em 401 (não-TV): `clearAuthToken()` + `window.location.href = "/login"`. |
 | `src/components/providers/TenantProvider.tsx` | `useEffect` aplica `<html data-tenant={slug}>` quando `useCurrentUser` resolve. |
-| `src/config/tenants.ts` | `TENANT_FALLBACKS` (EQI/BDN), `resolveTenantConfig(slug, brandConfig)` faz merge `{...fallback, ...brandConfig, slug}`, e `resolveTenantFromHost(hostname)` mapeia domínio → slug pra rotas públicas (/tv). |
+| `src/config/tenants.ts` | `TENANT_FALLBACKS` (EQI/BDN), `resolveTenantConfig(slug, brandConfig)` faz merge `{...fallback, ...brandConfig, slug}`, e `DEFAULT_TENANT_SLUG = "bdn"` é o fallback quando nada mais resolve. |
 | `src/hooks/useCurrentUser.ts` | `/auth/me` + `useSwitchTenant` (`POST /auth/switch-tenant`). Retorna `{ user, tenant, tenantConfig, memberships, isAdmin, isSuperAdmin, hasMultipleMemberships }`. |
 | `src/hooks/useRankingStream.ts:52-63` | SSE invalida 6 query keys em cascata. |
 | `src/components/layouts/RequireAdmin.tsx` | Role guard com loader (evita flash de redirect antes da role chegar). |
@@ -144,8 +144,11 @@ npm run preview      # serve o dist localmente
 
 - **URL base**: `import.meta.env.VITE_API_URL` (default `http://localhost:3001/api`). `.env.development` e `.env.example` já têm o default. Em produção (Vercel/Coolify) injetar a URL pública.
 - **Token**: `localStorage["pp_token"]` (constante `TOKEN_STORAGE_KEY` em `src/api/client.ts:12`). `apiFetch` injeta `Authorization: Bearer <token>` automaticamente. Login usa `skipAuth: true` (`src/pages/Login.tsx:41`).
+- **Last tenant**: `localStorage["pp_last_tenant"]` (`LAST_TENANT_STORAGE_KEY`). Slug do último tenant ativo, persistido pra `/login` saber qual brand renderizar. Setado no `/auth/login` success, `useSwitchTenant`, e sempre que `useCurrentUser` recebe `tenant.slug` de `/auth/me`. NÃO é limpo no logout.
+- **Last tenant logo**: `localStorage["pp_last_tenant_logo"]` (`LAST_TENANT_LOGO_STORAGE_KEY`). URL do logo R2 do último tenant logado. Permite `/login` mostrar a marca real (imagem) em vez do quadrado-com-letra. Setado nos mesmos pontos do slug. **Importante**: só é gravado quando o backend retornou `tenant.brandConfig.logoUrl` (não no fallback pre-auth), pra não limpar o cache em rotas públicas.
 - **401**: `apiFetch` limpa o token e redireciona pra `/login`, **exceto** em `/tv` (rota pública).
 - **`/tv` é rota pública**: `apiFetch` detecta `window.location.pathname` e bypassa auth tanto pra anexar token quanto pra redirecionar em 401. Os endpoints consumidos pela TV são públicos no backend. Check é por-chamada (não module-load) pra funcionar com navegação client-side.
+- **Forwarding de tenant em `/tv`**: como /tv não tem JWT, o backend `resolveTenantForPublicRoute` cai em "eqi" fallback se não receber `?tenant=`. Pra evitar BDN mostrar dados EQI, `apiFetch` injeta automaticamente `?tenant=<slug>` da URL atual quando estiver em /tv (`src/api/client.ts`, função `getTenantQueryParam`). As hooks não precisam adicionar manualmente — funciona pra qualquer endpoint público.
 - **SSE**: `EventSource` em `/api/stream/rankings` (e `/api/stream/tournament-finished`). EventSource **não aceita header custom** — token vai por query param `?token=`. Backend lê do query (compat com middleware legado; stream em si é público agora).
   - Eventos: `ranking:update`, `sound:play`, `connected`, `tournament:finished`.
   - **Debounce 300ms** em `useRankingStream` evita refetch tempestade quando Felipe digita métricas rápido.
@@ -196,21 +199,46 @@ Pipeline:
 
 `resolveTenantConfig(slug, brandConfig)` faz merge `{...TENANT_FALLBACKS[safeSlug], ...brandConfig, slug}` — o fallback garante que UI nunca quebra se o admin esquecer campos no painel `/admin/tenants`. Slug desconhecido cai pra `eqi`.
 
-### Rotas públicas (`/tv`) — detecção por hostname
+### Rotas públicas (`/tv`) — slug obrigatório via query string
 
-`/tv` não tem JWT → não pode usar `useCurrentUser`. Resolve o tenant em 2 passos (`src/pages/Tv.tsx:37-46`):
+`/tv` não tem JWT → não pode usar `useCurrentUser`. A plataforma roda em domínio único (BDN hospeda todos os tenants), então a diferenciação é só pelo query param na URL: `?tenant=eqi` ou `?tenant=bdn`.
 
-1. Query param explícito `?tenant=eqi|bdn` (override útil em dev/preview).
-2. `resolveTenantFromHost(window.location.hostname)` em `src/config/tenants.ts` — match case-insensitive contra `HOST_PATTERNS` (`/bdntech/`, `/(^|\.)bdn[.-]/`). Fallback `"eqi"`.
+- **Sem fallback**: `/tv` sem `?tenant=` (ou com slug inválido) renderiza tela `TvMissingTenant` no estilo NotFound (404-like) com links pros tenants conhecidos — em vez de silenciosamente cair em EQI. Decisão pra evitar TV BDN mostrar dados EQI por engano.
+- **Forwarding pro backend**: quando o slug está presente, `apiFetch` (em `src/api/client.ts`) injeta `?tenant=<slug>` automaticamente em toda chamada pública. Hooks não precisam adicionar manualmente.
+- Lógica em `src/pages/Tv.tsx` (componentes `TvPage` wrapper + `TvPageContent` + `TvMissingTenant`).
 
-`HOST_PATTERNS` espelha o array equivalente no backend (`src/lib/tenant.ts`). **Mantenha os dois em sincronia** ao adicionar tenant novo com domínio próprio.
+### `/login` — brand "last login"
 
-**Adicionar tenant novo** (4 passos):
+`/login` também é pre-auth → não pode resolver tenant via JWT. Adota padrão "last login" das apps modernas:
+
+- `getLastTenant()` (em `src/api/client.ts`) lê `localStorage["pp_last_tenant"]` — slug do último tenant ativo.
+- Slug válido → aplica `data-tenant=<slug>` no `<html>` + usa `LOGIN_BRANDS[<slug>]` no painel esquerdo (gradient, inicial, accent color).
+- Sem last login (primeira visita, localStorage limpo, slug desconhecido) → fallback `DEFAULT_TENANT_SLUG = "bdn"` (definido em `src/config/tenants.ts`). BDN é a org admin da plataforma, então é o default natural.
+- Persistência: `setLastTenant(slug)` é chamado em (a) `Login.handleSubmit` no sucesso do `/auth/login`, (b) `useSwitchTenant.onSuccess`, e (c) `useCurrentUser` sempre que `tenant.slug` chega de `/auth/me`. **Não é limpo no logout** (`clearAuthToken` não toca a chave) — propósito é exatamente sobreviver entre sessões.
+
+Pra adicionar tenant novo no /login: criar entry em `LOGIN_BRANDS` (em `src/pages/Login.tsx`) com `gradientFrom/gradientTo/accentBg/accentText/accentHighlight/accentBlob/initial`. Sem essa entry, cai no fallback BDN.
+
+### Logo do tenant nos brand-marks
+
+Sempre que o tenant tem `brandConfig.logoUrl` (subido via `/admin/tenants` → R2), o frontend prefere a IMAGEM em cima do quadrado-com-letra/ícone-genérico nesses pontos:
+
+- **`DashboardSidebar`** — quadrado da marca no topo da sidebar. Se `tenantConfig.logoUrl` está presente, renderiza `<img>`; senão, ícone `<Pulse>` genérico.
+- **`TenantSwitcher`** — botão trigger do dropdown na sidebar. Mostra a imagem em 16x16 quando há logo; senão ícone `<ShieldStar>` (admin org) ou `<Buildings>`. Items do dropdown continuam com ícone (não temos logo das OUTRAS memberships).
+- **`Login.tsx`** — quadrado da marca (desktop 56x56 e mobile 40x40). Pre-auth não acessa `tenantConfig`, então lê do cache `localStorage["pp_last_tenant_logo"]`. Primeira visita sempre cai na inicial (`LOGIN_BRANDS[slug].initial`); a partir do segundo login a imagem real aparece.
+
+Padrão de fallback é sempre o mesmo: `{logoUrl ? <img/> : <FallbackVisual/>}` — adicionar em outros lugares basta seguir esse padrão.
+
+**TvSlides** (rota pública, sem JWT, sem cache de last login) usa o hook `usePublicTenantBrand(slug)` em `src/hooks/usePublicTenantBrand.ts`, que consome o endpoint público `GET /api/public/tenants/:slug/brand` (PR backend separada). Caminho:
+- `Tv.tsx` lê `?tenant=<slug>` da URL → chama `usePublicTenantBrand(slug)` → extrai `data.brandConfig.logoUrl`
+- Passa `logoUrl` como prop pra `<TvSlides>` → propaga pro `Chrome` interno
+- Chrome chrome header renderiza `<img>` quando presente, senão `t.label[0]` (letra inicial)
+- Cache Tanstack: 5min (alinhado com `Cache-Control` do backend), `retry: false` (404 é resposta válida)
+
+**Adicionar tenant novo** (3 passos):
 
 1. Criar bloco `[data-tenant="<slug>"] { --background: ...; ... }` em `src/index.css` (copiar do bloco BDN como template).
 2. Adicionar entry em `TENANT_FALLBACKS` (`src/config/tenants.ts`) e atualizar tipo `TenantSlug`.
-3. Adicionar pattern em `HOST_PATTERNS` (em `src/config/tenants.ts` e backend `src/lib/tenant.ts`) se o tenant tem domínio próprio.
-4. Criar tenant via UI `/admin/tenants` (ou script direto no backend).
+3. Criar tenant via UI `/admin/tenants` (ou script direto no backend).
 
 `TenantSwitcher` (`src/components/shared/TenantSwitcher.tsx`) só aparece se `memberships.length > 1`. Renderiza dropdown na sidebar com indicador `isAdminOrg`.
 
@@ -326,5 +354,5 @@ describe("KpiTile", () => {
 - **Nova rota admin** → mesmo + entrar no nested `/admin` route + adicionar ao `AdminSubnav`.
 - **Novo widget do dashboard** → `src/components/dashboard/<Widget>.tsx`, importar onde fizer sentido (Index, PorDia, Ranking, ...). Reutilizar `KpiTile`/`SectionCard`/`StatDelta` de `shared/`.
 - **Nova entidade tempo-real** (muda quando métrica é registrada) → adicionar `qc.invalidateQueries({ queryKey: ["<entity>"] })` em `useRankingStream` cascade.
-- **Novo tenant** → 4 passos descritos em "Multi-tenant em runtime" (inclui adicionar pattern em `HOST_PATTERNS` se tiver domínio próprio).
+- **Novo tenant** → 3 passos descritos em "Multi-tenant em runtime".
 - **Novo upload** → seguir pattern FormData de `useKpis.useUploadKpiSound`.

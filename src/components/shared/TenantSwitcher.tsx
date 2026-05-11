@@ -20,7 +20,8 @@ import {
 import { cn } from "@/lib/utils";
 
 export function TenantSwitcher({ collapsed = false }: { collapsed?: boolean }) {
-  const { tenant, memberships, hasMultipleMemberships } = useCurrentUser();
+  const { tenant, tenantConfig, memberships, hasMultipleMemberships } =
+    useCurrentUser();
   const switchTenant = useSwitchTenant();
   const [open, setOpen] = useState(false);
 
@@ -54,7 +55,15 @@ export function TenantSwitcher({ collapsed = false }: { collapsed?: boolean }) {
           )}
           title={`Mesa atual: ${tenant.fullName}`}
         >
-          {tenant.isAdminOrg ? (
+          {tenantConfig.logoUrl ? (
+            <div className="w-4 h-4 shrink-0 rounded overflow-hidden">
+              <img
+                src={tenantConfig.logoUrl}
+                alt={tenant.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : tenant.isAdminOrg ? (
             <ShieldStar size={16} weight="bold" className="text-primary shrink-0" />
           ) : (
             <Buildings size={16} weight="bold" className="text-ink-2 shrink-0" />

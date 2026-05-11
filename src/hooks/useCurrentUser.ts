@@ -1,5 +1,12 @@
+import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiFetch, getAuthToken, setAuthToken } from "@/api/client";
+import {
+  apiFetch,
+  getAuthToken,
+  setAuthToken,
+  setLastTenant,
+  setLastTenantLogo,
+} from "@/api/client";
 import { resolveTenantConfig, type TenantConfig, type TenantSlug } from "@/config/tenants";
 
 export interface ApiTenant {
@@ -51,6 +58,19 @@ export function useCurrentUser() {
     tenant?.brandConfig,
   );
 
+  // Persiste o slug do tenant ativo + logoUrl no localStorage pra `/login`
+  // renderizar a marca real na próxima visita (estilo "last login").
+  //
+  // IMPORTANTE: só persiste quando `tenant` veio do backend (user logado).
+  // Sem essa guarda, rotas pre-auth (que ainda passam pelo TenantProvider)
+  // limpariam o cache porque `tenantConfig` cai no fallback sem logoUrl.
+  useEffect(() => {
+    if (!tenant?.slug) return;
+    setLastTenant(tenant.slug);
+    const rawLogo = tenant.brandConfig?.logoUrl;
+    setLastTenantLogo(typeof rawLogo === "string" ? rawLogo : null);
+  }, [tenant?.slug, tenant?.brandConfig?.logoUrl]);
+
   return {
     user,
     tenant,
@@ -87,6 +107,13 @@ export function useSwitchTenant() {
       }),
     onSuccess: (data) => {
       setAuthToken(data.token);
+      setLastTenant(data.tenant.slug);
+      // Atualiza cache de logo — pode mudar ao trocar de tenant
+      const incomingLogo =
+        typeof data.tenant.brandConfig?.logoUrl === "string"
+          ? (data.tenant.brandConfig.logoUrl as string)
+          : null;
+      setLastTenantLogo(incomingLogo);
       // Atualiza /auth/me imediatamente sem refetch
       qc.setQueryData(QUERY_KEY, {
         user: data.user,

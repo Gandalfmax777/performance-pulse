@@ -273,6 +273,10 @@ function Delta({ pctVal }: { pctVal: number | null }) {
 
 interface ChromeProps {
   tenant: Tenant;
+  /** Logo do tenant (R2). Quando presente, substitui o quadrado-com-letra
+   *  no header. Fluxo: Tv.tsx busca via usePublicTenantBrand → passa pro
+   *  TvSlides → chega aqui. */
+  logoUrl?: string | null;
   rangeLabel: string;
   slideTitle: string;
   slideIdx: number;
@@ -280,7 +284,7 @@ interface ChromeProps {
   children: React.ReactNode;
 }
 
-function Chrome({ tenant, rangeLabel, slideTitle, slideIdx, slideCount, children }: ChromeProps) {
+function Chrome({ tenant, logoUrl, rangeLabel, slideTitle, slideIdx, slideCount, children }: ChromeProps) {
   const t = TENANT_TOKENS[tenant];
   return (
     <div
@@ -321,7 +325,7 @@ function Chrome({ tenant, rangeLabel, slideTitle, slideIdx, slideCount, children
               width: 28,
               height: 28,
               borderRadius: 6,
-              background: "var(--tv-accent)",
+              background: logoUrl ? "rgba(255,255,255,0.06)" : "var(--tv-accent)",
               color: "var(--tv-bg)",
               display: "flex",
               alignItems: "center",
@@ -330,9 +334,18 @@ function Chrome({ tenant, rangeLabel, slideTitle, slideIdx, slideCount, children
               fontWeight: 800,
               fontSize: 13,
               letterSpacing: "-0.04em",
+              overflow: "hidden",
             }}
           >
-            {t.label[0]}
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt={t.label}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              t.label[0]
+            )}
           </div>
           <span>Performance Pulse</span>
           <span style={{ color: "var(--tv-ink-4)" }}>·</span>
@@ -1320,6 +1333,9 @@ export const TV_SLIDES: TvSlideDef[] = [
 
 interface TvSlidesProps {
   tenant?: Tenant;
+  /** Logo do tenant (R2) pra mostrar no chrome header. Fluxo: Tv.tsx busca
+   *  via usePublicTenantBrand → passa aqui. Sem logo, cai pra letra inicial. */
+  logoUrl?: string | null;
   period?: Period;
   assessors: Assessor[];
   /** Index do slide atual (controlled). Se não passado, gerencia state local. */
@@ -1332,7 +1348,13 @@ interface TvSlidesProps {
  * Quando `slideIdx` é passado, opera como controlled component (caller
  * gerencia rotação). Quando ausente, faz auto-rotation interna a 15s.
  */
-export function TvSlides({ tenant = "eqi", period = "weekly", assessors, slideIdx: ctrlIdx }: TvSlidesProps) {
+export function TvSlides({
+  tenant = "eqi",
+  logoUrl,
+  period = "weekly",
+  assessors,
+  slideIdx: ctrlIdx,
+}: TvSlidesProps) {
   const [internalIdx, setInternalIdx] = useState(0);
   const slideIdx = ctrlIdx ?? internalIdx;
   const range = useMemo(() => rangeForPeriod(period), [period]);
@@ -1352,6 +1374,7 @@ export function TvSlides({ tenant = "eqi", period = "weekly", assessors, slideId
   return (
     <Chrome
       tenant={tenant}
+      logoUrl={logoUrl}
       rangeLabel={range.label}
       slideTitle={slide.title}
       slideIdx={slideIdx % TV_SLIDES.length}
