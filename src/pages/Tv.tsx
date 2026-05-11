@@ -57,7 +57,14 @@ const TvPage = () => {
  */
 const TvMissingTenant = () => {
   useEffect(() => {
-    document.documentElement.setAttribute("data-tenant", DEFAULT_TENANT_SLUG);
+    // /tv é o único surface dark do sistema (DESIGN.md § Elevation).
+    // Mesmo a tela 404 vive em dark + tenant default pra herdar o clima.
+    const html = document.documentElement;
+    html.setAttribute("data-tenant", DEFAULT_TENANT_SLUG);
+    html.classList.add("dark");
+    return () => {
+      html.classList.remove("dark");
+    };
   }, []);
 
   return (
@@ -93,16 +100,24 @@ const TvPageContent = ({ tenantSlug }: { tenantSlug: TenantSlug }) => {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Aplica data-tenant no <html> pra ativar tema CSS escopado.
+  // Aplica `data-tenant` + classe `dark` no <html> pra ativar a paleta
+  // dark tenant-scoped (`.dark[data-tenant="<slug>"]` em src/index.css).
+  // Limpa `.dark` ao desmontar pra não vazar dark em outras rotas; o
+  // `data-tenant` fica (AppShell/Login lê last-login slug ao montar).
   useEffect(() => {
-    document.documentElement.setAttribute("data-tenant", tenantSlug);
+    const html = document.documentElement;
+    html.setAttribute("data-tenant", tenantSlug);
+    html.classList.add("dark");
+    return () => {
+      html.classList.remove("dark");
+    };
   }, [tenantSlug]);
 
   const { assessors } = useAssessors();
 
   // Brand público (logo R2 + nome) via endpoint sem auth. Usado pra mostrar
   // a marca real do tenant no chrome header do TvSlides — sem isso, cai
-  // pra letra inicial do nome do tenant (TENANT_TOKENS).
+  // pra letra inicial do label do tenant (TENANT_META em TvSlides.tsx).
   const brandQuery = usePublicTenantBrand(tenantSlug);
   const tenantLogoUrl =
     typeof brandQuery.data?.brandConfig?.logoUrl === "string"
@@ -172,7 +187,7 @@ const TvPageContent = ({ tenantSlug }: { tenantSlug: TenantSlug }) => {
   };
 
   return (
-    <div className="min-h-screen w-screen overflow-hidden relative" style={{ background: "#000b14" }}>
+    <div className="min-h-screen w-screen overflow-hidden relative bg-background">
       {/* Slide ocupa tela inteira — TvSlides tem seu próprio Chrome */}
       <div className="absolute inset-0">
         <TvSlides
@@ -185,7 +200,8 @@ const TvPageContent = ({ tenantSlug }: { tenantSlug: TenantSlug }) => {
 
       {/* Controles flutuantes — auto-hide após 3s idle. Posicionados
           ABAIXO do chrome top header (top-72px) pra não sobrepor o
-          rangeLabel "Semana de XX a YY". */}
+          rangeLabel "Semana de XX a YY". Tokens semânticos: foreground/5
+          segue o tenant (verde EQI / cyan BDN translúcido). */}
       <div
         className={`fixed top-[72px] right-4 z-50 flex items-center gap-1 transition-opacity duration-300 ${
           controlsVisible ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -194,14 +210,14 @@ const TvPageContent = ({ tenantSlug }: { tenantSlug: TenantSlug }) => {
       >
         <button
           onClick={() => setPlaying((p) => !p)}
-          className="p-2 rounded-[6px] bg-white/5 hover:bg-white/15 text-white/70 hover:text-white backdrop-blur-sm transition-all"
+          className="p-2 rounded-[6px] bg-foreground/5 hover:bg-foreground/15 text-foreground/70 hover:text-foreground backdrop-blur-sm transition-all"
           title={playing ? "Pausar rotação" : "Retomar rotação"}
         >
           {playing ? <Pause size={14} weight="bold" /> : <Play size={14} weight="bold" />}
         </button>
         <button
           onClick={nextSlide}
-          className="p-2 rounded-[6px] bg-white/5 hover:bg-white/15 text-white/70 hover:text-white backdrop-blur-sm transition-all"
+          className="p-2 rounded-[6px] bg-foreground/5 hover:bg-foreground/15 text-foreground/70 hover:text-foreground backdrop-blur-sm transition-all"
           title="Próximo slide"
         >
           <SkipForward size={14} weight="bold" />
@@ -209,17 +225,17 @@ const TvPageContent = ({ tenantSlug }: { tenantSlug: TenantSlug }) => {
         <div className="relative">
           <button
             onClick={() => setShowSettings((s) => !s)}
-            className="p-2 rounded-[6px] bg-white/5 hover:bg-white/15 text-white/70 hover:text-white backdrop-blur-sm transition-all"
+            className="p-2 rounded-[6px] bg-foreground/5 hover:bg-foreground/15 text-foreground/70 hover:text-foreground backdrop-blur-sm transition-all"
             title={`Intervalo: ${intervalSec}s`}
           >
             <Timer size={14} weight="bold" />
           </button>
           {showSettings && (
             <div
-              className="absolute right-0 top-9 rounded-[6px] p-2 min-w-[120px] z-10 shadow-xl backdrop-blur-sm"
-              style={{ background: "oklch(0 0 0 / 0.85)", border: "1px solid oklch(1 0 0 / 0.1)" }}
+              className="absolute right-0 top-9 rounded-[6px] p-2 min-w-[120px] z-10 shadow-xl backdrop-blur-sm border border-foreground/10"
+              style={{ background: "hsl(var(--card) / 0.92)" }}
             >
-              <p className="text-[10px] uppercase tracking-[0.16em] font-mono font-semibold text-white/50 px-2 pb-1">
+              <p className="text-[10px] uppercase tracking-[0.16em] font-mono font-semibold text-foreground/50 px-2 pb-1">
                 Intervalo
               </p>
               {TV_INTERVALS.map((sec) => (
@@ -232,8 +248,8 @@ const TvPageContent = ({ tenantSlug }: { tenantSlug: TenantSlug }) => {
                   }}
                   className={`block w-full text-left px-2 py-1 rounded-[4px] text-xs font-mono font-semibold transition-all ${
                     intervalSec === sec
-                      ? "bg-white text-black"
-                      : "text-white/70 hover:bg-white/10"
+                      ? "bg-foreground text-background"
+                      : "text-foreground/70 hover:bg-foreground/10"
                   }`}
                 >
                   {sec}s
@@ -244,21 +260,20 @@ const TvPageContent = ({ tenantSlug }: { tenantSlug: TenantSlug }) => {
         </div>
         <button
           onClick={exitFullscreen}
-          className="p-2 rounded-[6px] bg-white/5 hover:bg-white/15 text-white/70 hover:text-white backdrop-blur-sm transition-all"
+          className="p-2 rounded-[6px] bg-foreground/5 hover:bg-foreground/15 text-foreground/70 hover:text-foreground backdrop-blur-sm transition-all"
           title="Sair fullscreen"
         >
           <X size={14} weight="bold" />
         </button>
       </div>
 
-      {/* Progress bar — dourado fino no topo */}
+      {/* Progress bar — fino no topo. Cor segue --primary do tenant. */}
       <div
-        className="fixed top-0 left-0 right-0 h-[2px] z-50"
-        style={{ background: "oklch(1 0 0 / 0.05)" }}
+        className="fixed top-0 left-0 right-0 h-[2px] z-50 bg-foreground/5"
       >
         <div
           className="h-full transition-all duration-100 ease-linear"
-          style={{ width: `${progress}%`, background: "var(--tv-accent, #1bccf6)" }}
+          style={{ width: `${progress}%`, background: "hsl(var(--primary))" }}
         />
       </div>
 

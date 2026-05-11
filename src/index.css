@@ -166,11 +166,13 @@
     --chart-red: 14 80% 50%;
     --chart-purple: 262 60% 60%;
 
-    /* EQI brand */
-    --eqi-green: 148 70% 18%;
-    --eqi-mint: 148 60% 45%;
-    --eqi-forest: 148 80% 12%;
-    --eqi-soft: 148 50% 95%;
+    /* Brand tenant-scoped — 4 shades nominais (primary/light/deep/soft) que
+       cada bloco de tenant remapeia pro seu próprio brand. Tenant-neutros por
+       design — não há "verde" hardcoded no nome. Valores aqui são EQI default. */
+    --brand-primary: 148 70% 18%;          /* shade forte (= --primary EQI light) */
+    --brand-light: 148 60% 45%;            /* shade médio/brilhante */
+    --brand-deep: 148 80% 12%;             /* shade escuríssimo */
+    --brand-soft: 148 50% 95%;             /* shade quase-branco pra tints/bgs soft */
 
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
@@ -183,11 +185,11 @@
     --sidebar-ring: 240 12% 16%;
   }
 
-  /* ═══ TENANT BDN — light (estrutura preservada, INATIVA em runtime) ═══
-     Aplicação atual fica fixa em EQI via `<html data-tenant="eqi">` (index.html).
-     Este bloco existe para preservar a paleta cyan/azul do BDN documentada no
-     pulse.css do design — quando o backend suportar multi-tenant, basta trocar
-     o atributo `data-tenant` no `<html>` para reativar. NÃO REMOVER. */
+  /* ═══ TENANT BDN — light ═══
+     Ativo em runtime desde 2026-05-10 quando `data-tenant="bdn"` está no <html>
+     (aplicado por `TenantProvider` após `/auth/me`, ou no `Login.tsx` via
+     last-login). Paleta cyan/azul espelhando "The Tenant Mirror Rule" do
+     DESIGN.md — mesma estrutura semântica do `:root` EQI, valores BDN. */
   [data-tenant="bdn"] {
     --background: 210 33% 97%;            /* #f4f7fa */
     --foreground: 207 100% 4%;            /* #000b14 */
@@ -235,72 +237,213 @@
     --sidebar-accent-foreground: 207 100% 4%;
     --sidebar-border: 210 28% 89%;
     --sidebar-ring: 207 100% 4%;
+
+    /* Brand BDN — cyan equivalents pros 4 shades. */
+    --brand-primary: 196 100% 35%;         /* beacon cyan deep (= --accent-foreground) */
+    --brand-light: 191 92% 54%;            /* beacon cyan bright */
+    --brand-deep: 211 100% 15%;            /* surface dark profunda */
+    --brand-soft: 191 75% 92%;             /* cyan soft (= --accent BDN) */
   }
 
-  /* ═══ DARK MODE (paleta EQI dark — opção, não default) ═══
-     Mantém legibilidade pra quem prefere dark + Modo TV em ambiente escuro.
-     Verde mais claro pra contraste no fundo escuro. */
+  /* ═══ DARK MODE — exclusivo do Modo TV ═══
+     DESIGN.md (§ 4 Elevation, § 2 Colors): dark é o único surface canônico
+     escuro do sistema — sai do `Tv.tsx` aplicando `<html class="dark">` +
+     `data-tenant=<slug>`. A paleta segue "The Tenant Mirror Rule": cada
+     tenant tem seu próprio dark scope via `--brand-*` tenant-neutral.
+
+     Universais dark (gold/silver/bronze/charts/success/warning/destructive)
+     ficam no bloco `.dark` base. Backgrounds, surfaces, ink scale e accent
+     do tenant vivem em `.dark[data-tenant="<slug>"]`. O bloco base também
+     funciona como fallback EQI (caso `.dark` entre antes do `data-tenant`,
+     evitando FOUC). */
+
   .dark {
-    --background: 220 27% 7%;             /* #0F141A — quase preto azulado */
-    --foreground: 220 14% 96%;            /* #F3F4F6 */
+    /* Fallback (= EQI dark) pra evitar FOUC se `.dark` entrar antes do
+       `data-tenant`. Tenant-specific blocks abaixo sobrescrevem. */
+    --background: 148 50% 5%;              /* #07140d — deep forest */
+    --foreground: 138 36% 94%;             /* #eaf6ee */
 
-    --card: 220 24% 11%;                  /* #161D26 */
-    --card-foreground: 220 14% 96%;
+    --card: 148 36% 10%;                   /* #0d2418 */
+    --card-foreground: 138 36% 94%;
 
-    --popover: 220 24% 11%;
-    --popover-foreground: 220 14% 96%;
+    --popover: 148 36% 10%;
+    --popover-foreground: 138 36% 94%;
 
-    /* Primary: verde EQI mais claro pra contraste */
-    --primary: 142 76% 45%;               /* #1FB55B — verde médio brilhante */
-    --primary-foreground: 220 27% 7%;
+    --primary: 148 60% 50%;                /* #36c980 — verde médio brilhante */
+    --primary-foreground: 148 50% 5%;
 
-    /* Secondary */
-    --secondary: 220 20% 18%;
-    --secondary-foreground: 220 14% 96%;
+    --secondary: 148 32% 15%;              /* #143524 */
+    --secondary-foreground: 138 36% 94%;
 
-    /* Muted */
-    --muted: 220 20% 16%;
-    --muted-foreground: 220 9% 60%;
+    --muted: 148 32% 15%;
+    --muted-foreground: 138 14% 60%;
 
-    /* Accent */
-    --accent: 148 50% 18%;
-    --accent-foreground: 142 76% 70%;
+    --accent: 148 40% 14%;
+    --accent-foreground: 148 70% 35%;      /* #1f8a5b */
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 220 14% 96%;
+    --destructive: 350 100% 66%;           /* #ff5470 — warm red, legível em dark */
+    --destructive-foreground: 138 36% 94%;
 
-    --border: 220 20% 18%;
-    --input: 220 20% 18%;
-    --ring: 142 76% 45%;
+    --border: 148 30% 22%;                 /* #1f4e34 */
+    --input: 148 30% 22%;
+    --ring: 148 60% 50%;
 
-    /* Gamification — saturadas o suficiente pra TV mode */
-    --gold: 43 90% 60%;
-    --silver: 220 12% 70%;
-    --bronze: 25 70% 50%;
-    --success: 142 76% 45%;
-    --warning: 38 95% 55%;
+    /* Ink scale dark (espelha a estrutura ink/ink-2/ink-3/ink-4 do light).
+       ink-3 calibrado pra ≥5:1 sobre --background (eyebrow 11px mono = body text). */
+    --ink: 138 36% 94%;
+    --ink-2: 138 22% 72%;                  /* #a8c8b4 */
+    --ink-3: 138 14% 52%;                  /* eyebrow — contraste WCAG AA folgado */
+    --ink-4: 138 12% 30%;
 
-    /* Charts */
-    --chart-blue: 217 91% 60%;
-    --chart-green: 142 76% 45%;
-    --chart-orange: 38 95% 55%;
-    --chart-red: 0 84% 60%;
-    --chart-purple: 262 83% 65%;
+    /* Surface scale */
+    --surface: 148 36% 10%;
+    --surface-2: 148 32% 15%;
+    --line: 148 30% 22%;
+    --line-2: 148 30% 18%;
 
-    /* EQI brand accents */
-    --eqi-green: 142 76% 45%;
-    --eqi-mint: 142 60% 60%;
-    --eqi-forest: 148 60% 25%;
+    /* Universais — herdam em todos os tenants dark */
+    --gold: 38 90% 60%;                    /* Achievement Amber ≥4.5:1 sobre #0d2418 */
+    --gold-deep: 32 88% 52%;
+    --gold-soft: 38 88% 60%;               /* aplicado com /0.18 inline pra fundo soft */
+    --silver: 220 8% 70%;
+    --bronze: 28 56% 54%;
+    --success: 148 60% 50%;                /* override por tenant abaixo */
+    --warning: 38 92% 58%;
 
-    /* Sidebar */
-    --sidebar-background: 220 27% 9%;
-    --sidebar-foreground: 220 14% 96%;
-    --sidebar-primary: 142 76% 45%;
-    --sidebar-primary-foreground: 220 27% 7%;
-    --sidebar-accent: 220 20% 16%;
-    --sidebar-accent-foreground: 220 14% 96%;
-    --sidebar-border: 220 20% 18%;
-    --sidebar-ring: 142 76% 45%;
+    --chart-blue: 217 91% 65%;
+    --chart-green: 148 60% 55%;
+    --chart-orange: 38 92% 60%;
+    --chart-red: 350 100% 66%;
+    --chart-purple: 262 70% 70%;
+
+    /* Sidebar — em /tv só usado se algum sub-componente reusar tokens
+       de sidebar. Mantém compat. */
+    --sidebar-background: 148 36% 8%;
+    --sidebar-foreground: 138 36% 94%;
+    --sidebar-primary: 148 60% 50%;
+    --sidebar-primary-foreground: 148 50% 5%;
+    --sidebar-accent: 148 32% 15%;
+    --sidebar-accent-foreground: 138 36% 94%;
+    --sidebar-border: 148 30% 22%;
+    --sidebar-ring: 148 60% 50%;
+
+    /* Brand dark (fallback = EQI). */
+    --brand-primary: 148 60% 50%;
+    --brand-light: 148 60% 60%;
+    --brand-deep: 148 36% 10%;
+    --brand-soft: 148 32% 18%;
+  }
+
+  /* ═══ DARK + Tenant EQI ═══
+     Espinha igual ao bloco .dark base; explícito pra leitura semântica e
+     pra resistir a edits futuros do bloco base sem propagar pro EQI. */
+  .dark[data-tenant="eqi"] {
+    --background: 148 50% 5%;
+    --foreground: 138 36% 94%;
+
+    --card: 148 36% 10%;
+    --card-foreground: 138 36% 94%;
+    --popover: 148 36% 10%;
+    --popover-foreground: 138 36% 94%;
+
+    --primary: 148 60% 50%;
+    --primary-foreground: 148 50% 5%;
+
+    --secondary: 148 32% 15%;
+    --secondary-foreground: 138 36% 94%;
+    --muted: 148 32% 15%;
+    --muted-foreground: 138 14% 60%;
+
+    --accent: 148 40% 14%;
+    --accent-foreground: 148 70% 35%;
+
+    --border: 148 30% 22%;
+    --input: 148 30% 22%;
+    --ring: 148 60% 50%;
+
+    --ink: 138 36% 94%;
+    --ink-2: 138 22% 72%;
+    --ink-3: 138 14% 52%;
+    --ink-4: 138 12% 30%;
+
+    --surface: 148 36% 10%;
+    --surface-2: 148 32% 15%;
+    --line: 148 30% 22%;
+    --line-2: 148 30% 18%;
+
+    --success: 148 60% 50%;
+
+    --sidebar-background: 148 36% 8%;
+    --sidebar-foreground: 138 36% 94%;
+    --sidebar-primary: 148 60% 50%;
+    --sidebar-primary-foreground: 148 50% 5%;
+    --sidebar-accent: 148 32% 15%;
+    --sidebar-accent-foreground: 138 36% 94%;
+    --sidebar-border: 148 30% 22%;
+    --sidebar-ring: 148 60% 50%;
+
+    /* Brand dark EQI. */
+    --brand-primary: 148 60% 50%;
+    --brand-light: 148 60% 60%;
+    --brand-deep: 148 36% 10%;
+    --brand-soft: 148 32% 18%;
+  }
+
+  /* ═══ DARK + Tenant BDN ═══
+     Midnight navy + beacon cyan. "Trading-desk noturno": background
+     quase-preto azulado, accent cyan brilhante, ink scale frio. */
+  .dark[data-tenant="bdn"] {
+    --background: 207 100% 4%;             /* #000b14 */
+    --foreground: 207 67% 95%;             /* #e9f3fb */
+
+    --card: 211 100% 9%;                   /* #001a2e */
+    --card-foreground: 207 67% 95%;
+    --popover: 211 100% 9%;
+    --popover-foreground: 207 67% 95%;
+
+    --primary: 191 92% 54%;                /* #1bccf6 — beacon cyan bright */
+    --primary-foreground: 207 100% 4%;
+
+    --secondary: 211 100% 15%;             /* #002c4f */
+    --secondary-foreground: 207 67% 95%;
+    --muted: 211 100% 15%;
+    --muted-foreground: 207 24% 60%;
+
+    --accent: 209 81% 14%;
+    --accent-foreground: 196 100% 35%;     /* #0083b1 — beacon cyan deep */
+
+    --border: 209 81% 21%;                 /* #0a3a62 */
+    --input: 209 81% 21%;
+    --ring: 191 92% 54%;
+
+    --ink: 207 67% 95%;
+    --ink-2: 207 33% 75%;                  /* #a6c1d6 */
+    --ink-3: 209 23% 56%;                  /* eyebrow — contraste WCAG AA folgado (>5:1) */
+    --ink-4: 213 30% 33%;
+
+    --surface: 211 100% 9%;
+    --surface-2: 211 100% 15%;
+    --line: 209 81% 21%;
+    --line-2: 209 70% 18%;
+
+    /* Success em BDN é o próprio beacon cyan (azul-verde alto-contraste).
+       Mantém a leitura instantânea de "subiu" sem importar verde EQI. */
+    --success: 191 92% 54%;
+
+    --sidebar-background: 211 100% 7%;
+    --sidebar-foreground: 207 67% 95%;
+    --sidebar-primary: 191 92% 54%;
+    --sidebar-primary-foreground: 207 100% 4%;
+    --sidebar-accent: 211 100% 15%;
+    --sidebar-accent-foreground: 207 67% 95%;
+    --sidebar-border: 209 81% 21%;
+    --sidebar-ring: 191 92% 54%;
+
+    /* Brand dark BDN (cyan equivalents). */
+    --brand-primary: 191 92% 54%;
+    --brand-light: 196 100% 35%;
+    --brand-deep: 211 100% 9%;
+    --brand-soft: 211 100% 15%;
   }
 }
 
@@ -408,7 +551,8 @@
     box-shadow: 0 1px 3px hsl(var(--primary) / 0.12), 0 0 0 1px hsl(var(--primary) / 0.15);
   }
   .dark .glow-primary {
-    box-shadow: 0 0 20px hsl(var(--primary) / 0.2), 0 0 0 1px hsl(var(--primary) / 0.3);
+    /* Glow contido — autoridade calma, não casino. DESIGN.md § Achievement-Not-Casino. */
+    box-shadow: 0 0 12px hsl(var(--primary) / 0.18), 0 0 0 1px hsl(var(--primary) / 0.35);
   }
 
   /* === CARD SURFACES ===
@@ -420,10 +564,13 @@
     box-shadow: 0 1px 2px hsl(220 39% 11% / 0.04), 0 1px 3px hsl(220 39% 11% / 0.06);
   }
   .dark .card-glass {
-    background: hsl(var(--card) / 0.85);
+    /* Único uso autorizado de backdrop blur (DESIGN.md § No-Decorative-Blur):
+       superfície translúcida sobre fundo dark deixa "luz da TV atrás dos dados". */
+    background: hsl(var(--card) / 0.7);
     backdrop-filter: blur(16px);
-    border: 1px solid hsl(var(--border) / 0.6);
-    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.3);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsl(var(--border) / 0.55);
+    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.35);
   }
 
   .card-noise {
@@ -445,12 +592,14 @@
      Dark: mantém o efeito de "ambiente" que o Pulse tinha. */
   .bg-mesh {
     background-image:
-      radial-gradient(ellipse at 20% 0%, hsl(var(--eqi-green) / 0.02) 0%, transparent 50%);
+      radial-gradient(ellipse at 20% 0%, hsl(var(--brand-primary) / 0.02) 0%, transparent 50%);
   }
   .dark .bg-mesh {
+    /* Atmosfera dark — segue o tenant ativo (verde em EQI, cyan em BDN).
+       ≤6% opacity, conforme "The Mesa Bloomberg Rule" (DESIGN.md § Colors). */
     background-image:
-      radial-gradient(ellipse at 20% 0%, hsl(var(--eqi-green) / 0.06) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 100%, hsl(var(--eqi-mint) / 0.04) 0%, transparent 50%);
+      radial-gradient(ellipse at 20% 0%, hsl(var(--primary) / 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, hsl(var(--accent-foreground) / 0.04) 0%, transparent 50%);
   }
 
 }

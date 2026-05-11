@@ -19,7 +19,8 @@ import {
 import {
   DEFAULT_TENANT_SLUG,
   isTenantSlug,
-  TENANT_FALLBACKS,
+  TENANTS,
+  type TenantLoginBrand,
   type TenantSlug,
 } from "@/config/tenants";
 
@@ -43,51 +44,19 @@ interface LoginResponse {
 const KEYWORDS = ["Inteligente", "Obstinada", "Inovadora", "Dinâmica"];
 
 /**
- * Brand visual por tenant pro painel esquerdo da tela de login.
+ * Resolve o brand do painel esquerdo da tela de login.
  *
  * Pre-auth não tem JWT, então o frontend não sabe quem está logando.
  * Estratégia "last login": lê o slug do último tenant ativo (localStorage)
  * e renderiza o brand correspondente. Sem last login → fallback BDN
  * (`DEFAULT_TENANT_SLUG` em `src/config/tenants.ts`).
  *
- * Cada entry é AUTOSSUFICIENTE — pra adicionar novo tenant, adicionar
- * entry aqui + atualizar `TENANT_FALLBACKS` e `TenantSlug` type. Sem
- * essa registry, o painel cai no brand do `DEFAULT_TENANT_SLUG`.
+ * Brand data vive em `TENANTS[slug].login` (single source of truth pra
+ * metadados de tenant). Pra adicionar tenant novo, basta editar `TENANTS`.
  */
-interface LoginBrand {
-  initial: string;
-  gradientFrom: string;
-  gradientTo: string;
-  accentBg: string;
-  accentText: string;
-  accentHighlight: string;
-  accentBlob: string;
-}
-
-const LOGIN_BRANDS: Record<TenantSlug, LoginBrand> = {
-  eqi: {
-    initial: "E",
-    gradientFrom: "hsl(var(--eqi-forest))",
-    gradientTo: "hsl(220 27% 5%)",
-    accentBg: "hsl(var(--eqi-mint))",
-    accentText: "hsl(var(--eqi-forest))",
-    accentHighlight: "hsl(var(--eqi-mint))",
-    accentBlob: "hsl(var(--eqi-mint) / 0.22)",
-  },
-  bdn: {
-    initial: "B",
-    gradientFrom: "#002c4f",
-    gradientTo: "#000b14",
-    accentBg: "#1bccf6",
-    accentText: "#002c4f",
-    accentHighlight: "#1bccf6",
-    accentBlob: "rgba(27, 204, 246, 0.22)",
-  },
-};
-
 function resolveLoginBrand(): {
   slug: TenantSlug;
-  brand: LoginBrand;
+  brand: TenantLoginBrand;
   fullName: string;
   logoUrl: string | null;
 } {
@@ -96,8 +65,8 @@ function resolveLoginBrand(): {
     stored && isTenantSlug(stored) ? stored : DEFAULT_TENANT_SLUG;
   return {
     slug,
-    brand: LOGIN_BRANDS[slug],
-    fullName: TENANT_FALLBACKS[slug].fullName,
+    brand: TENANTS[slug].login,
+    fullName: TENANTS[slug].fullName,
     // Logo do último tenant logado (cacheado quando useCurrentUser resolveu
     // brandConfig). Primeira visita nunca tem logo — cai na inicial do brand.
     logoUrl: getLastTenantLogo(),

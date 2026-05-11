@@ -117,7 +117,7 @@ const AdminPenalties = () => {
     const dateLabel = format(new Date(p.date), "dd/MM/yyyy", { locale: ptBR });
     const msg =
       p.status === "APPROVED" || p.status === "AUTO_APPROVED"
-        ? `Apagar penalidade de ${p.assessorName} (${dateLabel}, −${p.pointsProposed} pts)?\n\nESTÁ APROVADA — apagar vai DEVOLVER os pontos no ranking. Irreversível.`
+        ? `Apagar penalidade de ${p.assessorName} (${dateLabel}, −${p.pointsProposed} pts)?\n\nESTÁ APROVADA: apagar vai DEVOLVER os pontos no ranking. Irreversível.`
         : `Apagar proposta de ${p.assessorName} (${dateLabel})? Irreversível.`;
     if (!window.confirm(msg)) return;
     deleteMut.mutate(p.id, {
@@ -199,7 +199,7 @@ const AdminPenalties = () => {
           <Warning size={32} className="mx-auto mb-3 opacity-50" />
           <p className="text-sm font-semibold">Nenhuma proposta com este filtro.</p>
           {filter === "PENDING" && (
-            <p className="text-xs mt-1">Bom sinal — time tá registrando regularmente.</p>
+            <p className="text-xs mt-1">Bom sinal: time tá registrando regularmente.</p>
           )}
         </div>
       ) : (
@@ -294,7 +294,7 @@ const AdminPenalties = () => {
                               title="Aprovar"
                               onClick={() => openReview("APPROVED", p)}
                             >
-                              <Check size={14} className="text-eqi" />
+                              <Check size={14} className="text-primary" />
                             </Button>
                             <Button
                               variant="ghost"
@@ -628,7 +628,7 @@ function EditDialog({
             {target.assessorName}
             {isApproved && (
               <span className="block mt-1 text-destructive font-semibold">
-                Já aprovada — mudar pontos/data afeta o ranking imediatamente.
+                Já aprovada: mudar pontos/data afeta o ranking imediatamente.
               </span>
             )}
           </DialogDescription>

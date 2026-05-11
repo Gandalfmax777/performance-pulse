@@ -220,7 +220,7 @@ const AdminTournaments = () => {
             <button
               key={tpl.id}
               onClick={() => applyTemplate(tpl)}
-              className="text-left p-3 rounded-[14px] border border-line bg-surface-2/50 hover:border-eqi/40 hover:bg-eqi/5 transition-all"
+              className="text-left p-3 rounded-[14px] border border-line bg-surface-2/50 hover:border-primary/40 hover:bg-primary/5 transition-all"
             >
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-sm font-semibold text-ink truncate">{tpl.label}</span>

@@ -77,7 +77,7 @@ const KpiGoalsList = ({ from, to, limit = 6 }: KpiGoalsListProps) => {
                   className="h-full rounded-full transition-all duration-700"
                   style={{
                     width: `${pct}%`,
-                    background: reached ? "hsl(var(--success))" : "hsl(var(--eqi-green))",
+                    background: reached ? "hsl(var(--success))" : "hsl(var(--brand-primary))",
                   }}
                 />
               </div>

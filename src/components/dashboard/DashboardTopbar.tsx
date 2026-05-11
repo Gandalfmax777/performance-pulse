@@ -19,7 +19,7 @@ interface Props {
  */
 const DashboardTopbar = ({ eyebrow, title, subtitle, actions, onMenuClick }: Props) => {
   return (
-    <header className="flex items-center gap-4 px-7 py-5 border-b border-line bg-card/70 backdrop-blur-md sticky top-0 z-30">
+    <header className="flex items-center gap-4 px-7 py-5 border-b border-line bg-card sticky top-0 z-30">
       <button
         onClick={onMenuClick}
         aria-label="Abrir menu"

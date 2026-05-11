@@ -47,8 +47,8 @@ const SquadPoolHero = () => {
         // Design: linear-gradient(135deg, accent-3 → ink). Mantemos a
         // direção 135° que cria uma diagonal mais dramática.
         background:
-          "linear-gradient(135deg, hsl(var(--eqi-forest)) 0%, hsl(var(--ink)) 100%)",
-        borderColor: "hsl(var(--eqi-forest))",
+          "linear-gradient(135deg, hsl(var(--brand-deep)) 0%, hsl(var(--ink)) 100%)",
+        borderColor: "hsl(var(--brand-deep))",
       }}
     >
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-8 px-6 py-7 md:py-8 items-center">

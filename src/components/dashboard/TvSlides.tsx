@@ -21,99 +21,38 @@ import { useOverviewReport } from "@/hooks/useReports";
 import { useWeeklyRanking, useMonthlyRanking } from "@/hooks/useRankings";
 import { useActiveTournaments, type ApiTournament } from "@/hooks/useTournaments";
 import { useTeamInsightHistory } from "@/hooks/useInsight";
+import { TENANTS, type TenantSlug } from "@/config/tenants";
 
-// ─── TENANT TOKENS ────────────────────────────────────────────────────────
-// BDN: navy + cyan. EQI: verde forest + verde claro.
+// ─── TENANT ───────────────────────────────────────────────────────────────
+// Paleta vive em `src/index.css` sob `.dark[data-tenant="<slug>"]` (single
+// source of truth — DESIGN.md § Tenant Mirror Rule). Metadados (label, font
+// tuning) vivem em `src/config/tenants.ts` → `TENANTS[slug].tv`.
 
-type Tenant = "bdn" | "eqi";
-
-interface TenantToken {
-  label: string;
-  fullName: string;
-  bg: string;
-  surface: string;
-  surface2: string;
-  line: string;
-  line2: string;
-  ink: string;
-  ink2: string;
-  ink3: string;
-  ink4: string;
-  accent: string;
-  accent2: string;
-  success: string;
-  warning: string;
-  danger: string;
-  fontDisplay: string;
-  displayWeight: number;
-  displayLetter: string;
-}
-
-const TENANT_TOKENS: Record<Tenant, TenantToken> = {
-  bdn: {
-    label: "BDN",
-    fullName: "Build Develop Network",
-    bg: "#000b14",
-    surface: "#001a2e",
-    surface2: "#002c4f",
-    line: "#0a3a62",
-    line2: "#053153",
-    ink: "#e9f3fb",
-    ink2: "#a6c1d6",
-    ink3: "#5d7d97",
-    ink4: "#3a5670",
-    accent: "#1bccf6",
-    accent2: "#0083b1",
-    success: "#1bccf6",
-    warning: "#f5b800",
-    danger: "#ff5470",
-    fontDisplay: "'Archivo', system-ui, sans-serif",
-    displayWeight: 800,
-    displayLetter: "-0.04em",
-  },
-  eqi: {
-    label: "EQI",
-    fullName: "EQI Investimentos",
-    bg: "#07140d",
-    surface: "#0d2418",
-    surface2: "#143524",
-    line: "#1f4e34",
-    line2: "#193f2a",
-    ink: "#eaf6ee",
-    ink2: "#a8c8b4",
-    ink3: "#5e8470",
-    ink4: "#3a5b48",
-    accent: "#36c980",
-    accent2: "#1f8a5b",
-    success: "#36c980",
-    warning: "#f5b800",
-    danger: "#ff5470",
-    fontDisplay: "'Archivo', system-ui, sans-serif",
-    displayWeight: 700,
-    displayLetter: "-0.035em",
-  },
-};
+type Tenant = TenantSlug;
 
 function tenantStyle(tenant: Tenant): CSSProperties {
-  const t = TENANT_TOKENS[tenant];
+  // Adapter pros componentes existentes: aliases `--tv-*` continuam válidos
+  // mas lêem a paleta dark do tenant ativo via `hsl(var(--*))`. Quem aplica
+  // `<html class="dark" data-tenant=...>` é o `Tv.tsx`.
+  const tv = TENANTS[tenant].tv;
   return {
-    "--tv-bg": t.bg,
-    "--tv-surface": t.surface,
-    "--tv-surface-2": t.surface2,
-    "--tv-line": t.line,
-    "--tv-line-2": t.line2,
-    "--tv-ink": t.ink,
-    "--tv-ink-2": t.ink2,
-    "--tv-ink-3": t.ink3,
-    "--tv-ink-4": t.ink4,
-    "--tv-accent": t.accent,
-    "--tv-accent-2": t.accent2,
-    "--tv-success": t.success,
-    "--tv-warning": t.warning,
-    "--tv-danger": t.danger,
-    "--tv-font-display": t.fontDisplay,
-    "--tv-display-weight": t.displayWeight,
-    "--tv-display-letter": t.displayLetter,
+    "--tv-bg": "hsl(var(--background))",
+    "--tv-surface": "hsl(var(--card))",
+    "--tv-surface-2": "hsl(var(--surface-2))",
+    "--tv-line": "hsl(var(--border))",
+    "--tv-line-2": "hsl(var(--line-2))",
+    "--tv-ink": "hsl(var(--foreground))",
+    "--tv-ink-2": "hsl(var(--ink-2))",
+    "--tv-ink-3": "hsl(var(--ink-3))",
+    "--tv-ink-4": "hsl(var(--ink-4))",
+    "--tv-accent": "hsl(var(--primary))",
+    "--tv-accent-2": "hsl(var(--accent-foreground))",
+    "--tv-success": "hsl(var(--success))",
+    "--tv-warning": "hsl(var(--warning))",
+    "--tv-danger": "hsl(var(--destructive))",
+    "--tv-font-display": "'Archivo', system-ui, sans-serif",
+    "--tv-display-weight": tv.displayWeight,
+    "--tv-display-letter": tv.displayLetter,
   } as CSSProperties;
 }
 
@@ -285,7 +224,7 @@ interface ChromeProps {
 }
 
 function Chrome({ tenant, logoUrl, rangeLabel, slideTitle, slideIdx, slideCount, children }: ChromeProps) {
-  const t = TENANT_TOKENS[tenant];
+  const t = TENANTS[tenant].tv;
   return (
     <div
       style={{
@@ -512,7 +451,7 @@ function useTvSlideData(period: Period, assessors: Assessor[]): SlideData {
 // ─── SLIDES ──────────────────────────────────────────────────────────────
 
 function SlideCover({ tenant, period, data }: { tenant: Tenant; period: Period; data: SlideData }) {
-  const t = TENANT_TOKENS[tenant];
+  const t = TENANTS[tenant].tv;
   return (
     <div>
       <Eyebrow>

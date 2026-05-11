@@ -95,7 +95,7 @@ const TournamentCard = ({ tournament, tvMode = false }: Props) => {
         className="relative p-6 text-white overflow-hidden"
         style={{
           background:
-            "linear-gradient(135deg, hsl(var(--ink)) 0%, hsl(var(--eqi-forest)) 100%)",
+            "linear-gradient(135deg, hsl(var(--ink)) 0%, hsl(var(--brand-deep)) 100%)",
         }}
       >
         <div

@@ -173,7 +173,7 @@ const AdminSchedule = () => {
   // ─── Render ──────────────────────────────────────────────────────────────
 
   const formDialog = createDialog !== null || editDialog !== null;
-  const formTitle = editDialog ? `Editar — ${editDialog.name}` : `Nova atividade — ${DAY_LABELS[createDialog ?? 1]}`;
+  const formTitle = editDialog ? `Editar: ${editDialog.name}` : `Nova atividade: ${DAY_LABELS[createDialog ?? 1]}`;
   const formAction = editDialog ? handleEdit : handleCreate;
   const formSaving = createAct.isPending || updateAct.isPending;
 
@@ -189,7 +189,7 @@ const AdminSchedule = () => {
 
       {isLoading ? (
         <div className="rounded-[14px] border border-line bg-card p-10 flex items-center justify-center">
-          <CircleNotch size={24} className="text-eqi animate-spin" />
+          <CircleNotch size={24} className="text-primary animate-spin" />
         </div>
       ) : (
         <Tabs defaultValue="1" className="w-full">
@@ -260,7 +260,7 @@ const AdminSchedule = () => {
                               <Badge key={k.kpiId} variant="secondary" className="text-[10px]">
                                 {k.label}
                                 {k.targetOverride !== null && (
-                                  <span className="ml-1 text-eqi font-mono">({k.targetOverride})</span>
+                                  <span className="ml-1 text-primary font-mono">({k.targetOverride})</span>
                                 )}
                               </Badge>
                             ))}
@@ -372,7 +372,7 @@ const AdminSchedule = () => {
       <Sheet open={!!kpiSheet} onOpenChange={(v) => !v && setKpiSheet(null)}>
         <SheetContent className="w-[400px]">
           <SheetHeader>
-            <SheetTitle>KPIs — {kpiSheet?.name}</SheetTitle>
+            <SheetTitle>KPIs: {kpiSheet?.name}</SheetTitle>
             <SheetDescription>Vincule KPIs e defina meta override por atividade.</SheetDescription>
           </SheetHeader>
           {kpiSheet && (
@@ -545,7 +545,7 @@ function InlineTimeEditor({
           setEnd(endTime);
           setEditing(true);
         }}
-        className="font-mono text-xs hover:text-eqi hover:bg-eqi/10 px-1.5 py-0.5 rounded transition-all"
+        className="font-mono text-xs hover:text-primary hover:bg-primary/10 px-1.5 py-0.5 rounded transition-all"
         title="Editar horário"
       >
         {startTime}–{endTime}
@@ -565,7 +565,7 @@ function InlineTimeEditor({
         }}
         autoFocus
         disabled={saving}
-        className="w-[70px] px-1 py-0.5 rounded bg-muted/30 border border-eqi/30 text-xs font-mono focus:outline-none focus:border-primary"
+        className="w-[70px] px-1 py-0.5 rounded bg-muted/30 border border-primary/30 text-xs font-mono focus:outline-none focus:border-primary"
       />
       <span className="text-ink-3">–</span>
       <input
@@ -578,9 +578,9 @@ function InlineTimeEditor({
         }}
         onBlur={commit}
         disabled={saving}
-        className="w-[70px] px-1 py-0.5 rounded bg-muted/30 border border-eqi/30 text-xs font-mono focus:outline-none focus:border-primary"
+        className="w-[70px] px-1 py-0.5 rounded bg-muted/30 border border-primary/30 text-xs font-mono focus:outline-none focus:border-primary"
       />
-      {saving && <CircleNotch size={12} className="animate-spin text-eqi" />}
+      {saving && <CircleNotch size={12} className="animate-spin text-primary" />}
     </div>
   );
 }

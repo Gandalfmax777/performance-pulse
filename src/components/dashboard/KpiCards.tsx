@@ -97,7 +97,7 @@ const KpiCards = ({ from, to }: KpiCardsProps) => {
         const onTrack = projectedPct >= 100;
 
         const valueColor =
-          pct >= 100 ? "hsl(var(--eqi-green))" : "hsl(var(--ink))";
+          pct >= 100 ? "hsl(var(--brand-primary))" : "hsl(var(--ink))";
         const barColor =
           pct >= 100
             ? "hsl(var(--success))"

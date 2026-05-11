@@ -72,7 +72,7 @@ export default function AdminSounds() {
       </div>
 
       {/* Info card */}
-      <div className="rounded-lg bg-eqi/5 border border-eqi/20 p-4 space-y-2">
+      <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 space-y-2">
         <h3 className="text-sm font-bold text-ink flex items-center gap-1.5">
           <Volume2 size={16} weight="fill" /> Como funciona
         </h3>
@@ -87,7 +87,7 @@ export default function AdminSounds() {
             fica desativado pra esse KPI.
           </li>
           <li>
-            KPIs sem som cadastrado ficam <strong>silenciosos</strong> — não há
+            KPIs sem som cadastrado ficam <strong>silenciosos</strong>; não há
             fallback sintético.
           </li>
           <li>
@@ -142,7 +142,7 @@ function VolumeControlCard() {
           className={`p-2 rounded-[6px] transition-colors ${
             muted ? "bg-destructive/10 text-destructive" : "text-ink-3 hover:text-ink hover:bg-surface-2"
           }`}
-          title={muted ? "Mute ativo — clique pra reativar" : "Click pra mute"}
+          title={muted ? "Mute ativo: clique pra reativar" : "Click pra mute"}
         >
           {muted ? <VolumeX size={16} weight="fill" /> : <Volume2 size={16} weight="bold" />}
         </button>
@@ -389,7 +389,7 @@ function KpiSoundRow({ kpi }: { kpi: ApiKpi }) {
                   Ativar som
                 </Label>
                 <p className="text-[10px] text-ink-3 mt-0.5">
-                  Quando desativado, nada toca — mesmo com arquivo carregado.
+                  Quando desativado, nada toca, mesmo com arquivo carregado.
                 </p>
               </div>
             </div>

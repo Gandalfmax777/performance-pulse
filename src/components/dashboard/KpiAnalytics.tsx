@@ -218,7 +218,7 @@ const KpiAnalytics = ({ assessors, initialRange }: KpiAnalyticsProps) => {
       {/* Filters */}
       <div className="rounded-[14px] border border-line bg-card p-4">
         <div className="flex items-center flex-wrap gap-3">
-          <Funnel size={16} className="text-eqi" />
+          <Funnel size={16} className="text-primary" />
           <span className="text-sm font-bold text-ink mr-2">Filtros:</span>
 
           <DateRangePicker value={range} onChange={setRange} />
@@ -279,7 +279,7 @@ const KpiAnalytics = ({ assessors, initialRange }: KpiAnalyticsProps) => {
             <select
               value={selectedAssessor || ""}
               onChange={(e) => setSelectedAssessor(e.target.value || null)}
-              className="px-3 py-1.5 rounded-md bg-muted/30 border border-line/30 text-sm text-ink focus:outline-none focus:border-eqi/50"
+              className="px-3 py-1.5 rounded-md bg-muted/30 border border-line/30 text-sm text-ink focus:outline-none focus:border-primary/50"
             >
               <option value="">Selecione...</option>
               {assessors.map((a) => (
@@ -390,7 +390,7 @@ const KpiAnalytics = ({ assessors, initialRange }: KpiAnalyticsProps) => {
         <div className="rounded-[14px] border border-line bg-card p-5">
           <div className="flex items-baseline justify-between mb-4">
             <div className="flex items-center gap-2">
-              <ChartBar size={16} className="text-eqi" />
+              <ChartBar size={16} className="text-primary" />
               <h3 className="text-sm font-bold text-ink">
                 Cumprimento de Metas — {range.from} → {range.to}
               </h3>
@@ -429,7 +429,7 @@ const KpiAnalytics = ({ assessors, initialRange }: KpiAnalyticsProps) => {
 
         <div className="rounded-[14px] border border-line bg-card p-5">
           <div className="flex items-center gap-2 mb-4">
-            <TrendUp size={16} className="text-eqi" />
+            <TrendUp size={16} className="text-primary" />
             <h3 className="text-sm font-bold text-ink">Radar de Desempenho</h3>
           </div>
           <ResponsiveContainer width="100%" height={280}>
@@ -542,7 +542,7 @@ const KpiAnalytics = ({ assessors, initialRange }: KpiAnalyticsProps) => {
                             key={kpi.key}
                             className={`px-3 py-2 text-right font-mono font-semibold whitespace-nowrap ${
                               cellPct >= 80
-                                ? "text-eqi-green"
+                                ? "text-brand-primary"
                                 : cellPct >= 50
                                 ? "text-ink"
                                 : "text-destructive"
@@ -555,7 +555,7 @@ const KpiAnalytics = ({ assessors, initialRange }: KpiAnalyticsProps) => {
                       <td
                         className={`px-3 py-2 text-right font-mono font-bold whitespace-nowrap ${
                           overallPct >= 100
-                            ? "text-eqi-green"
+                            ? "text-brand-primary"
                             : overallPct >= 70
                             ? "text-ink"
                             : "text-destructive"
@@ -569,7 +569,7 @@ const KpiAnalytics = ({ assessors, initialRange }: KpiAnalyticsProps) => {
                             varDelta === null
                               ? "text-ink-3"
                               : varDelta > 0
-                              ? "text-eqi-green"
+                              ? "text-brand-primary"
                               : varDelta < 0
                               ? "text-destructive"
                               : "text-ink-3"
@@ -592,7 +592,7 @@ const KpiAnalytics = ({ assessors, initialRange }: KpiAnalyticsProps) => {
       <div className="rounded-[14px] border border-line bg-card p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Sparkle size={20} className="text-eqi" />
+            <Sparkle size={20} className="text-primary" />
             <h3 className="text-sm font-bold text-ink">Análise IA do Time</h3>
             {teamInsight?.cached && (
               <span className="text-[9px] text-ink-3 bg-muted/30 px-1.5 py-0.5 rounded">
@@ -617,7 +617,7 @@ const KpiAnalytics = ({ assessors, initialRange }: KpiAnalyticsProps) => {
                 )
               }
               disabled={generateTeam.isPending}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-eqi bg-eqi/10 border border-eqi/20 hover:bg-eqi/20 transition-all disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-primary bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all disabled:opacity-50"
             >
               {generateTeam.isPending ? (
                 <CircleNotch size={12} className="animate-spin" />
@@ -631,7 +631,7 @@ const KpiAnalytics = ({ assessors, initialRange }: KpiAnalyticsProps) => {
 
         {generateTeam.isPending ? (
           <div className="flex items-center gap-3 text-sm text-ink-3 py-6">
-            <CircleNotch size={20} className="animate-spin text-eqi" />
+            <CircleNotch size={20} className="animate-spin text-primary" />
             Gemini Flash analisando desempenho do time…
           </div>
         ) : teamInsight ? (

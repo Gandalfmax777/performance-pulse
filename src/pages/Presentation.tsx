@@ -167,7 +167,7 @@ const Presentation = () => {
             onClick={() => setAutoAdvance((v) => !v)}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition ${
               autoAdvance
-                ? "bg-eqi text-eqi-foreground"
+                ? "bg-primary text-primary-foreground"
                 : "bg-surface-2 text-ink-2 hover:text-ink"
             }`}
             title="Liga/desliga auto-advance (12s por slide)"
@@ -310,7 +310,7 @@ function SlideRanking({ period }: { period: Period }) {
             <div className="text-right border-l border-line pl-4 ml-2">
               <p
                 className={`text-2xl font-mono font-extrabold ${
-                  r.rollup.weeklyGoalPercent >= 100 ? "text-eqi" : "text-ink-3"
+                  r.rollup.weeklyGoalPercent >= 100 ? "text-primary" : "text-ink-3"
                 }`}
               >
                 {r.rollup.weeklyGoalPercent}%
@@ -350,7 +350,7 @@ function SlideEvolution() {
                 {a.deltaPercent !== null && (
                   <span
                     className={`text-xs font-mono font-extrabold ${
-                      a.deltaPercent >= 0 ? "text-eqi" : "text-destructive"
+                      a.deltaPercent >= 0 ? "text-primary" : "text-destructive"
                     }`}
                   >
                     {a.deltaPercent >= 0 ? "▲" : "▼"} {Math.abs(a.deltaPercent)}%
@@ -518,7 +518,7 @@ function SlideCadence({ period }: { period: Period }) {
                 </span>
                 <p
                   className={`text-[10px] font-bold ${
-                    conv >= 70 ? "text-eqi" : conv >= 40 ? "text-chart-orange" : "text-destructive"
+                    conv >= 70 ? "text-primary" : conv >= 40 ? "text-chart-orange" : "text-destructive"
                   }`}
                 >
                   {reunAg > 0 ? `${conv}%` : "—"}
@@ -527,7 +527,7 @@ function SlideCadence({ period }: { period: Period }) {
               <div className="text-center">
                 <span
                   className={`font-mono font-extrabold text-lg ${
-                    ativ >= 3 ? "text-eqi" : ativ >= 1 ? "text-ink" : "text-ink-3"
+                    ativ >= 3 ? "text-primary" : ativ >= 1 ? "text-ink" : "text-ink-3"
                   }`}
                 >
                   {ativ}
@@ -536,7 +536,7 @@ function SlideCadence({ period }: { period: Period }) {
               <div className="text-center">
                 <span
                   className={`font-mono font-extrabold text-base ${
-                    cad >= 70 ? "text-eqi" : cad >= 50 ? "text-chart-orange" : "text-destructive"
+                    cad >= 70 ? "text-primary" : cad >= 50 ? "text-chart-orange" : "text-destructive"
                   }`}
                 >
                   {cad}%
@@ -544,7 +544,7 @@ function SlideCadence({ period }: { period: Period }) {
                 <div className="mt-1 h-1 bg-muted rounded-full overflow-hidden mx-auto max-w-[80px]">
                   <div
                     className={`h-full ${
-                      cad >= 70 ? "bg-eqi" : cad >= 50 ? "bg-chart-orange" : "bg-destructive"
+                      cad >= 70 ? "bg-primary" : cad >= 50 ? "bg-chart-orange" : "bg-destructive"
                     }`}
                     style={{ width: `${Math.min(100, cad)}%` }}
                   />
@@ -585,7 +585,7 @@ function KpiCard({
 }) {
   const toneClass: Record<typeof tone, string> = {
     primary: "border-primary/30 bg-primary/5 text-primary",
-    eqi: "border-eqi/30 bg-eqi/5 text-eqi",
+    eqi: "border-primary/30 bg-primary/5 text-primary",
     ink: "border-line bg-surface-2 text-ink",
     gold: "border-gold/30 bg-gold/5 text-gold-deep",
   };
@@ -706,10 +706,10 @@ function SlideRisk() {
     return (
       <div>
         <h2 className="text-3xl font-extrabold tracking-tight text-ink mb-6 flex items-center gap-3">
-          <Warning size={28} weight="fill" className="text-eqi" />
+          <Warning size={28} weight="fill" className="text-primary" />
           Alertas de Risco
         </h2>
-        <div className="text-center text-eqi font-bold py-12">
+        <div className="text-center text-primary font-bold py-12">
           Nenhum alerta no momento. Time tá rodando bem.
         </div>
       </div>
@@ -729,12 +729,12 @@ function SlideRisk() {
         {data.alerts.map((alert) => (
           <div
             key={alert.assessorId}
-            className={`p-4 rounded-xl border-l-4 ${
+            className={`p-4 rounded-xl border ${
               alert.reasons.length === 3
-                ? "bg-destructive/10 border-l-destructive border-y border-r border-destructive/30"
+                ? "bg-destructive/12 border-destructive/35"
                 : alert.reasons.length === 2
-                ? "bg-orange-100 border-l-orange-500 border-y border-r border-orange-300"
-                : "bg-amber-100/50 border-l-amber-500 border-y border-r border-amber-300"
+                ? "bg-destructive/8 border-destructive/25"
+                : "bg-[hsl(var(--warning)/0.15)] border-[hsl(var(--warning)/0.40)]"
             }`}
           >
             <div className="flex items-center gap-3 mb-2">

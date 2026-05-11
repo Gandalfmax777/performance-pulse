@@ -72,7 +72,7 @@ const AnnouncementTicker = (_props: AnnouncementTickerProps) => {
             }}
           >
             {doubled.map((m, i) => (
-              <span key={i} className="text-[13px] py-2 font-medium" style={{ color: 'oklch(1 0 0 / 0.92)' }}>
+              <span key={i} className="text-[13px] py-2 font-medium text-white/90">
                 {m}
               </span>
             ))}

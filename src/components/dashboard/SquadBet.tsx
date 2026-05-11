@@ -500,7 +500,7 @@ const SquadBet = ({ assessors }: Props) => {
 
       {/* Active Bet Banner */}
       {activeBet && (
-        <div className="rounded-[14px] border border-line bg-card p-4 border-l-2 border-l-gold animate-fade-in">
+        <div className="rounded-[14px] border border-line bg-card p-4 animate-fade-in">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Fire size={22} weight="fill" className="text-gold-deep" />
@@ -511,7 +511,7 @@ const SquadBet = ({ assessors }: Props) => {
                     className={`ml-2 text-[10px] px-2 py-0.5 rounded-full font-bold ${
                       activeBet.type === "MONTHLY"
                         ? "bg-gold/20 text-gold-deep"
-                        : "bg-eqi/15 text-eqi"
+                        : "bg-primary/15 text-primary"
                     }`}
                   >
                     {activeBet.type === "MONTHLY" ? "MENSAL" : "SEMANAL"}
@@ -637,7 +637,7 @@ const SquadBet = ({ assessors }: Props) => {
                             {row.members.map((m) => (
                               <div key={m.id} className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                  <div className="w-6 h-6 rounded-full bg-eqi/20 flex items-center justify-center text-[10px] font-bold text-eqi">
+                                  <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">
                                     {m.avatar}
                                   </div>
                                   <span className="text-xs text-ink">{m.name}</span>
@@ -669,7 +669,7 @@ const SquadBet = ({ assessors }: Props) => {
                             {earnedBadges.map((b) => (
                               <span
                                 key={b.id}
-                                className="text-xs bg-eqi/10 text-eqi px-2 py-1 rounded-[7px] inline-flex items-center gap-1"
+                                className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-[7px] inline-flex items-center gap-1"
                                 title={b.description}
                               >
                                 <BadgeIcon slug={b.icon} size={12} />
@@ -775,7 +775,7 @@ const SquadBet = ({ assessors }: Props) => {
         <div className="lg:col-span-7">
           <div className="rounded-[14px] border border-line bg-card p-5 h-full">
             <h3 className="text-sm font-extrabold tracking-tight text-ink mb-3 flex items-center gap-2">
-              <TrendUp size={14} weight="bold" className="text-eqi" /> Performance vs Meta
+              <TrendUp size={14} weight="bold" className="text-primary" /> Performance vs Meta
             </h3>
             {barData.length > 0 ? (
               <ResponsiveContainer width="100%" height={220}>
@@ -949,7 +949,7 @@ const SquadBet = ({ assessors }: Props) => {
                           className={`ml-1.5 text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
                             bet.type === "MONTHLY"
                               ? "bg-gold/20 text-gold-deep"
-                              : "bg-eqi/15 text-eqi"
+                              : "bg-primary/15 text-primary"
                           }`}
                         >
                           {bet.type === "MONTHLY" ? "MÊS" : "SEM"}
@@ -992,12 +992,12 @@ const SquadBet = ({ assessors }: Props) => {
                     key={badge.id}
                     className={`rounded-[7px] p-3 border ${
                       unlocked
-                        ? "border-eqi/30 bg-eqi/5"
+                        ? "border-primary/30 bg-primary/5"
                         : "border-line bg-surface-2/30 opacity-50"
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      <BadgeIcon slug={badge.icon} size={16} className="text-eqi" />
+                      <BadgeIcon slug={badge.icon} size={16} className="text-primary" />
                       <span className="text-xs font-extrabold tracking-tight text-ink">{badge.name}</span>
                     </div>
                     <p className="text-[10px] text-ink-3">{badge.description}</p>
@@ -1006,7 +1006,7 @@ const SquadBet = ({ assessors }: Props) => {
                         {earnedSquads.map((sq) => (
                           <span
                             key={sq.id}
-                            className="text-[10px] bg-eqi/10 text-eqi px-1.5 py-0.5 rounded inline-flex items-center gap-1"
+                            className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded inline-flex items-center gap-1"
                           >
                             <SquadLogo squad={sq} size={10} />
                             {sq.name}

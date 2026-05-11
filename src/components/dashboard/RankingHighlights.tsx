@@ -140,7 +140,7 @@ const RankingHighlights = ({ assessors, rankDeltas }: RankingHighlightsProps) =>
             </div>
             <p
               className="font-mono font-extrabold leading-none tracking-[-0.04em]"
-              style={{ fontSize: 36, color: "hsl(var(--eqi-green))" }}
+              style={{ fontSize: 36, color: "hsl(var(--brand-primary))" }}
             >
               +{biggestJump.jump}
             </p>
@@ -186,10 +186,7 @@ const RankingHighlights = ({ assessors, rankDeltas }: RankingHighlightsProps) =>
             >
               {hallOfFame.name}
             </p>
-            <p
-              className="text-[12px] mt-1 mb-3.5"
-              style={{ color: "oklch(1 0 0 / 0.6)" }}
-            >
+            <p className="text-[12px] mt-1 mb-3.5 text-white/60">
               {sorted.indexOf(hallOfFame) === 0 ? "líder do ranking esta semana" : ""}
             </p>
             <div className="flex gap-4">
@@ -200,10 +197,7 @@ const RankingHighlights = ({ assessors, rankDeltas }: RankingHighlightsProps) =>
                 >
                   {hallOfFame.weeklyGoalPercent}%
                 </p>
-                <p
-                  className="text-[8px] uppercase tracking-[0.12em] font-semibold mt-1"
-                  style={{ color: "oklch(1 0 0 / 0.5)" }}
-                >
+                <p className="text-[8px] uppercase tracking-[0.12em] font-semibold mt-1 text-white/50">
                   MELHOR SEM.
                 </p>
               </div>
@@ -214,10 +208,7 @@ const RankingHighlights = ({ assessors, rankDeltas }: RankingHighlightsProps) =>
                 >
                   {hallOfFame.points}
                 </p>
-                <p
-                  className="text-[8px] uppercase tracking-[0.12em] font-semibold mt-1"
-                  style={{ color: "oklch(1 0 0 / 0.5)" }}
-                >
+                <p className="text-[8px] uppercase tracking-[0.12em] font-semibold mt-1 text-white/50">
                   PONTOS
                 </p>
               </div>
@@ -228,10 +219,7 @@ const RankingHighlights = ({ assessors, rankDeltas }: RankingHighlightsProps) =>
                 >
                   {hallOfFame.streak}
                 </p>
-                <p
-                  className="text-[8px] uppercase tracking-[0.12em] font-semibold mt-1"
-                  style={{ color: "oklch(1 0 0 / 0.5)" }}
-                >
+                <p className="text-[8px] uppercase tracking-[0.12em] font-semibold mt-1 text-white/50">
                   STREAK
                 </p>
               </div>
