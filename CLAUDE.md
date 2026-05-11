@@ -145,6 +145,7 @@ npm run preview      # serve o dist localmente
 - **URL base**: `import.meta.env.VITE_API_URL` (default `http://localhost:3001/api`). `.env.development` e `.env.example` já têm o default. Em produção (Vercel/Coolify) injetar a URL pública.
 - **Token**: `localStorage["pp_token"]` (constante `TOKEN_STORAGE_KEY` em `src/api/client.ts:12`). `apiFetch` injeta `Authorization: Bearer <token>` automaticamente. Login usa `skipAuth: true` (`src/pages/Login.tsx:41`).
 - **Last tenant**: `localStorage["pp_last_tenant"]` (`LAST_TENANT_STORAGE_KEY`). Slug do último tenant ativo, persistido pra `/login` saber qual brand renderizar. Setado no `/auth/login` success, `useSwitchTenant`, e sempre que `useCurrentUser` recebe `tenant.slug` de `/auth/me`. NÃO é limpo no logout.
+- **Last tenant logo**: `localStorage["pp_last_tenant_logo"]` (`LAST_TENANT_LOGO_STORAGE_KEY`). URL do logo R2 do último tenant logado. Permite `/login` mostrar a marca real (imagem) em vez do quadrado-com-letra. Setado nos mesmos pontos do slug. **Importante**: só é gravado quando o backend retornou `tenant.brandConfig.logoUrl` (não no fallback pre-auth), pra não limpar o cache em rotas públicas.
 - **401**: `apiFetch` limpa o token e redireciona pra `/login`, **exceto** em `/tv` (rota pública).
 - **`/tv` é rota pública**: `apiFetch` detecta `window.location.pathname` e bypassa auth tanto pra anexar token quanto pra redirecionar em 401. Os endpoints consumidos pela TV são públicos no backend. Check é por-chamada (não module-load) pra funcionar com navegação client-side.
 - **Forwarding de tenant em `/tv`**: como /tv não tem JWT, o backend `resolveTenantForPublicRoute` cai em "eqi" fallback se não receber `?tenant=`. Pra evitar BDN mostrar dados EQI, `apiFetch` injeta automaticamente `?tenant=<slug>` da URL atual quando estiver em /tv (`src/api/client.ts`, função `getTenantQueryParam`). As hooks não precisam adicionar manualmente — funciona pra qualquer endpoint público.
@@ -216,6 +217,16 @@ Pipeline:
 - Persistência: `setLastTenant(slug)` é chamado em (a) `Login.handleSubmit` no sucesso do `/auth/login`, (b) `useSwitchTenant.onSuccess`, e (c) `useCurrentUser` sempre que `tenant.slug` chega de `/auth/me`. **Não é limpo no logout** (`clearAuthToken` não toca a chave) — propósito é exatamente sobreviver entre sessões.
 
 Pra adicionar tenant novo no /login: criar entry em `LOGIN_BRANDS` (em `src/pages/Login.tsx`) com `gradientFrom/gradientTo/accentBg/accentText/accentHighlight/accentBlob/initial`. Sem essa entry, cai no fallback BDN.
+
+### Logo do tenant nos brand-marks
+
+Sempre que o tenant tem `brandConfig.logoUrl` (subido via `/admin/tenants` → R2), o frontend prefere a IMAGEM em cima do quadrado-com-letra/ícone-genérico nesses pontos:
+
+- **`DashboardSidebar`** — quadrado da marca no topo da sidebar. Se `tenantConfig.logoUrl` está presente, renderiza `<img>`; senão, ícone `<Pulse>` genérico.
+- **`TenantSwitcher`** — botão trigger do dropdown na sidebar. Mostra a imagem em 16x16 quando há logo; senão ícone `<ShieldStar>` (admin org) ou `<Buildings>`. Items do dropdown continuam com ícone (não temos logo das OUTRAS memberships).
+- **`Login.tsx`** — quadrado da marca (desktop 56x56 e mobile 40x40). Pre-auth não acessa `tenantConfig`, então lê do cache `localStorage["pp_last_tenant_logo"]`. Primeira visita sempre cai na inicial (`LOGIN_BRANDS[slug].initial`); a partir do segundo login a imagem real aparece.
+
+Padrão de fallback é sempre o mesmo: `{logoUrl ? <img/> : <FallbackVisual/>}` — adicionar em outros lugares basta seguir esse padrão. Pra TvSlides (rota pública sem JWT e sem cache de logo), exigiria um endpoint público backend tipo `/api/public/tenants/:slug/brand` — fora do escopo atual.
 
 **Adicionar tenant novo** (3 passos):
 

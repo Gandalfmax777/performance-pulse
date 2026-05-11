@@ -4,8 +4,10 @@ import {
   apiFetch,
   ApiError,
   getLastTenant,
+  getLastTenantLogo,
   setAuthToken,
   setLastTenant,
+  setLastTenantLogo,
 } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +36,7 @@ interface LoginResponse {
     slug: string;
     name: string;
     fullName: string;
+    brandConfig?: Record<string, unknown>;
   };
 }
 
@@ -82,7 +85,12 @@ const LOGIN_BRANDS: Record<TenantSlug, LoginBrand> = {
   },
 };
 
-function resolveLoginBrand(): { slug: TenantSlug; brand: LoginBrand; fullName: string } {
+function resolveLoginBrand(): {
+  slug: TenantSlug;
+  brand: LoginBrand;
+  fullName: string;
+  logoUrl: string | null;
+} {
   const stored = getLastTenant();
   const slug: TenantSlug =
     stored && isTenantSlug(stored) ? stored : DEFAULT_TENANT_SLUG;
@@ -90,6 +98,9 @@ function resolveLoginBrand(): { slug: TenantSlug; brand: LoginBrand; fullName: s
     slug,
     brand: LOGIN_BRANDS[slug],
     fullName: TENANT_FALLBACKS[slug].fullName,
+    // Logo do último tenant logado (cacheado quando useCurrentUser resolveu
+    // brandConfig). Primeira visita nunca tem logo — cai na inicial do brand.
+    logoUrl: getLastTenantLogo(),
   };
 }
 
@@ -100,7 +111,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { slug, brand, fullName } = useMemo(resolveLoginBrand, []);
+  const { slug, brand, fullName, logoUrl } = useMemo(resolveLoginBrand, []);
 
   // Aplica data-tenant no <html> pra ativar tema CSS escopado também na
   // tela de login (cards do form, primary buttons, etc. respeitam o brand).
@@ -122,6 +133,11 @@ const Login = () => {
       setAuthToken(res.token);
       // Persiste pro próximo `/login` saber qual brand renderizar.
       if (res.tenant?.slug) setLastTenant(res.tenant.slug);
+      const incomingLogo =
+        typeof res.tenant?.brandConfig?.logoUrl === "string"
+          ? (res.tenant.brandConfig.logoUrl as string)
+          : null;
+      setLastTenantLogo(incomingLogo);
       navigate("/", { replace: true });
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
@@ -165,9 +181,9 @@ const Login = () => {
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-8">
               <div
-                className="w-14 h-14 rounded-xl flex items-center justify-center font-display"
+                className="w-14 h-14 rounded-xl flex items-center justify-center font-display overflow-hidden"
                 style={{
-                  background: brand.accentBg,
+                  background: logoUrl ? "rgba(255,255,255,0.06)" : brand.accentBg,
                   color: brand.accentText,
                   fontSize: 22,
                   fontWeight: 800,
@@ -175,7 +191,15 @@ const Login = () => {
                 }}
                 aria-hidden
               >
-                {brand.initial}
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt={fullName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  brand.initial
+                )}
               </div>
               <div className="leading-tight">
                 <p className="font-display text-lg font-extrabold tracking-tight leading-none">
@@ -232,9 +256,9 @@ const Login = () => {
             {/* Mobile brand mark — usa as mesmas cores do painel esquerdo */}
             <div className="flex items-center gap-3 mb-10 lg:hidden">
               <div
-                className="w-10 h-10 rounded-lg flex items-center justify-center font-display"
+                className="w-10 h-10 rounded-lg flex items-center justify-center font-display overflow-hidden"
                 style={{
-                  background: brand.gradientFrom,
+                  background: logoUrl ? "rgba(0,0,0,0.04)" : brand.gradientFrom,
                   color: brand.accentBg,
                   fontSize: 16,
                   fontWeight: 800,
@@ -242,7 +266,15 @@ const Login = () => {
                 }}
                 aria-hidden
               >
-                {brand.initial}
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt={fullName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  brand.initial
+                )}
               </div>
               <span className="font-display text-base font-extrabold tracking-tight text-ink">
                 Performance Pulse
