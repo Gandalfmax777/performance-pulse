@@ -4,6 +4,7 @@ import DashboardTopbar from "@/components/dashboard/DashboardTopbar";
 import { AppShellLayout } from "@/components/layouts/AppShellLayout";
 import { AdminSubnav } from "@/components/shared";
 import { usePenaltyProposalsCount } from "@/hooks/usePenaltyProposals";
+import { useOpenTv } from "@/hooks/useOpenTv";
 
 interface AdminRoute {
   /** Pathname — alinha com `AdminSubnavItem.to` para forwarding direto. */
@@ -123,9 +124,7 @@ const AdminLayout = () => {
   const title = current?.title ?? "Configurações";
   const subtitle = current?.subtitle;
 
-  const openTv = useCallback(() => {
-    window.open("/tv", "_blank", "noopener,noreferrer");
-  }, []);
+  const openTv = useOpenTv();
 
   const openPresentation = useCallback(() => {
     window.open("/presentation", "_blank", "noopener,noreferrer");

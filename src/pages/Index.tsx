@@ -30,6 +30,8 @@ import { PresentationChart, Television } from "@phosphor-icons/react";
 import { useAssessors } from "@/hooks/useAssessors";
 import { useRankingStream } from "@/hooks/useRankingStream";
 import { useSystemNotifications } from "@/hooks/useSystemNotifications";
+import { useOpenTv } from "@/hooks/useOpenTv";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
 
@@ -102,13 +104,14 @@ function parsePeriod(raw: string | null): OverviewPeriod {
 
 const Index = () => {
   const navigate = useNavigate();
+  const { tenantSlug } = useCurrentUser();
 
-  // Legacy: `/?tv=1` virou `/tv` público
+  // Legacy: `/?tv=1` virou `/tv?tenant=<slug>` público
   // Legacy: views internas que viraram rotas próprias do redesign
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("tv") === "1") {
-      navigate("/tv", { replace: true });
+      navigate(tenantSlug ? `/tv?tenant=${tenantSlug}` : "/tv", { replace: true });
       return;
     }
     const v = params.get("view");
@@ -118,7 +121,7 @@ const Index = () => {
     else if (v === "squad") navigate("/squad-bet", { replace: true });
     else if (v === "tournament") navigate("/torneio", { replace: true });
     else if (v === "team") navigate("/assessores", { replace: true });
-  }, [navigate]);
+  }, [navigate, tenantSlug]);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const view = parseView(searchParams.get("view"));
@@ -169,9 +172,7 @@ const Index = () => {
   useRankingStream(true);
   useSystemNotifications(true);
 
-  const openTv = useCallback(() => {
-    window.open("/tv", "_blank", "noopener,noreferrer");
-  }, []);
+  const openTv = useOpenTv();
 
   const openPresentation = useCallback(() => {
     window.open("/presentation", "_blank", "noopener,noreferrer");

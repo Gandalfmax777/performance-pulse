@@ -8,6 +8,7 @@ import { AppShellLayout } from "@/components/layouts/AppShellLayout";
 import { Eyebrow, SectionCard } from "@/components/shared";
 import { useTournaments } from "@/hooks/useTournaments";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useOpenTv } from "@/hooks/useOpenTv";
 
 /**
  * /torneio — alinha com `Torneio.html` do design.
@@ -26,9 +27,7 @@ const Torneio = () => {
   const { data: activeTournaments = [] } = useTournaments("ACTIVE");
   const { data: finishedTournaments = [] } = useTournaments("FINISHED");
 
-  const openTv = useCallback(() => {
-    window.open("/tv", "_blank", "noopener,noreferrer");
-  }, []);
+  const openTv = useOpenTv();
 
   const openPresentation = useCallback(() => {
     window.open("/presentation", "_blank", "noopener,noreferrer");

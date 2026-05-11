@@ -12,6 +12,7 @@ import DashboardTopbar from "@/components/dashboard/DashboardTopbar";
 import KpiAnalytics from "@/components/dashboard/KpiAnalytics";
 import { AppShellLayout } from "@/components/layouts/AppShellLayout";
 import { useAssessors } from "@/hooks/useAssessors";
+import { useOpenTv } from "@/hooks/useOpenTv";
 
 type KpisPeriod = "weekly" | "monthly";
 
@@ -66,9 +67,7 @@ const Kpis = () => {
     [setSearchParams],
   );
 
-  const openTv = useCallback(() => {
-    window.open("/tv", "_blank", "noopener,noreferrer");
-  }, []);
+  const openTv = useOpenTv();
 
   const openPresentation = useCallback(() => {
     window.open("/presentation", "_blank", "noopener,noreferrer");
