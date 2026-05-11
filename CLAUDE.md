@@ -197,9 +197,13 @@ Pipeline:
 
 `resolveTenantConfig(slug, brandConfig)` faz merge `{...TENANT_FALLBACKS[safeSlug], ...brandConfig, slug}` — o fallback garante que UI nunca quebra se o admin esquecer campos no painel `/admin/tenants`. Slug desconhecido cai pra `eqi`.
 
-### Rotas públicas (`/tv`) — slug por query string
+### Rotas públicas (`/tv`) — slug obrigatório via query string
 
-`/tv` não tem JWT → não pode usar `useCurrentUser`. A plataforma roda em domínio único (BDN hospeda todos os tenants), então a diferenciação é só pelo query param na URL: `?tenant=eqi` ou `?tenant=bdn`. Sem param cai em `"eqi"` (compat com URL antiga). Lógica em `src/pages/Tv.tsx:37-43`.
+`/tv` não tem JWT → não pode usar `useCurrentUser`. A plataforma roda em domínio único (BDN hospeda todos os tenants), então a diferenciação é só pelo query param na URL: `?tenant=eqi` ou `?tenant=bdn`.
+
+- **Sem fallback**: `/tv` sem `?tenant=` (ou com slug inválido) renderiza tela `TvMissingTenant` com links pros 2 tenants conhecidos — em vez de silenciosamente cair em EQI. Decisão pra evitar TV BDN mostrar dados EQI por engano.
+- **Forwarding pro backend**: quando o slug está presente, `apiFetch` (em `src/api/client.ts`) injeta `?tenant=<slug>` automaticamente em toda chamada pública. Hooks não precisam adicionar manualmente.
+- Lógica em `src/pages/Tv.tsx` (componentes `TvPage` wrapper + `TvPageContent` + `TvMissingTenant`).
 
 **Adicionar tenant novo** (3 passos):
 

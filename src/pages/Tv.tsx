@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Play, Pause, SkipForward, Timer, X } from "@phosphor-icons/react";
+import { Play, Pause, SkipForward, Timer, X, Warning } from "@phosphor-icons/react";
 import { TvSlides, TV_SLIDES } from "@/components/dashboard/TvSlides";
 import TournamentFinishedOverlay from "@/components/dashboard/TournamentFinishedOverlay";
 import { useAssessors } from "@/hooks/useAssessors";
@@ -21,8 +21,77 @@ const TV_INTERVALS = [10, 15, 20, 30, 45, 60];
  * Controles flutuantes top-right (play/pause/skip/timer/exit). O
  * `TvSlides` em si tem chrome editorial próprio (top header com tenant
  * + range, body central, footer com slide title + index/count).
+ *
+ * Tenant obrigatório via `?tenant=eqi|bdn` — sem fallback silencioso pra
+ * evitar TV mostrar dados do tenant errado. Sem slug válido, renderiza
+ * tela de erro com instruções.
  */
 const TvPage = () => {
+  // Tenant via query param `?tenant=eqi|bdn`. /tv é público (sem JWT), por
+  // isso não usa useCurrentUser. A plataforma roda em domínio único (BDN
+  // hospeda todos os tenants), então a URL é a fonte única de verdade.
+  // Sem slug válido → tela de erro (sem fallback silencioso).
+  const tenantSlug = useMemo<TenantSlug | null>(() => {
+    const slug = new URLSearchParams(window.location.search).get("tenant") ?? "";
+    return isTenantSlug(slug) ? slug : null;
+  }, []);
+
+  if (!tenantSlug) {
+    return <TvMissingTenant />;
+  }
+
+  return <TvPageContent tenantSlug={tenantSlug} />;
+};
+
+const TvMissingTenant = () => {
+  // Reseta `data-tenant` pro fallback do <html> não afetar a tela de erro.
+  useEffect(() => {
+    document.documentElement.setAttribute("data-tenant", "eqi");
+  }, []);
+
+  return (
+    <div
+      className="min-h-screen w-screen flex items-center justify-center p-8"
+      style={{ background: "#000b14", color: "rgba(255,255,255,0.92)" }}
+    >
+      <div className="max-w-md text-center">
+        <div
+          className="mx-auto mb-6 w-12 h-12 rounded-full flex items-center justify-center"
+          style={{ background: "rgba(255,255,255,0.06)" }}
+        >
+          <Warning size={24} weight="bold" />
+        </div>
+        <p className="num text-[11px] uppercase tracking-[0.22em] text-white/55 mb-3">
+          Modo TV · tenant obrigatório
+        </p>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight mb-4">
+          Especifique o tenant na URL.
+        </h1>
+        <p className="text-sm text-white/65 leading-relaxed mb-5">
+          /tv não tem fallback automático. Adicione <code>?tenant=&lt;slug&gt;</code> na URL pra escolher a mesa que vai aparecer.
+        </p>
+        <div className="grid gap-2 text-sm">
+          <a
+            href="/tv?tenant=eqi"
+            className="block px-4 py-2 rounded-md font-mono text-xs hover:bg-white/10 transition-colors"
+            style={{ border: "1px solid rgba(255,255,255,0.18)" }}
+          >
+            /tv?tenant=eqi
+          </a>
+          <a
+            href="/tv?tenant=bdn"
+            className="block px-4 py-2 rounded-md font-mono text-xs hover:bg-white/10 transition-colors"
+            style={{ border: "1px solid rgba(255,255,255,0.18)" }}
+          >
+            /tv?tenant=bdn
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const TvPageContent = ({ tenantSlug }: { tenantSlug: TenantSlug }) => {
   const [slideIdx, setSlideIdx] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [intervalSec, setIntervalSec] = useState(15);
@@ -31,16 +100,6 @@ const TvPage = () => {
   const [controlsVisible, setControlsVisible] = useState(true);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Tenant via query param `?tenant=eqi|bdn`. /tv é público (sem JWT), por
-  // isso não usa useCurrentUser. A plataforma roda em domínio único (BDN
-  // hospeda), então a diferenciação é só pelo slug na URL. Default eqi
-  // pra compat com URL antiga.
-  const tenantSlug: TenantSlug = useMemo(() => {
-    const params = new URLSearchParams(window.location.search);
-    const slug = params.get("tenant") ?? "";
-    return isTenantSlug(slug) ? slug : "eqi";
-  }, []);
 
   // Aplica data-tenant no <html> pra ativar tema CSS escopado.
   useEffect(() => {
