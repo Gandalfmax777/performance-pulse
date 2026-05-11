@@ -54,11 +54,21 @@ export function isTenantSlug(slug: string): slug is TenantSlug {
   return slug in TENANT_FALLBACKS;
 }
 
+/**
+ * Tenant fallback quando nenhuma informação está disponível.
+ *
+ * BDN é a org admin da plataforma — qualquer cenário onde o slug não foi
+ * informado (auth/me sem tenant, /login sem last login, etc.) cai aqui.
+ * Mover pra "eqi" no passado mascarava bugs (TV BDN mostrando dados EQI).
+ */
+export const DEFAULT_TENANT_SLUG: TenantSlug = "bdn";
+
 export function resolveTenantConfig(
   slug: string | undefined,
   brandConfig?: Record<string, unknown>,
 ): TenantConfig {
-  const safeSlug: TenantSlug = slug && isTenantSlug(slug) ? slug : "eqi";
+  const safeSlug: TenantSlug =
+    slug && isTenantSlug(slug) ? slug : DEFAULT_TENANT_SLUG;
   return {
     ...TENANT_FALLBACKS[safeSlug],
     ...(brandConfig ?? {}),

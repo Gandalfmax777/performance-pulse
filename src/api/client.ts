@@ -10,6 +10,10 @@
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001/api";
 
 export const TOKEN_STORAGE_KEY = "pp_token";
+/** Slug do último tenant logado. Persistido entre sessões pra adaptar o
+ *  layout do /login ao último brand visto (estilo "last login" das apps
+ *  modernas). NÃO é limpo no logout — propósito é exatamente sobreviver. */
+export const LAST_TENANT_STORAGE_KEY = "pp_last_tenant";
 
 export function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -22,6 +26,16 @@ export function setAuthToken(token: string): void {
 
 export function clearAuthToken(): void {
   window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+}
+
+export function getLastTenant(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(LAST_TENANT_STORAGE_KEY);
+}
+
+export function setLastTenant(slug: string): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(LAST_TENANT_STORAGE_KEY, slug);
 }
 
 export class ApiError extends Error {

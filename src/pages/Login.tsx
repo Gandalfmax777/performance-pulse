@@ -1,6 +1,12 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiFetch, ApiError, setAuthToken } from "@/api/client";
+import {
+  apiFetch,
+  ApiError,
+  getLastTenant,
+  setAuthToken,
+  setLastTenant,
+} from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,6 +14,12 @@ import {
   Television,
   CircleNotch,
 } from "@phosphor-icons/react";
+import {
+  DEFAULT_TENANT_SLUG,
+  isTenantSlug,
+  TENANT_FALLBACKS,
+  type TenantSlug,
+} from "@/config/tenants";
 
 interface LoginResponse {
   token: string;
@@ -17,9 +29,69 @@ interface LoginResponse {
     name: string;
     role: string;
   };
+  tenant: {
+    id: string;
+    slug: string;
+    name: string;
+    fullName: string;
+  };
 }
 
 const KEYWORDS = ["Inteligente", "Obstinada", "Inovadora", "Dinâmica"];
+
+/**
+ * Brand visual por tenant pro painel esquerdo da tela de login.
+ *
+ * Pre-auth não tem JWT, então o frontend não sabe quem está logando.
+ * Estratégia "last login": lê o slug do último tenant ativo (localStorage)
+ * e renderiza o brand correspondente. Sem last login → fallback BDN
+ * (`DEFAULT_TENANT_SLUG` em `src/config/tenants.ts`).
+ *
+ * Cada entry é AUTOSSUFICIENTE — pra adicionar novo tenant, adicionar
+ * entry aqui + atualizar `TENANT_FALLBACKS` e `TenantSlug` type. Sem
+ * essa registry, o painel cai no brand do `DEFAULT_TENANT_SLUG`.
+ */
+interface LoginBrand {
+  initial: string;
+  gradientFrom: string;
+  gradientTo: string;
+  accentBg: string;
+  accentText: string;
+  accentHighlight: string;
+  accentBlob: string;
+}
+
+const LOGIN_BRANDS: Record<TenantSlug, LoginBrand> = {
+  eqi: {
+    initial: "E",
+    gradientFrom: "hsl(var(--eqi-forest))",
+    gradientTo: "hsl(220 27% 5%)",
+    accentBg: "hsl(var(--eqi-mint))",
+    accentText: "hsl(var(--eqi-forest))",
+    accentHighlight: "hsl(var(--eqi-mint))",
+    accentBlob: "hsl(var(--eqi-mint) / 0.22)",
+  },
+  bdn: {
+    initial: "B",
+    gradientFrom: "#002c4f",
+    gradientTo: "#000b14",
+    accentBg: "#1bccf6",
+    accentText: "#002c4f",
+    accentHighlight: "#1bccf6",
+    accentBlob: "rgba(27, 204, 246, 0.22)",
+  },
+};
+
+function resolveLoginBrand(): { slug: TenantSlug; brand: LoginBrand; fullName: string } {
+  const stored = getLastTenant();
+  const slug: TenantSlug =
+    stored && isTenantSlug(stored) ? stored : DEFAULT_TENANT_SLUG;
+  return {
+    slug,
+    brand: LOGIN_BRANDS[slug],
+    fullName: TENANT_FALLBACKS[slug].fullName,
+  };
+}
 
 const Login = () => {
   const navigate = useNavigate();
@@ -27,6 +99,14 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { slug, brand, fullName } = useMemo(resolveLoginBrand, []);
+
+  // Aplica data-tenant no <html> pra ativar tema CSS escopado também na
+  // tela de login (cards do form, primary buttons, etc. respeitam o brand).
+  useEffect(() => {
+    document.documentElement.setAttribute("data-tenant", slug);
+  }, [slug]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,6 +120,8 @@ const Login = () => {
         skipAuth: true,
       });
       setAuthToken(res.token);
+      // Persiste pro próximo `/login` saber qual brand renderizar.
+      if (res.tenant?.slug) setLastTenant(res.tenant.slug);
       navigate("/", { replace: true });
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
@@ -58,15 +140,14 @@ const Login = () => {
         className="w-full max-w-[1080px] grid lg:grid-cols-2 bg-surface border border-line rounded-2xl overflow-hidden"
         style={{ boxShadow: "0 10px 40px hsl(240 12% 16% / 0.08)" }}
       >
-        {/* ─── Left: editorial brand panel ─────────────────────────────── */}
+        {/* ─── Left: editorial brand panel (tenant-aware) ─────────────── */}
         <div
           className="relative hidden lg:flex flex-col justify-between p-14 text-white overflow-hidden min-h-[600px]"
           style={{
-            background:
-              "linear-gradient(155deg, hsl(var(--eqi-forest)) 0%, hsl(220 27% 5%) 95%)",
+            background: `linear-gradient(155deg, ${brand.gradientFrom} 0%, ${brand.gradientTo} 95%)`,
           }}
         >
-          {/* Atmospheric accent — gold blob */}
+          {/* Atmospheric accent — soft blob no canto */}
           <div
             aria-hidden
             className="absolute pointer-events-none"
@@ -76,8 +157,7 @@ const Login = () => {
               width: 380,
               height: 380,
               borderRadius: "50%",
-              background:
-                "radial-gradient(circle, hsl(var(--eqi-mint) / 0.22) 0%, transparent 65%)",
+              background: `radial-gradient(circle, ${brand.accentBlob} 0%, transparent 65%)`,
             }}
           />
 
@@ -87,36 +167,36 @@ const Login = () => {
               <div
                 className="w-14 h-14 rounded-xl flex items-center justify-center font-display"
                 style={{
-                  background: "hsl(var(--eqi-mint))",
-                  color: "hsl(var(--eqi-forest))",
+                  background: brand.accentBg,
+                  color: brand.accentText,
                   fontSize: 22,
                   fontWeight: 800,
                   letterSpacing: "-0.04em",
                 }}
                 aria-hidden
               >
-                E
+                {brand.initial}
               </div>
               <div className="leading-tight">
                 <p className="font-display text-lg font-extrabold tracking-tight leading-none">
                   Performance Pulse
                 </p>
                 <p className="num text-[9px] uppercase tracking-[0.22em] text-white/55 mt-1">
-                  Mesa de Performance
+                  {fullName}
                 </p>
               </div>
             </div>
 
             <p
               className="num text-[10px] uppercase tracking-[0.22em] mb-4"
-              style={{ color: "hsl(var(--eqi-mint))" }}
+              style={{ color: brand.accentHighlight }}
             >
               Mesa de performance · v3.2
             </p>
             <h1 className="font-display text-5xl xl:text-[48px] font-extrabold tracking-[-0.04em] leading-[1.02] m-0">
               A meta não é um número.
               <br />
-              É um <span style={{ color: "hsl(var(--eqi-mint))" }}>ritmo.</span>
+              É um <span style={{ color: brand.accentHighlight }}>ritmo.</span>
             </h1>
             <p className="mt-4 text-sm leading-relaxed text-white/65 max-w-[380px]">
               Acompanhe seu time em tempo real — KPIs, ranking, torneios e Squad
@@ -149,20 +229,20 @@ const Login = () => {
         {/* ─── Right: login form ──────────────────────────────────────── */}
         <div className="flex items-center p-8 lg:p-14">
           <div className="w-full max-w-sm mx-auto">
-            {/* Mobile brand mark */}
+            {/* Mobile brand mark — usa as mesmas cores do painel esquerdo */}
             <div className="flex items-center gap-3 mb-10 lg:hidden">
               <div
                 className="w-10 h-10 rounded-lg flex items-center justify-center font-display"
                 style={{
-                  background: "hsl(var(--eqi-forest))",
-                  color: "hsl(var(--eqi-mint))",
+                  background: brand.gradientFrom,
+                  color: brand.accentBg,
                   fontSize: 16,
                   fontWeight: 800,
                   letterSpacing: "-0.04em",
                 }}
                 aria-hidden
               >
-                E
+                {brand.initial}
               </div>
               <span className="font-display text-base font-extrabold tracking-tight text-ink">
                 Performance Pulse
@@ -262,7 +342,7 @@ const Login = () => {
 
             <button
               type="button"
-              onClick={() => navigate("/tv")}
+              onClick={() => navigate(`/tv?tenant=${slug}`)}
               className="w-full h-11 rounded-[10px] flex items-center justify-center gap-2 text-sm font-semibold border border-line bg-surface text-ink hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors disabled:opacity-50"
             >
               <Television size={15} weight="bold" />

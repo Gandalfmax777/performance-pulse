@@ -1,5 +1,11 @@
+import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiFetch, getAuthToken, setAuthToken } from "@/api/client";
+import {
+  apiFetch,
+  getAuthToken,
+  setAuthToken,
+  setLastTenant,
+} from "@/api/client";
 import { resolveTenantConfig, type TenantConfig, type TenantSlug } from "@/config/tenants";
 
 export interface ApiTenant {
@@ -51,6 +57,12 @@ export function useCurrentUser() {
     tenant?.brandConfig,
   );
 
+  // Persiste o slug do tenant ativo no localStorage pra `/login` saber qual
+  // brand renderizar na próxima visita (estilo "last login").
+  useEffect(() => {
+    if (tenant?.slug) setLastTenant(tenant.slug);
+  }, [tenant?.slug]);
+
   return {
     user,
     tenant,
@@ -87,6 +99,7 @@ export function useSwitchTenant() {
       }),
     onSuccess: (data) => {
       setAuthToken(data.token);
+      setLastTenant(data.tenant.slug);
       // Atualiza /auth/me imediatamente sem refetch
       qc.setQueryData(QUERY_KEY, {
         user: data.user,
