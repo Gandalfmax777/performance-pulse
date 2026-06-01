@@ -14,6 +14,7 @@ import { ptBR } from "date-fns/locale";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/api/client";
 import { useCreateGoal, useGoals, type ApiGoal } from "@/hooks/useGoals";
+import { useAssessors } from "@/hooks/useAssessors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,6 +50,60 @@ const PERIOD_OPTIONS: Array<{ value: "DAILY" | "WEEKLY" | "MONTHLY"; label: stri
   { value: "WEEKLY", label: "Semanal" },
   { value: "MONTHLY", label: "Mensal" },
 ];
+
+/**
+ * Preview do ALVO AGREGADO do time pra semana — espelha
+ * `computeAggregatedTarget` do backend (services/reports.ts). Existe pra o
+ * admin enxergar na hora que uma meta DIÁRIA multiplica por 7 dias (causa do
+ * "2.940" em vez de "300" no slide de KPIs). KPIs de % não agregam.
+ */
+function GoalTargetPreview({
+  value,
+  period,
+  inputMode,
+}: {
+  value: number;
+  period: "DAILY" | "WEEKLY" | "MONTHLY";
+  inputMode: "ABSOLUTE" | "PERCENT" | "QUANTITY_OVER_BASE";
+}) {
+  const { assessors } = useAssessors();
+  // Mesmo critério do ranking/meta: ativos e não de férias agora.
+  const team = useMemo(() => {
+    const now = Date.now();
+    const competing = assessors.filter(
+      (a) => !a.vacationUntil || new Date(a.vacationUntil).getTime() < now,
+    ).length;
+    return competing || 1;
+  }, [assessors]);
+
+  if (inputMode !== "ABSOLUTE") {
+    return (
+      <p className="text-[10px] text-ink-3 mt-2">
+        Meta de percentual — comparada como % da meta; não multiplica por dias nem por assessores.
+      </p>
+    );
+  }
+
+  const days = 7;
+  const mult = period === "DAILY" ? days : 1; // DAILY → ×7 dias; WEEKLY/MONTHLY → 1 na semana
+  const total = value * mult * team;
+  const perLabel = period === "DAILY" ? "/dia" : period === "WEEKLY" ? "/semana" : "/mês";
+
+  return (
+    <div className="mt-2 rounded-lg bg-muted/20 border border-line/20 p-2.5">
+      <p className="text-[10px] uppercase tracking-wider text-ink-3">Alvo do time nesta semana</p>
+      <p className="text-xs font-mono text-ink mt-0.5">
+        {value} {perLabel} × {team} assessor{team === 1 ? "" : "es"}
+        {mult !== 1 ? ` × ${mult} dias` : ""} = <span className="font-semibold">{total}</span>
+      </p>
+      {period === "DAILY" && (
+        <p className="text-[10px] text-amber-600 mt-1">
+          ⚠ Meta diária multiplica por 7 dias. Se você pensa a meta como semanal, troque para "Semanal".
+        </p>
+      )}
+    </div>
+  );
+}
 
 function formatYmdBr(ymd: string): string {
   try {
@@ -440,6 +495,7 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
                   </Select>
                 </div>
               </div>
+              <GoalTargetPreview value={goalValue} period={period} inputMode={kpi.inputMode} />
               <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/20 border border-line/20">
                 <Checkbox
                   id="retroactive"
@@ -617,7 +673,9 @@ function CreateKpiDialog({ open, onClose, onSuccess }: CreateKpiDialogProps) {
     "ABSOLUTE",
   );
   const [defaultTarget, setDefaultTarget] = useState(1);
-  const [period, setPeriod] = useState<"DAILY" | "WEEKLY" | "MONTHLY">("DAILY");
+  // Default SEMANAL (igual ao form de edição). Antes era DAILY, o que fazia
+  // metas nascerem diárias por omissão e inflar o alvo do time em ×7 dias.
+  const [period, setPeriod] = useState<"DAILY" | "WEEKLY" | "MONTHLY">("WEEKLY");
   const [createGoal, setCreateGoal] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -636,7 +694,7 @@ function CreateKpiDialog({ open, onClose, onSuccess }: CreateKpiDialogProps) {
     setUnit("");
     setInputMode("ABSOLUTE");
     setDefaultTarget(1);
-    setPeriod("DAILY");
+    setPeriod("WEEKLY");
     setCreateGoal(true);
     setCreateRule(true);
     setRuleType("LINEAR");
@@ -765,18 +823,21 @@ function CreateKpiDialog({ open, onClose, onSuccess }: CreateKpiDialogProps) {
                 Criar goal ativa agora
               </Label>
               {createGoal && (
-                <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
-                  <SelectTrigger className="mt-2">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PERIOD_OPTIONS.map((p) => (
-                      <SelectItem key={p.value} value={p.value}>
-                        {p.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <>
+                  <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
+                    <SelectTrigger className="mt-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PERIOD_OPTIONS.map((p) => (
+                        <SelectItem key={p.value} value={p.value}>
+                          {p.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <GoalTargetPreview value={defaultTarget} period={period} inputMode={inputMode} />
+                </>
               )}
             </div>
           </div>

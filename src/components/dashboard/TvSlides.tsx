@@ -17,7 +17,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { format, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { Assessor } from "@/types/assessor";
-import { useOverviewReport } from "@/hooks/useReports";
+import { useOverviewReport, useActiveTvPeriod } from "@/hooks/useReports";
 import { useWeeklyRanking, useMonthlyRanking } from "@/hooks/useRankings";
 import { useActiveTournaments, type ApiTournament } from "@/hooks/useTournaments";
 import { useTeamInsightHistory } from "@/hooks/useInsight";
@@ -87,6 +87,17 @@ function rangeForPeriod(period: Period): { from: string; to: string; label: stri
     to: fmtD(e),
     label: `Semana de ${format(s, "dd/MM")} a ${format(e, "dd/MM")}`,
   };
+}
+
+/** Label do header a partir de um range resolvido (YYYY-MM-DD). */
+function labelForRange(from: string, to: string, period: Period): string {
+  // Parse local (sufixo T00:00:00) pra o dd/MM bater com o range exibido.
+  const s = new Date(`${from}T00:00:00`);
+  const e = new Date(`${to}T00:00:00`);
+  if (period === "monthly") {
+    return format(s, "MMMM 'de' yyyy", { locale: ptBR }).replace(/^./, (c) => c.toUpperCase());
+  }
+  return `Semana de ${format(s, "dd/MM")} a ${format(e, "dd/MM")}`;
 }
 
 // ─── PRIMITIVES ───────────────────────────────────────────────────────────
@@ -353,6 +364,8 @@ function Chrome({ tenant, logoUrl, rangeLabel, slideTitle, slideIdx, slideCount,
 // ─── DATA HOOK (consolidado) ──────────────────────────────────────────────
 
 interface SlideData {
+  /** Label do período resolvido (ex: "Semana de 25/05 a 31/05") pro header. */
+  rangeLabel: string;
   totalPoints: number;
   avgGoalPct: number;
   teamSize: number;
@@ -370,7 +383,20 @@ interface SlideData {
 }
 
 function useTvSlideData(period: Period, assessors: Assessor[]): SlideData {
-  const range = useMemo(() => rangeForPeriod(period), [period]);
+  // Período resolvido pelo backend = semana/mês da métrica mais recente. Evita
+  // a TV ficar vazia no início da semana. Enquanto carrega, usa a semana atual.
+  const fallbackRange = useMemo(() => rangeForPeriod(period), [period]);
+  const { data: activePeriod } = useActiveTvPeriod(period);
+  const range = useMemo(() => {
+    if (activePeriod?.from && activePeriod?.to) {
+      return {
+        from: activePeriod.from,
+        to: activePeriod.to,
+        label: labelForRange(activePeriod.from, activePeriod.to, period),
+      };
+    }
+    return fallbackRange;
+  }, [activePeriod, fallbackRange, period]);
   // Range anterior shifted back pelo mesmo intervalo
   const prevRange = useMemo(() => {
     const d = new Date(range.from);
@@ -386,8 +412,10 @@ function useTvSlideData(period: Period, assessors: Assessor[]): SlideData {
 
   const { data: overview } = useOverviewReport(range);
   const { data: prevOverview } = useOverviewReport(prevRange);
-  const weeklyQ = useWeeklyRanking();
-  const monthlyQ = useMonthlyRanking();
+  // Passa o início do período resolvido pros rankings (default seria a semana
+  // atual). Mantém ranking e overview no MESMO período exibido no header.
+  const weeklyQ = useWeeklyRanking({ start: range.from, enabled: period === "weekly" });
+  const monthlyQ = useMonthlyRanking({ start: range.from, enabled: period === "monthly" });
   const activeRanking = period === "weekly" ? weeklyQ.data : monthlyQ.data;
   const { data: tournaments = [] } = useActiveTournaments();
   const { data: insightHistory } = useTeamInsightHistory(
@@ -437,6 +465,7 @@ function useTvSlideData(period: Period, assessors: Assessor[]): SlideData {
     });
 
     return {
+      rangeLabel: range.label,
       totalPoints,
       avgGoalPct,
       teamSize: rankings.length || assessors.length,
@@ -445,7 +474,7 @@ function useTvSlideData(period: Period, assessors: Assessor[]): SlideData {
       tournaments,
       teamInsightMd: insightHistory?.items?.[0]?.summary ?? insightHistory?.items?.[0]?.textMarkdown ?? null,
     };
-  }, [overview, prevOverview, activeRanking, assessors, tournaments, insightHistory]);
+  }, [range, overview, prevOverview, activeRanking, assessors, tournaments, insightHistory]);
 }
 
 // ─── SLIDES ──────────────────────────────────────────────────────────────
@@ -1299,7 +1328,6 @@ export function TvSlides({
 }: TvSlidesProps) {
   const [internalIdx, setInternalIdx] = useState(0);
   const slideIdx = ctrlIdx ?? internalIdx;
-  const range = useMemo(() => rangeForPeriod(period), [period]);
   const data = useTvSlideData(period, assessors);
 
   useEffect(() => {
@@ -1317,7 +1345,7 @@ export function TvSlides({
     <Chrome
       tenant={tenant}
       logoUrl={logoUrl}
-      rangeLabel={range.label}
+      rangeLabel={data.rangeLabel}
       slideTitle={slide.title}
       slideIdx={slideIdx % TV_SLIDES.length}
       slideCount={TV_SLIDES.length}

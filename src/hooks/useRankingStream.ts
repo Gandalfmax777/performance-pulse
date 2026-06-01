@@ -53,6 +53,8 @@ export function useRankingStream(enabled: boolean = true) {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ["rankings"] });
+        // ["reports"] cobre overview, kpi-series E active-period (prefix match)
+        // — assim a TV "vira" pra semana corrente ao 1º lançamento da semana.
         queryClient.invalidateQueries({ queryKey: ["reports"] });
         queryClient.invalidateQueries({ queryKey: ["assessors"] });
         queryClient.invalidateQueries({ queryKey: ["metrics"] });
