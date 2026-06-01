@@ -197,6 +197,24 @@ export function useOverviewReport(
   });
 }
 
+/**
+ * Resolve qual período (semana/mês) a TV deve exibir: o que contém a métrica
+ * mais recente do tenant. Evita a TV ficar vazia no início da semana (antes do
+ * 1º lançamento), caindo na última semana com dados. Rota pública (/tv) —
+ * apiFetch injeta `?tenant=` sozinho.
+ */
+export function useActiveTvPeriod(period: "weekly" | "monthly") {
+  return useQuery({
+    queryKey: ["reports", "active-period", period],
+    queryFn: () =>
+      apiFetch<{ from: string; to: string }>(
+        `/reports/active-period${toQs({ period })}`,
+      ),
+    staleTime: 3_000,
+    refetchInterval: 30_000,
+  });
+}
+
 export function useAssessorReport(
   assessorId: string | undefined,
   params: { from?: string; to?: string },
