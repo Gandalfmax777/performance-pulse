@@ -3417,6 +3417,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reports/active-period": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Resolve o período (semana/mês) que contém a métrica mais recente do tenant. PUBLIC — usado pela /tv pra não mostrar período vazio no início da semana. */
+        get: {
+            parameters: {
+                query?: {
+                    period?: "weekly" | "monthly";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            from: string;
+                            to: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/reports/assessor/{id}": {
         parameters: {
             query?: never;
@@ -6155,6 +6196,47 @@ export interface paths {
                     content: {
                         "application/json": {
                             logoUrl: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/scoring/recompute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Recalcula pontos e percentuais de todas as MetricEntries do tenant ativo usando a regra de pontuação atual + bônus por nota. Idempotente. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            updated: number;
+                            unchanged: number;
+                            failed: number;
+                            total: number;
                         };
                     };
                 };
