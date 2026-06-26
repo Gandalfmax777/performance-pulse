@@ -307,11 +307,13 @@ const form = useForm<FormValues>({
 
 ## Datas e timezone
 
-- **`date-fns` v3** é a única lib de data. Não usar moment, dayjs.
-- Helpers de range em `src/pages/Index.tsx:45-66` (`rangeForPeriod`) e em `src/lib/biweekly.ts` (períodos quinzenais).
-- `startOfWeek(now, { weekStartsOn: 1 })` — segunda como início (padrão do backend).
+- **`date-fns` v3** é a lib base de data. Não usar moment, dayjs.
+- **`date-fns-tz` (BRT)**: cálculos de PERÍODO/RANGE devem ancorar em Brasília via `src/lib/dates.ts` (`nowInAppTz()`, `todayStrInAppTz()`, `weekRangeInAppTz()`, `monthRangeInAppTz()`) — NÃO usar `new Date()` cru pra calcular semana/mês/hoje. `new Date()` reflete o relógio do browser; um gestor fora de Brasília mandaria um range divergente do backend (que calcula em BRT). Regra anterior ("não introduzir date-fns-tz") foi revertida em 2026-06 (fix/frontend-timezone-brt).
+  - Padrão: `const now = nowInAppTz(); startOfWeek(now, { weekStartsOn: 1 })` (segunda, igual ao backend) → `format(d, "yyyy-MM-dd")`.
+  - **NÃO** use o retorno de `nowInAppTz()` em `toISOString()`/timestamp — só pra wall-clock/range. Timestamps de display (footers "gerado em") continuam com `new Date()` normal.
+- Helpers de range em `src/pages/Index.tsx` (`rangeForPeriod`) e em `src/lib/biweekly.ts` (períodos quinzenais).
 - Formato de data trocado com backend: **sempre `YYYY-MM-DD`** (string), nunca `Date` cru nem ISO completo. Helper `format(d, "yyyy-MM-dd")`.
-- O backend faz toda a conversão pra Brasília (date-fns-tz no backend); frontend trabalha em local time. **Não introduzir `date-fns-tz` aqui** — não precisamos.
+- O backend também faz conversão pra Brasília (date-fns-tz no backend, `src/lib/dates.ts`).
 
 ## Testes
 

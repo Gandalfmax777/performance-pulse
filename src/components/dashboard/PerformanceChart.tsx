@@ -1,3 +1,4 @@
+import { nowInAppTz } from "@/lib/dates";
 import { useMemo } from "react";
 import {
   AreaChart,
@@ -21,7 +22,7 @@ function dayLabelFromYmd(s: string): string {
 }
 
 function todayYmd(): string {
-  const now = new Date();
+  const now = nowInAppTz();
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, "0");
   const d = String(now.getDate()).padStart(2, "0");
@@ -47,7 +48,7 @@ const FALLBACK_COLORS = [
 ];
 
 const PerformanceChart = () => {
-  const now = new Date();
+  const now = nowInAppTz();
   const from = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
   const to = format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
   const today = todayYmd();

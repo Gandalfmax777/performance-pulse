@@ -1,3 +1,4 @@
+import { nowInAppTz } from "@/lib/dates";
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import {
@@ -47,7 +48,7 @@ interface KpiCardsProps {
 const KpiCards = ({ from, to }: KpiCardsProps) => {
   const { kpis } = useKpis();
 
-  const now = new Date();
+  const now = nowInAppTz();
   const defaultFrom = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
   const defaultTo = format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
   const fromDate = from ?? defaultFrom;
@@ -60,7 +61,7 @@ const KpiCards = ({ from, to }: KpiCardsProps) => {
   const projection = useMemo(() => {
     const start = new Date(`${fromDate}T00:00:00.000Z`);
     const end = new Date(`${toDate}T00:00:00.000Z`);
-    const today = new Date();
+    const today = nowInAppTz();
     today.setUTCHours(0, 0, 0, 0);
 
     const totalDays = Math.max(1, differenceInCalendarDays(end, start) + 1);

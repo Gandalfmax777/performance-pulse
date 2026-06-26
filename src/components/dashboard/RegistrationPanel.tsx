@@ -20,6 +20,7 @@ import { useKpis } from "@/hooks/useKpis";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { apiFetch } from "@/api/client";
 import { MEETING_NOTE_PREFIX, MEETING_AREA_PREFIX, type NoteType } from "@/lib/meetingBonus";
+import { todayStrInAppTz } from "@/lib/dates";
 
 export interface ActivityBlock {
   name: string;
@@ -44,7 +45,9 @@ interface RegistrationPanelProps {
 }
 
 function todayString(): string {
-  return new Date().toISOString().slice(0, 10);
+  // BRT, não UTC: `new Date().toISOString()` daria o dia errado à noite em
+  // Brasília (UTC-3), registrando a métrica no dia seguinte.
+  return todayStrInAppTz();
 }
 
 const RegistrationPanel = ({ assessors, kpiKeys, extraKpiKeys = [], date, blocks }: RegistrationPanelProps) => {

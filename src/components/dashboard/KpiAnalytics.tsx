@@ -1,3 +1,4 @@
+import { nowInAppTz } from "@/lib/dates";
 import { useState, useMemo, useEffect } from "react";
 import {
   BarChart,
@@ -48,7 +49,7 @@ import { Eyebrow } from "@/components/shared";
 type Scope = "geral" | "individual";
 
 function defaultWeekRange() {
-  const now = new Date();
+  const now = nowInAppTz();
   return {
     from: format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
     to: format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
@@ -64,7 +65,7 @@ function defaultWeekRange() {
 type QuickPeriod = "day" | "week" | "month" | "semester";
 
 function rangeForPeriod(p: QuickPeriod): { from: string; to: string } {
-  const now = new Date();
+  const now = nowInAppTz();
   const fmt = (d: Date) => format(d, "yyyy-MM-dd");
   switch (p) {
     case "day":

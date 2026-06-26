@@ -13,6 +13,7 @@
  * quando carregando.
  */
 
+import { nowInAppTz } from "@/lib/dates";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { format, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -69,7 +70,7 @@ function pctDelta(curr: number, prev: number): number | null {
 type Period = "weekly" | "monthly";
 
 function rangeForPeriod(period: Period): { from: string; to: string; label: string } {
-  const now = new Date();
+  const now = nowInAppTz();
   const fmtD = (d: Date) => format(d, "yyyy-MM-dd");
   if (period === "monthly") {
     const s = startOfMonth(now);

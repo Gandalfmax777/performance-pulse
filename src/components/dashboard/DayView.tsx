@@ -1,3 +1,4 @@
+import { nowInAppTz } from "@/lib/dates";
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -53,7 +54,7 @@ interface DayViewProps {
  */
 const DayView = ({ assessors }: DayViewProps) => {
   // ─── Data e tab ────────────────────────────────────────────────────────────
-  const today = new Date();
+  const today = nowInAppTz();
   const todayDow = today.getDay();
   const defaultTab = todayDow >= 1 && todayDow <= 5 ? todayDow - 1 : 0;
   const [activeDay, setActiveDay] = useState(defaultTab);

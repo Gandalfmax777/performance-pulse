@@ -1,3 +1,4 @@
+import { nowInAppTz } from "@/lib/dates";
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { type DashboardView } from "@/components/dashboard/DashboardSidebar";
@@ -45,7 +46,7 @@ const OVERVIEW_PERIODS: { value: OverviewPeriod; label: string }[] = [
 ];
 
 function rangeForPeriod(period: OverviewPeriod): { from: string; to: string } {
-  const now = new Date();
+  const now = nowInAppTz();
   const fmt = (d: Date) => format(d, "yyyy-MM-dd");
   switch (period) {
     case "daily":

@@ -1,3 +1,4 @@
+import { nowInAppTz } from "@/lib/dates";
 import { useMemo, useState } from "react";
 import { Trophy } from "@phosphor-icons/react";
 import { type Assessor } from "@/types/assessor";
@@ -31,7 +32,7 @@ interface DailyResultsProps {
 
 /** Range YYYY-MM-DD do period — para casar com useOverviewReport (KPIs por assessor). */
 function rangeFor(period: Period): { from: string; to: string } {
-  const now = new Date();
+  const now = nowInAppTz();
   const fmt = (d: Date) => format(d, "yyyy-MM-dd");
   if (period === "daily") return { from: fmt(now), to: fmt(now) };
   if (period === "weekly")

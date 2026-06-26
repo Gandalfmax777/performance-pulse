@@ -1,3 +1,4 @@
+import { nowInAppTz } from "@/lib/dates";
 import { useMemo } from "react";
 import { Trophy, CurrencyDollar, Vault, Calendar } from "@phosphor-icons/react";
 import { differenceInCalendarDays, format, parseISO } from "date-fns";
@@ -34,7 +35,7 @@ const SquadPoolHero = () => {
   const daysRemaining = useMemo(() => {
     if (!activeBet) return null;
     const end = parseISO(activeBet.endDate);
-    const today = new Date();
+    const today = nowInAppTz();
     return Math.max(0, differenceInCalendarDays(end, today));
   }, [activeBet]);
 

@@ -1,3 +1,4 @@
+import { nowInAppTz } from "@/lib/dates";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { format, addDays, startOfWeek, nextWednesday, isWednesday } from "date-fns";
@@ -29,7 +30,7 @@ import type { ApiActivity } from "@/hooks/useActivities";
 
 /** Próximas N quartas-feiras a partir de hoje (inclusive). */
 function nextNWednesdays(n: number): Date[] {
-  const today = new Date();
+  const today = nowInAppTz();
   let cursor = isWednesday(today) ? today : nextWednesday(today);
   const list: Date[] = [];
   for (let i = 0; i < n; i++) {
@@ -276,7 +277,7 @@ function AnchorDialog({
   // Next valid Wednesday hint
   const suggestion = initialDate
     ? addDays(initialDate, 14)
-    : startOfWeek(new Date(), { weekStartsOn: 3 });
+    : startOfWeek(nowInAppTz(), { weekStartsOn: 3 });
 
   const handleSave = async () => {
     if (!date) return;
