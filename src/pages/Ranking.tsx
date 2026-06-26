@@ -6,6 +6,7 @@ import DailyResults from "@/components/dashboard/DailyResults";
 import { AppShellLayout } from "@/components/layouts/AppShellLayout";
 import { useAssessors } from "@/hooks/useAssessors";
 import { useOpenTv } from "@/hooks/useOpenTv";
+import { LoadingState, ErrorState } from "@/components/shared";
 
 type Period = "daily" | "weekly" | "monthly" | "semester";
 type RankType = "individuals" | "squads";
@@ -40,7 +41,7 @@ function parseType(raw: string | null): RankType {
  *   - "squads": SquadStandingsGrid agregando por squad
  */
 const Ranking = () => {
-  const { assessors } = useAssessors();
+  const { assessors, isLoading, isError, refetch } = useAssessors();
   const [searchParams, setSearchParams] = useSearchParams();
   const period = parsePeriod(searchParams.get("period"));
   const rankType = parseType(searchParams.get("type"));
@@ -145,7 +146,16 @@ const Ranking = () => {
         />
       )}
     >
-      <DailyResults assessors={assessors} period={period} rankType={rankType} />
+      {isError && assessors.length === 0 ? (
+        <ErrorState
+          message="Falha ao carregar o ranking. Verifique a conexão e tente de novo."
+          onRetry={refetch}
+        />
+      ) : isLoading && assessors.length === 0 ? (
+        <LoadingState label="Carregando ranking…" />
+      ) : (
+        <DailyResults assessors={assessors} period={period} rankType={rankType} />
+      )}
     </AppShellLayout>
   );
 };

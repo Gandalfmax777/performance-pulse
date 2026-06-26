@@ -39,7 +39,20 @@ const AdminAnnouncements = lazy(() => import("./pages/admin/AdminAnnouncements")
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const AdminTenants = lazy(() => import("./pages/admin/AdminTenants"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // `networkMode: "always"` (em vez do default "online"): o backend pode
+      // estar fora com o browser ONLINE. No modo "online", o Tanstack interpreta
+      // a falha de rede como "offline" e PAUSA a query (status fica "pending",
+      // isError nunca vira true) → a UI fica silenciosamente vazia. Com "always",
+      // a falha vira erro real → os estados de erro/retry das páginas e o
+      // indicador "Reconectando" da TV funcionam. (Tarefa 6 — robustez.)
+      networkMode: "always",
+      retry: 2,
+    },
+  },
+});
 
 function RequireAuth({ children }: { children: ReactElement }) {
   const token = getAuthToken();
