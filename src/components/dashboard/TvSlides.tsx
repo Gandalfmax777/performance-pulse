@@ -813,6 +813,14 @@ function SlideKpis({ data }: { tenant: Tenant; data: SlideData }) {
   );
 }
 
+const RANKING_COL_LABEL: CSSProperties = {
+  fontFamily: "'JetBrains Mono', monospace",
+  fontSize: 11,
+  letterSpacing: "0.18em",
+  textTransform: "uppercase",
+  color: "var(--tv-ink-3)",
+};
+
 function SlideRanking({ data }: { tenant: Tenant; data: SlideData }) {
   const top10 = data.ranked.slice(0, 10);
   const rest = data.ranked.slice(10);
@@ -831,51 +839,88 @@ function SlideRanking({ data }: { tenant: Tenant; data: SlideData }) {
           <Display size={64}>Ranking.</Display>
         </div>
       </div>
-      <div style={{ borderTop: "1px solid var(--tv-line)" }}>
-        {top10.map((a, i) => (
-          <div
-            key={a.id}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "60px 48px 1fr 120px 140px",
-              alignItems: "center",
-              padding: "12px 0",
-              gap: 20,
-              borderBottom: "1px solid var(--tv-line)",
-            }}
-          >
-            <Display
-              size={28}
-              lh={1}
-              style={{ color: i < 3 ? "var(--tv-accent)" : "var(--tv-ink-3)" }}
-            >
-              {String(i + 1).padStart(2, "0")}
-            </Display>
-            <TvAvatar initials={a.initials} size={36} accent={i === 0} />
-            <div style={{ fontSize: 18, fontWeight: 500 }}>{a.name}</div>
+      {/* Header de colunas — dá contexto pros números sem repetir "meta"/"pontos" linha a linha. */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "56px 48px 1fr 220px 120px",
+          gap: 24,
+          padding: "0 0 10px",
+          borderBottom: "1px solid var(--tv-line)",
+        }}
+      >
+        <div />
+        <div />
+        <div />
+        <div style={RANKING_COL_LABEL}>Meta</div>
+        <div style={{ ...RANKING_COL_LABEL, textAlign: "right" }}>Pontos</div>
+      </div>
+      <div>
+        {top10.map((a, i) => {
+          const top1 = i === 0;
+          const hitGoal = a.goalPct >= 100;
+          const barColor = hitGoal || top1 ? "var(--tv-accent)" : "var(--tv-accent-2)";
+          return (
             <div
+              key={a.id}
               style={{
-                textAlign: "right",
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: 14,
-                color: a.goalPct >= 100 ? "var(--tv-accent)" : "var(--tv-ink-3)",
+                display: "grid",
+                gridTemplateColumns: "56px 48px 1fr 220px 120px",
+                alignItems: "center",
+                padding: "16px 0",
+                gap: 24,
+                borderBottom: "1px solid var(--tv-line)",
               }}
             >
-              {a.goalPct}% meta
+              <Display
+                size={30}
+                lh={1}
+                weight={top1 ? 900 : undefined}
+                style={{ color: i < 3 ? "var(--tv-accent)" : "var(--tv-ink-3)" }}
+              >
+                {String(i + 1).padStart(2, "0")}
+              </Display>
+              <TvAvatar initials={a.initials} size={38} accent={top1} />
+              <div style={{ fontSize: 20, fontWeight: 500, letterSpacing: "-0.01em" }}>
+                {a.name}
+              </div>
+              {/* Meta: valor + barra de progresso (scan visual instantâneo). */}
+              <div>
+                <div
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 13,
+                    marginBottom: 6,
+                    color: hitGoal ? "var(--tv-accent)" : "var(--tv-ink-3)",
+                  }}
+                >
+                  {a.goalPct}%
+                </div>
+                <div style={{ height: 6, background: "var(--tv-surface-2)", position: "relative" }}>
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      right: "auto",
+                      width: `${Math.min(100, Math.max(0, a.goalPct))}%`,
+                      background: barColor,
+                    }}
+                  />
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <Display
+                  size={32}
+                  lh={1}
+                  weight={top1 ? 900 : 800}
+                  style={{ color: top1 ? "var(--tv-accent)" : "var(--tv-ink)" }}
+                >
+                  {fmt(a.points)}
+                </Display>
+              </div>
             </div>
-            <div
-              style={{
-                textAlign: "right",
-                fontFamily: "var(--tv-font-display)",
-                fontWeight: 800,
-                fontSize: 28,
-                letterSpacing: "var(--tv-display-letter)",
-              }}
-            >
-              {fmt(a.points)}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {rest.length > 0 && (
