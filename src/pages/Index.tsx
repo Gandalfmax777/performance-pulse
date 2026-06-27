@@ -29,6 +29,7 @@ const PresentationMode = lazy(() => import("@/components/dashboard/PresentationM
 
 import { PresentationChart, Television } from "@phosphor-icons/react";
 import { useAssessors } from "@/hooks/useAssessors";
+import { LoadingState, ErrorState } from "@/components/shared";
 import { useRankingStream } from "@/hooks/useRankingStream";
 import { useSystemNotifications } from "@/hooks/useSystemNotifications";
 import { useOpenTv } from "@/hooks/useOpenTv";
@@ -162,7 +163,7 @@ const Index = () => {
     }, { replace: true });
   }, [setSearchParams]);
 
-  const { assessors } = useAssessors();
+  const { assessors, isLoading: assessorsLoading, isError: assessorsError, refetch: refetchAssessors } = useAssessors();
   const { event: finishedEvent, dismiss: dismissFinished } = useTournamentFinishedStream(true);
   const overviewRange = usingCustomRange
     ? { from: customFrom!, to: customTo! }
@@ -288,7 +289,15 @@ const Index = () => {
           />
         )}
       >
-        {view === "overview" && (
+        {view === "overview" && assessorsError && assessors.length === 0 ? (
+          <ErrorState
+            message="Falha ao carregar o dashboard. Verifique a conexão e tente de novo."
+            onRetry={refetchAssessors}
+          />
+        ) : view === "overview" && assessorsLoading && assessors.length === 0 ? (
+          <LoadingState label="Carregando dashboard…" />
+        ) : (
+          view === "overview" && (
             <>
               {/* AnnouncementTicker continua acima do hero — feature de
                   marquee animado (não é o card "Avisos da mesa" abaixo). */}
@@ -315,7 +324,8 @@ const Index = () => {
                 <InsightFeaturedCard />
               </div>
             </>
-          )}
+          )
+        )}
 
       </AppShellLayout>
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Play, Pause, SkipForward, Timer, X } from "@phosphor-icons/react";
 import { TvSlides, TV_SLIDES } from "@/components/dashboard/TvSlides";
+import { TvErrorBoundary } from "@/components/TvErrorBoundary";
 import TournamentFinishedOverlay from "@/components/dashboard/TournamentFinishedOverlay";
 import { useAssessors } from "@/hooks/useAssessors";
 import { usePublicTenantBrand } from "@/hooks/usePublicTenantBrand";
@@ -188,14 +189,18 @@ const TvPageContent = ({ tenantSlug }: { tenantSlug: TenantSlug }) => {
 
   return (
     <div className="min-h-screen w-screen overflow-hidden relative bg-background">
-      {/* Slide ocupa tela inteira — TvSlides tem seu próprio Chrome */}
+      {/* Slide ocupa tela inteira — TvSlides tem seu próprio Chrome.
+          Envolto no TvErrorBoundary: um slide que estoure mostra "Reconectando"
+          (não tela branca) e auto-recupera quando o backend volta. */}
       <div className="absolute inset-0">
-        <TvSlides
-          slideIdx={slideIdx}
-          assessors={assessors}
-          tenant={tenantSlug}
-          logoUrl={tenantLogoUrl}
-        />
+        <TvErrorBoundary>
+          <TvSlides
+            slideIdx={slideIdx}
+            assessors={assessors}
+            tenant={tenantSlug}
+            logoUrl={tenantLogoUrl}
+          />
+        </TvErrorBoundary>
       </div>
 
       {/* Controles flutuantes — auto-hide após 3s idle. Posicionados

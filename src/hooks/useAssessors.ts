@@ -88,6 +88,8 @@ function toLegacyAssessor(a: ApiAssessor, rollup: ApiRollup | undefined): Assess
 interface UseAssessorsResult {
   assessors: Assessor[];
   isLoading: boolean;
+  isError: boolean;
+  refetch: () => void;
   addAssessor: (input: CreateAssessorInput) => void;
   removeAssessor: (id: string) => void;
 }
@@ -136,6 +138,11 @@ export function useAssessors(): UseAssessorsResult {
   return {
     assessors: (assessorsQuery.data ?? []).map((a) => toLegacyAssessor(a, rollupMap.get(a.id))),
     isLoading: assessorsQuery.isLoading,
+    // failureCount cobre também o estado "paused" do Tanstack (quando o browser
+    // é considerado offline) além do erro final — pega backend fora de forma
+    // confiável, independente do networkMode/navigator.onLine.
+    isError: assessorsQuery.isError || assessorsQuery.failureCount > 0,
+    refetch: () => void assessorsQuery.refetch(),
     addAssessor: (input) => createMutation.mutate(input),
     removeAssessor: (id) => removeMutation.mutate(id),
   };

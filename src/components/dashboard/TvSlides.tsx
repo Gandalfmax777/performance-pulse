@@ -381,6 +381,8 @@ interface SlideData {
   }>;
   tournaments: ApiTournament[];
   teamInsightMd: string | null;
+  /** true quando as queries de dados do slide estão em erro (backend fora). */
+  connectionError: boolean;
 }
 
 function useTvSlideData(period: Period, assessors: Assessor[]): SlideData {
@@ -411,13 +413,24 @@ function useTvSlideData(period: Period, assessors: Assessor[]): SlideData {
     return { from: format(s, "yyyy-MM-dd"), to: format(e, "yyyy-MM-dd") };
   }, [range, period]);
 
-  const { data: overview } = useOverviewReport(range);
+  const overviewQ = useOverviewReport(range);
+  const overview = overviewQ.data;
   const { data: prevOverview } = useOverviewReport(prevRange);
   // Passa o início do período resolvido pros rankings (default seria a semana
   // atual). Mantém ranking e overview no MESMO período exibido no header.
   const weeklyQ = useWeeklyRanking({ start: range.from, enabled: period === "weekly" });
   const monthlyQ = useMonthlyRanking({ start: range.from, enabled: period === "monthly" });
   const activeRanking = period === "weekly" ? weeklyQ.data : monthlyQ.data;
+  // Sinaliza desconexão quando as queries principais do slide erram (backend
+  // fora). O Tanstack segue retentando → quando volta, o indicador some sozinho.
+  // failureCount > 0 sinaliza já durante as tentativas (não só após o erro
+  // final), pra TV mostrar "Reconectando" rápido. Reseta a 0 quando volta.
+  const activeRankingQ = period === "weekly" ? weeklyQ : monthlyQ;
+  const connectionError =
+    overviewQ.isError ||
+    activeRankingQ.isError ||
+    overviewQ.failureCount > 0 ||
+    activeRankingQ.failureCount > 0;
   const { data: tournaments = [] } = useActiveTournaments();
   const { data: insightHistory } = useTeamInsightHistory(
     period === "weekly" ? "WEEK" : "MONTH",
@@ -474,8 +487,9 @@ function useTvSlideData(period: Period, assessors: Assessor[]): SlideData {
       ranked,
       tournaments,
       teamInsightMd: insightHistory?.items?.[0]?.summary ?? insightHistory?.items?.[0]?.textMarkdown ?? null,
+      connectionError,
     };
-  }, [range, overview, prevOverview, activeRanking, assessors, tournaments, insightHistory]);
+  }, [range, overview, prevOverview, activeRanking, assessors, tournaments, insightHistory, connectionError]);
 }
 
 // ─── SLIDES ──────────────────────────────────────────────────────────────
@@ -1351,6 +1365,14 @@ export function TvSlides({
       slideIdx={slideIdx % TV_SLIDES.length}
       slideCount={TV_SLIDES.length}
     >
+      {data.connectionError && (
+        <div className="fixed bottom-6 left-6 z-50 flex items-center gap-2 rounded-full border border-foreground/15 bg-card/90 px-3 py-1.5 backdrop-blur-sm">
+          <span className="h-2 w-2 rounded-full bg-warning animate-pulse" />
+          <span className="num text-[11px] uppercase tracking-[0.16em] text-foreground/70">
+            Reconectando…
+          </span>
+        </div>
+      )}
       <SlideComp tenant={tenant} period={period} data={data} />
     </Chrome>
   );
