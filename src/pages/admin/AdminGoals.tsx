@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { Fragment, useState, useMemo } from "react";
 import { toast } from "sonner";
 import {
   CaretDown,
@@ -8,6 +8,8 @@ import {
   PencilSimple,
   ClockCounterClockwise as History,
   Plus,
+  ArrowsClockwise,
+  Warning,
 } from "@phosphor-icons/react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -36,9 +38,66 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import type { ApiKpi } from "@/hooks/useKpis";
+import { useRecomputeScoring } from "@/hooks/useRecomputeScoring";
+
+/**
+ * Botão "Recalcular pontos" — dispara o recálculo do histórico no backend
+ * (substitui o passo manual de rodar `scripts/recompute-all-points.ts`).
+ * Reusado no header da página e dentro do dialog de edição de regra.
+ */
+function RecomputeButton({
+  variant = "outline",
+  size = "default",
+  label = "Recalcular pontos",
+  className,
+}: {
+  variant?: "outline" | "ghost" | "default";
+  size?: "default" | "sm";
+  label?: string;
+  className?: string;
+}) {
+  const recompute = useRecomputeScoring();
+  return (
+    <Button
+      type="button"
+      variant={variant}
+      size={size}
+      className={className}
+      disabled={recompute.isPending}
+      onClick={() =>
+        recompute.mutate(undefined, {
+          onSuccess: (r) =>
+            toast.success(
+              `${r.updated} de ${r.total} métricas recalculadas` +
+                (r.failed ? ` · ${r.failed} falhas` : ""),
+            ),
+          onError: (e) =>
+            toast.error(e instanceof Error ? e.message : "Erro ao recalcular"),
+        })
+      }
+    >
+      {recompute.isPending ? (
+        <CircleNotch size={14} className="animate-spin" />
+      ) : (
+        <ArrowsClockwise size={14} weight="bold" />
+      )}
+      {label}
+    </Button>
+  );
+}
 
 interface KpiDialogState {
   open: boolean;
@@ -186,14 +245,23 @@ const AdminGoals = () => {
         </div>
       </div>
 
-      {/* CTA "Novo KPI" */}
-      <div className="flex justify-end">
-        <Button
-          onClick={() => setCreateOpen(true)}
-          className="gap-2 bg-ink hover:bg-ink/90 text-white"
-        >
-          <Plus size={14} weight="bold" /> Novo KPI
-        </Button>
+      {/* Legenda meta × pontos + CTAs */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-[11px] text-ink-3 leading-snug max-w-xl">
+          <span className="font-semibold text-ink-2">Meta</span> define o{" "}
+          <span className="font-semibold">% de cumprimento</span> (cards e relatórios).{" "}
+          <span className="font-semibold text-ink-2">Regra de pontuação</span> define os{" "}
+          <span className="font-semibold">pontos do ranking</span>. São independentes — editáveis por KPI.
+        </p>
+        <div className="flex items-center gap-2 shrink-0">
+          <RecomputeButton />
+          <Button
+            onClick={() => setCreateOpen(true)}
+            className="gap-2 bg-ink hover:bg-ink/90 text-white"
+          >
+            <Plus size={14} weight="bold" /> Novo KPI
+          </Button>
+        </div>
       </div>
 
       {/* KPI list */}
@@ -222,9 +290,13 @@ const AdminGoals = () => {
                   : "—";
                 const period = kpi.activeGoal?.period ?? "—";
                 const expanded = historyOpen === kpi.id;
+                // KPI com meta ativa mas sem regra de pontos ativa → lançamentos
+                // gravam 0 ponto silenciosamente. Avisa o admin.
+                const missingActiveRule =
+                  !!kpi.activeGoal && (!kpi.scoringRule || !kpi.scoringRule.active);
                 return (
-                  <>
-                    <TableRow key={kpi.id} className="border-line/20">
+                  <Fragment key={kpi.id}>
+                    <TableRow className="border-line/20">
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <button
@@ -239,6 +311,14 @@ const AdminGoals = () => {
                             )}
                           </button>
                           <span className="font-semibold text-sm text-ink">{kpi.label}</span>
+                          {missingActiveRule && (
+                            <span
+                              className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-300 px-1.5 py-0.5 text-[10px] font-medium text-amber-700"
+                              title="Este KPI tem meta ativa mas nenhuma regra de pontuação ativa — os lançamentos gravam 0 ponto no ranking. Edite e configure a regra."
+                            >
+                              <Warning size={11} weight="fill" /> sem regra de pontos
+                            </span>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -274,7 +354,7 @@ const AdminGoals = () => {
                       </TableCell>
                     </TableRow>
                     {expanded && <GoalHistoryRow kpiId={kpi.id} />}
-                  </>
+                  </Fragment>
                 );
               })}
             </TableBody>
@@ -342,6 +422,23 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
   );
 
   const createGoal = useCreateGoal();
+  const [confirmDailyOpen, setConfirmDailyOpen] = useState(false);
+
+  const goalChanged =
+    goalValue !== (kpi.activeGoal?.value ?? kpi.defaultTarget) ||
+    period !== (kpi.activeGoal?.period ?? "WEEKLY");
+  // Meta DIÁRIA em KPI absoluto multiplica o alvo do time por ~7 dias. Exige
+  // confirmação explícita antes de salvar (a escolha de período é consciente).
+  const needsDailyConfirm =
+    goalChanged && period === "DAILY" && kpi.inputMode === "ABSOLUTE";
+
+  const handleSaveClick = () => {
+    if (needsDailyConfirm) {
+      setConfirmDailyOpen(true);
+      return;
+    }
+    void handleSave();
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -354,11 +451,7 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
         });
       }
 
-      // 2) POST nova Goal se valor ou período mudaram
-      const goalChanged =
-        goalValue !== (kpi.activeGoal?.value ?? kpi.defaultTarget) ||
-        period !== (kpi.activeGoal?.period ?? "WEEKLY");
-
+      // 2) POST nova Goal se valor ou período mudaram (goalChanged no escopo do componente)
       if (goalChanged) {
         await createGoal.mutateAsync({
           kpiId: kpi.id,
@@ -592,10 +685,13 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
                   Regra atual
                 </p>
                 <p className="text-sm font-mono text-primary">{rulePreview}</p>
-                <p className="text-[10px] text-ink-3 mt-1">
-                  Aplica em novos registros. Pra recalcular histórico, rodar
-                  <code className="mx-1 px-1 bg-muted/30 rounded">scripts/recompute-all-points.ts</code>.
-                </p>
+                <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-[10px] text-ink-3">
+                    Aplica automaticamente em novos registros. Para reaplicar a
+                    regra no histórico já lançado, recalcule os pontos:
+                  </p>
+                  <RecomputeButton size="sm" variant="outline" label="Recalcular agora" className="shrink-0 gap-1.5" />
+                </div>
               </div>
             </div>
           </div>
@@ -605,12 +701,37 @@ function EditKpiDialog({ kpi, open, onClose, onSuccess }: EditKpiDialogProps) {
           <Button variant="outline" onClick={onClose} disabled={saving}>
             Cancelar
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
+          <Button onClick={handleSaveClick} disabled={saving}>
             {saving && <CircleNotch size={16} className="animate-spin mr-2" />}
             Salvar alterações
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <AlertDialog open={confirmDailyOpen} onOpenChange={setConfirmDailyOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar meta diária</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você está definindo a meta de <strong>{kpi.label}</strong> como{" "}
+              <strong>Diária</strong>. Isso multiplica o alvo agregado do time por
+              ~7 dias na semana (ex.: 30/dia vira ~210/semana). Se você pensa essa
+              meta como semanal, cancele e troque o período para "Semanal".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setConfirmDailyOpen(false);
+                void handleSave();
+              }}
+            >
+              Confirmar meta diária
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
@@ -678,6 +799,7 @@ function CreateKpiDialog({ open, onClose, onSuccess }: CreateKpiDialogProps) {
   const [period, setPeriod] = useState<"DAILY" | "WEEKLY" | "MONTHLY">("WEEKLY");
   const [createGoal, setCreateGoal] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [confirmDailyOpen, setConfirmDailyOpen] = useState(false);
 
   // Scoring rule (opcional). Default: LINEAR 1:1 (= 1 unidade vale 1 ponto).
   const [createRule, setCreateRule] = useState(true);
@@ -702,6 +824,22 @@ function CreateKpiDialog({ open, onClose, onSuccess }: CreateKpiDialogProps) {
     setPointsPerBucket(1);
     setThresholdPct(70);
     setThresholdPoints(5);
+  };
+
+  // Meta diária em KPI absoluto multiplica o alvo do time por ~7 dias.
+  const needsDailyConfirm =
+    createGoal && period === "DAILY" && inputMode === "ABSOLUTE";
+
+  const handleSaveClick = () => {
+    if (!key.trim() || !label.trim()) {
+      toast.error("Preencha key e label");
+      return;
+    }
+    if (needsDailyConfirm) {
+      setConfirmDailyOpen(true);
+      return;
+    }
+    void handleSave();
   };
 
   const handleSave = async () => {
@@ -931,12 +1069,37 @@ function CreateKpiDialog({ open, onClose, onSuccess }: CreateKpiDialogProps) {
           <Button variant="outline" onClick={onClose} disabled={saving}>
             Cancelar
           </Button>
-          <Button onClick={handleSave} disabled={saving || !key.trim() || !label.trim()}>
+          <Button onClick={handleSaveClick} disabled={saving || !key.trim() || !label.trim()}>
             {saving && <CircleNotch size={16} className="animate-spin mr-2" />}
             Criar KPI
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <AlertDialog open={confirmDailyOpen} onOpenChange={setConfirmDailyOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar meta diária</AlertDialogTitle>
+            <AlertDialogDescription>
+              A meta deste KPI será criada como <strong>Diária</strong>, o que
+              multiplica o alvo agregado do time por ~7 dias na semana. Se você
+              pensa essa meta como semanal, cancele e troque o período para
+              "Semanal".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setConfirmDailyOpen(false);
+                void handleSave();
+              }}
+            >
+              Confirmar meta diária
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
