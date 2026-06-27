@@ -1,3 +1,4 @@
+import { nowInAppTz } from "@/lib/dates";
 import { useNavigate } from "react-router-dom";
 import { addDays, format, startOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -30,7 +31,7 @@ export const ScheduleStripCard = () => {
   const { isAdmin } = useCurrentUser();
   const { data: activities = [], isLoading } = useAllActivities();
 
-  const today = new Date();
+  const today = nowInAppTz();
   const monday = startOfWeek(today, { weekStartsOn: 1 });
   const todayDow = today.getDay() === 0 ? 7 : today.getDay(); // 1-7 onde 7=domingo
 

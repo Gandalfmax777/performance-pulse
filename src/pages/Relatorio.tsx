@@ -13,6 +13,7 @@
  *  - autoprint=1: chama window.print() automaticamente quando dados carregam
  */
 
+import { nowInAppTz } from "@/lib/dates";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import {
@@ -33,7 +34,7 @@ import { useGenerateTeamInsight, type ApiInsight } from "@/hooks/useInsight";
 type Period = "weekly" | "monthly";
 
 function rangeFor(period: Period) {
-  const now = new Date();
+  const now = nowInAppTz();
   const fmt = (d: Date) => format(d, "yyyy-MM-dd");
   if (period === "weekly") {
     const s = startOfWeek(now, { weekStartsOn: 1 });

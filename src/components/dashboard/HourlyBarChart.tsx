@@ -1,3 +1,4 @@
+import { nowInAppTz } from "@/lib/dates";
 import { useMemo } from "react";
 import { format, parseISO } from "date-fns";
 import { useMetrics } from "@/hooks/useMetrics";
@@ -62,7 +63,7 @@ const HourlyBarChart = ({ date }: HourlyBarChartProps) => {
     hourlyData[0],
   );
 
-  const isToday = date === format(new Date(), "yyyy-MM-dd");
+  const isToday = date === format(nowInAppTz(), "yyyy-MM-dd");
   const dateLabel = format(parseISO(date), "dd/MM");
 
   return (

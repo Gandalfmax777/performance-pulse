@@ -1,3 +1,4 @@
+import { nowInAppTz } from "@/lib/dates";
 import { useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
@@ -28,7 +29,7 @@ function parsePeriod(raw: string | null): KpisPeriod {
 }
 
 function rangeForPeriod(p: KpisPeriod): { from: string; to: string } {
-  const now = new Date();
+  const now = nowInAppTz();
   const fmt = (d: Date) => format(d, "yyyy-MM-dd");
   if (p === "weekly")
     return {

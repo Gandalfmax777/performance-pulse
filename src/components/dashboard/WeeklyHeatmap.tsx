@@ -1,3 +1,4 @@
+import { nowInAppTz } from "@/lib/dates";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -49,8 +50,8 @@ const WeeklyHeatmap = ({ assessors }: Props) => {
   const { data: allUnlocks } = useBadgeUnlocks();
 
   // Salesforce check: set de "(assessorId, dayIndex 0-4)" com [SALESFORCE_OK]
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
+  const weekStart = startOfWeek(nowInAppTz(), { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(nowInAppTz(), { weekStartsOn: 1 });
   const { data: weekMetrics } = useMetrics({
     from: format(weekStart, "yyyy-MM-dd"),
     to: format(weekEnd, "yyyy-MM-dd"),
@@ -116,13 +117,13 @@ const WeeklyHeatmap = ({ assessors }: Props) => {
                       className={`relative h-8 rounded-md flex items-center justify-center text-xs font-mono ${
                         done
                           ? "bg-success/30 text-success border border-success/20"
-                          : di < new Date().getDay() - 1
+                          : di < nowInAppTz().getDay() - 1
                           ? "bg-destructive/20 text-destructive/60 border border-destructive/10"
                           : "bg-muted/30 text-muted-foreground/40 border border-border/20"
                       }`}
                       title={sfOk ? "Salesforce confirmado" : undefined}
                     >
-                      {done ? "✓" : di < new Date().getDay() - 1 ? "✗" : "—"}
+                      {done ? "✓" : di < nowInAppTz().getDay() - 1 ? "✗" : "—"}
                       {sfOk && (
                         <span
                           className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-3 h-3 rounded-full bg-blue-500 text-[7px] flex items-center justify-center text-white font-bold border border-background"
@@ -239,14 +240,14 @@ const WeeklyHeatmap = ({ assessors }: Props) => {
                           className={`h-10 rounded-lg flex items-center justify-center text-sm font-mono transition-all ${
                             done
                               ? "bg-success/25 text-success border border-success/20"
-                              : di < new Date().getDay() - 1
+                              : di < nowInAppTz().getDay() - 1
                               ? "bg-destructive/15 text-destructive/70 border border-destructive/10"
                               : "bg-muted/20 text-muted-foreground/40 border border-border/20"
                           } ${isSelected ? "ring-1 ring-primary/30" : ""}`}
                         >
                           {done ? (
                             <CheckCircle size={16} weight="bold" />
-                          ) : di < new Date().getDay() - 1 ? (
+                          ) : di < nowInAppTz().getDay() - 1 ? (
                             <XCircle size={16} />
                           ) : (
                             "—"

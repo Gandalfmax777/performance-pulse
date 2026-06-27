@@ -7,6 +7,7 @@
  * Uso: /relatorio/assessor/:id?period=weekly|monthly[&autoprint=1]
  */
 
+import { nowInAppTz } from "@/lib/dates";
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import {
@@ -41,7 +42,7 @@ import {
 type Period = "weekly" | "monthly";
 
 function rangeFor(period: Period) {
-  const now = new Date();
+  const now = nowInAppTz();
   const fmt = (d: Date) => format(d, "yyyy-MM-dd");
   if (period === "weekly") {
     const s = startOfWeek(now, { weekStartsOn: 1 });

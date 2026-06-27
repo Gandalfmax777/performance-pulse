@@ -1,3 +1,4 @@
+import { nowInAppTz } from "@/lib/dates";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, startOfWeek, addDays } from "date-fns";
 import { apiFetch } from "@/api/client";
@@ -76,7 +77,7 @@ const DAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
  * data já foi puxada por outro componente (DayView, PresentationMode).
  */
 export function useWeekDirections(): WeekDirectionEntry[] {
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const weekStart = startOfWeek(nowInAppTz(), { weekStartsOn: 1 });
   const days = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
 
   const results = useQueries({

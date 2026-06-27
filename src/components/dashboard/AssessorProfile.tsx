@@ -1,3 +1,4 @@
+import { nowInAppTz } from "@/lib/dates";
 import { useMemo, useState } from "react";
 import { useModalDismiss } from "@/hooks/useModalDismiss";
 import { motion } from "framer-motion";
@@ -48,7 +49,7 @@ interface AssessorProfileProps {
 }
 
 function defaultWeekRange() {
-  const now = new Date();
+  const now = nowInAppTz();
   return {
     from: format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
     to: format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
@@ -57,7 +58,7 @@ function defaultWeekRange() {
 
 /** Ranges fixos pra card "Resultados por Período" — daily/weekly/monthly */
 function buildBreakdownRanges() {
-  const now = new Date();
+  const now = nowInAppTz();
   const fmt = (d: Date) => format(d, "yyyy-MM-dd");
   return {
     day: { from: fmt(now), to: fmt(now) },

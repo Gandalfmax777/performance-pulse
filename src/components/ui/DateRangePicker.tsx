@@ -1,3 +1,4 @@
+import { nowInAppTz } from "@/lib/dates";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, startOfYear } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "@phosphor-icons/react";
@@ -32,14 +33,14 @@ const PRESETS = [
   {
     label: "Hoje",
     compute: () => {
-      const now = new Date();
+      const now = nowInAppTz();
       return { from: toYmd(now), to: toYmd(now) };
     },
   },
   {
     label: "Esta semana",
     compute: () => {
-      const now = new Date();
+      const now = nowInAppTz();
       return {
         from: toYmd(startOfWeek(now, { weekStartsOn: 1 })),
         to: toYmd(endOfWeek(now, { weekStartsOn: 1 })),
@@ -49,14 +50,14 @@ const PRESETS = [
   {
     label: "Este mês",
     compute: () => {
-      const now = new Date();
+      const now = nowInAppTz();
       return { from: toYmd(startOfMonth(now)), to: toYmd(endOfMonth(now)) };
     },
   },
   {
     label: "Este semestre",
     compute: () => {
-      const now = new Date();
+      const now = nowInAppTz();
       const month = now.getMonth(); // 0-11
       const semStart = month < 6
         ? new Date(now.getFullYear(), 0, 1)  // jan
@@ -70,7 +71,7 @@ const PRESETS = [
   {
     label: "Últimos 30d",
     compute: () => {
-      const now = new Date();
+      const now = nowInAppTz();
       return { from: toYmd(subDays(now, 29)), to: toYmd(now) };
     },
   },

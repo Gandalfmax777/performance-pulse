@@ -1,3 +1,4 @@
+import { nowInAppTz } from "@/lib/dates";
 import { useMemo } from "react";
 import { Fire } from "@phosphor-icons/react";
 import { format } from "date-fns";
@@ -70,7 +71,7 @@ const DailyRankingTable = ({ date, assessors }: DailyRankingTableProps) => {
     });
   }, [dailyRanking, assessors, kpisByAssessor]);
 
-  const isToday = date === format(new Date(), "yyyy-MM-dd");
+  const isToday = date === format(nowInAppTz(), "yyyy-MM-dd");
 
   return (
     <SectionCard

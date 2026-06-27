@@ -1,3 +1,4 @@
+import { nowInAppTz } from "@/lib/dates";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -104,10 +105,10 @@ const TEMPLATES: TournamentTemplate[] = [
 ];
 
 function defaultStart(): string {
-  return format(new Date(), "yyyy-MM-dd");
+  return format(nowInAppTz(), "yyyy-MM-dd");
 }
 function defaultEnd(): string {
-  return format(addDays(new Date(), 6), "yyyy-MM-dd");
+  return format(addDays(nowInAppTz(), 6), "yyyy-MM-dd");
 }
 
 const AdminTournaments = () => {
@@ -191,7 +192,7 @@ const AdminTournaments = () => {
   };
 
   const applyTemplate = (tpl: TournamentTemplate) => {
-    const now = new Date();
+    const now = nowInAppTz();
     const dates = tpl.getDates(now);
     setForm({
       roundLabel: tpl.defaultLabel(now),
