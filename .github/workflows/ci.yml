@@ -3,6 +3,12 @@ name: CI
 on:
   pull_request:
     branches: [main]
+  # Também valida o RESULTADO do merge em main. Sem isso, PRs verdes isolados
+  # podem quebrar combinados (lint/tsc só checa cada branch contra a base ANTIGA)
+  # e um main quebrado só apareceria no build do deploy. Com push em main, o CI
+  # roda pós-merge e main quebrado fica vermelho na hora.
+  push:
+    branches: [main]
 
 permissions:
   contents: read
